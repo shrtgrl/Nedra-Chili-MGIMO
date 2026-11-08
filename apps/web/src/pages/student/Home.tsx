@@ -1,0 +1,157 @@
+import { Link } from 'react-router-dom'
+import { useUser } from '../../context/auth'
+import { useData } from '../../context/data'
+import { ANNOUNCEMENTS, DEADLINES, DEMO_NOW, DISCIPLINES_AUTUMN, REQUEST_STAGES, REQUEST_TYPES, STUDENT_LESSONS } from '../../data/mock'
+import { average, daysLeftLabel, eyebrowDate } from '../../lib/format'
+import { NextLessonHero, TodayTimeline } from '../../components/schedule'
+import { todayLessons } from '../../lib/lessons'
+import { Search } from '../../components/Search'
+import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, Ring, Stages, ThemeButton } from '../../components/ui'
+import { Icon } from '../../components/Icon'
+
+const daysUntil = (iso: string) => {
+  const d = new Date(iso)
+  const a = new Date(DEMO_NOW.getFullYear(), DEMO_NOW.getMonth(), DEMO_NOW.getDate())
+  const b = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  return Math.round((b.getTime() - a.getTime()) / 86_400_000)
+}
+
+export function StudentHome() {
+  const user = useUser()
+  const { requests, unreadCount } = useData()
+  const avg = average(DISCIPLINES_AUTUMN.map((d) => d.score))
+  const weakest = [...DISCIPLINES_AUTUMN].sort((a, b) => a.score - b.score)[0]
+  const inWork = requests.filter((r) => r.stage < 2).length
+  const todayCount = todayLessons(STUDENT_LESSONS).filter((l) => l.status !== 'cancelled').length
+
+  return (
+    <>
+      <PageHeader
+        eyebrow={eyebrowDate(DEMO_NOW)}
+        title={
+          <>
+            <span className="only-desktop">Добрый день, {user.firstName}</span>
+            <span className="only-mobile">Привет, {user.firstName}</span>
+          </>
+        }
+        actions={
+          <>
+            <Search />
+            <ThemeButton />
+            <IconButton icon="bell" label="Уведомления" to="/student/notifications" dot={unreadCount > 0} />
+          </>
+        }
+      />
+
+      <div className="grid-home">
+        <div className="stack">
+          <div className="only-desktop">
+            <NextLessonHero lessons={STUDENT_LESSONS} who="teacher" scheduleLink="/student/schedule" />
+          </div>
+          <div className="only-mobile">
+            <NextLessonHero lessons={STUDENT_LESSONS} who="teacher" compact />
+          </div>
+
+          <div className="stats only-desktop">
+            <div className="stat">
+              <span className="stat__label">Средний балл</span>
+              <span className="stat__value display">
+                {avg}
+                <small> / 100</small>
+              </span>
+            </div>
+            <div className="stat">
+              <span className="stat__label">Занятий сегодня</span>
+              <span className="stat__value display">{todayCount}</span>
+            </div>
+            <Link to="/student/requests" className="stat">
+              <span className="stat__label">Заявок в работе</span>
+              <span className="stat__value display">{inWork}</span>
+            </Link>
+          </div>
+
+          <div className="stats stats--2 only-mobile">
+            <Link to="/student/grades" className="stat stat--hl">
+              <span className="stat__label">Средний балл</span>
+              <span className="stat__value display">{avg}</span>
+            </Link>
+            <Link to="/student/notifications" className="stat">
+              <span className="stat__label">Дедлайн</span>
+              <b className="stat__text">{DEADLINES[0].title}</b>
+              <span className="stat__danger">завтра, 23:59</span>
+            </Link>
+          </div>
+
+          <TodayTimeline lessons={STUDENT_LESSONS} who="teacher" />
+        </div>
+
+        <div className="stack">
+          <section className="card card--hl status-card">
+            <Ring value={avg} size={108} />
+            <div>
+              <h2 className="card__title">Как у меня дела</h2>
+              <p className="small">
+                Хороший темп. Подтяните «{weakest.name}» — <b>{weakest.score}</b> баллов, это самый низкий результат.
+              </p>
+              <Link to="/student/grades" className="link">
+                Вся успеваемость <Icon name="arrowRight" size={14} />
+              </Link>
+            </div>
+          </section>
+
+          <section className="card">
+            <h2 className="card__title">Ближайшие дедлайны</h2>
+            <ul className="list">
+              {DEADLINES.map((d) => {
+                const n = daysUntil(d.date)
+                return (
+                  <li key={d.id} className="list__row">
+                    <div>
+                      <b>{d.title}</b>
+                      <span className="small muted">{d.dateLabel}</span>
+                    </div>
+                    <Badge tone={n <= 1 ? 'danger' : n <= 3 ? 'warn' : 'neutral'}>{daysLeftLabel(n)}</Badge>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+
+          <section className="card">
+            <div className="card__head">
+              <h2 className="card__title">Мои заявки</h2>
+              <ButtonLink to="/student/requests" variant="primary" icon="plus" size="sm">
+                Новая
+              </ButtonLink>
+            </div>
+            {requests.length === 0 && <p className="muted small">Заявок пока нет.</p>}
+            <div className="stack stack--sm">
+              {requests.slice(0, 3).map((r) => (
+                <Link to="/student/requests" key={r.id} className="mini-req">
+                  <div className="mini-req__head">
+                    <b>{REQUEST_TYPES[r.type]}</b>
+                    <Badge tone={r.stage >= 2 ? 'ok' : 'neutral'}>{REQUEST_STAGES[r.stage]}</Badge>
+                  </div>
+                  <Stages stages={REQUEST_STAGES} current={r.stage} showLabels={false} />
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="card">
+            <h2 className="card__title">Объявления деканата</h2>
+            <ul className="announcements">
+              {ANNOUNCEMENTS.map((a) => (
+                <li key={a.id}>
+                  <b>{a.title}</b>
+                  <span className="small muted">{a.text}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </div>
+      <Disclaimer />
+    </>
+  )
+}

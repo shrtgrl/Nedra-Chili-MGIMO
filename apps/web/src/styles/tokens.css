@@ -1,0 +1,220 @@
+/*
+  Дизайн-токены. Два варианта оформления × две темы:
+    data-variant="fog"      — «Туман» (по умолчанию)
+    data-variant="graphite" — «Графитово-синий»
+    data-theme="light" | "dark"
+  Цвета сняты с макетов MUKPiD_maket_Grafit_i_Tuman.pdf.
+*/
+
+:root {
+  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Unbounded', 'Manrope', system-ui, sans-serif;
+
+  --r-xl: 28px;
+  --r-lg: 22px;
+  --r-md: 16px;
+  --r-sm: 12px;
+  --r-pill: 999px;
+
+  --sidebar-w: 236px;
+
+  /* общие для всех вариантов */
+  --hl: #eff0a4;            /* лимонный акцент */
+  --on-hl: #181e2a;
+  --hl-pill: #d8dc9f;
+  --dot: #dd723c;           /* точка непрочитанного */
+  --bar-warn: #e0a23d;
+}
+
+/* ───────────── Туман · светлая ───────────── */
+:root,
+[data-variant='fog'][data-theme='light'] {
+  color-scheme: light;
+  --stage: #e9e8e0;
+  --bg: #f5f4ef;
+  --surface: #ffffff;
+  --surface-2: #f0efe9;     /* плашки внутри карточек, сегменты */
+  --surface-3: #e9e9df;     /* колонки расписания */
+  --line: #ebeae4;
+  --input-bg: #ffffff;
+  --input-line: #dedcd3;
+
+  --ink: #181e2a;
+  --ink-2: #4a505c;
+  --ink-3: #8a8e96;
+
+  --accent: #c3cbd8;        /* сайдбар, hero, вторичные кнопки */
+  --accent-2: #b1bac9;      /* карточка дедлайна, плитки */
+  --on-accent: #181e2a;
+  --on-accent-2: #4a5262;
+  --on-accent-hl: #181e2a;  /* акцентный текст на --accent */
+  --nav-badge: #181e2a;
+  --on-nav-badge: #ffffff;
+
+  --strong: #181e2a;        /* активный сегмент */
+  --on-strong: #ffffff;
+  --primary: #c3cbd8;       /* основная кнопка */
+  --on-primary: #181e2a;
+
+  --hl-soft: #f7f8d6;       /* подсветка текущей пары */
+  --progress: #181e2a;
+  --track: #eeeee4;
+  --ring-track: rgba(24, 30, 42, 0.14);
+  --ring: #181e2a;
+  --ring-on-accent: #181e2a;
+  --ring-on-accent-track: rgba(24, 30, 42, 0.16);
+
+  --warn-bg: #fae3b7;
+  --warn-ink: #70511a;
+  --danger-bg: #f7d5cc;
+  --danger-ink: #9b2c1c;
+  --ok-bg: #ddefd9;
+  --ok-ink: #3b6b3f;
+  --neutral-chip: #f0efe9;
+
+  --shadow: 0 1px 2px rgba(24, 30, 42, 0.04), 0 10px 30px rgba(24, 30, 42, 0.05);
+}
+
+/* ───────────── Туман · тёмная ───────────── */
+[data-variant='fog'][data-theme='dark'] {
+  color-scheme: dark;
+  --stage: #0b0c10;
+  --bg: #101116;
+  --surface: #191c25;
+  --surface-2: #232733;
+  --surface-3: #1d2029;
+  --line: #262a35;
+  --input-bg: #1a1d27;
+  --input-line: #2e3342;
+
+  --ink: #f2f2ee;
+  --ink-2: #b9bdc6;
+  --ink-3: #7c8190;
+
+  --accent: #afb8c9;
+  --accent-2: #9da8ba;
+  --on-accent: #12151d;
+  --on-accent-2: #3b4352;
+  --on-accent-hl: #12151d;
+  --nav-badge: #181e2a;
+  --on-nav-badge: #ffffff;
+
+  --strong: #eff0a4;
+  --on-strong: #181e2a;
+  --primary: #eff0a4;
+  --on-primary: #181e2a;
+
+  --hl-soft: #2b2c1c;
+  --progress: #eceee8;
+  --track: #2b303c;
+  --ring-track: rgba(24, 30, 42, 0.14);
+  --ring: #181e2a;
+  --ring-on-accent: #12151d;
+  --ring-on-accent-track: rgba(18, 21, 29, 0.18);
+
+  --warn-bg: #3a2f18;
+  --warn-ink: #e7bd6f;
+  --danger-bg: #3d1f17;
+  --danger-ink: #f0a08c;
+  --ok-bg: #1d3324;
+  --ok-ink: #8fc79a;
+  --neutral-chip: #262a35;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* ───────────── Графитово-синий · светлая ───────────── */
+[data-variant='graphite'][data-theme='light'] {
+  color-scheme: light;
+  --stage: #e9e8e0;
+  --bg: #f5f4ef;
+  --surface: #ffffff;
+  --surface-2: #f0efe9;
+  --surface-3: #e9e9df;
+  --line: #ebeae4;
+  --input-bg: #ffffff;
+  --input-line: #dedcd3;
+
+  --ink: #181e2a;
+  --ink-2: #4a505c;
+  --ink-3: #8a8e96;
+
+  --accent: #495468;
+  --accent-2: #57617b;
+  --on-accent: #f5f4ef;
+  --on-accent-2: #c3c8d3;
+  --on-accent-hl: #eff0a4;
+  --nav-badge: #bac6a2;
+  --on-nav-badge: #181e2a;
+
+  --strong: #495468;
+  --on-strong: #ffffff;
+  --primary: #495468;
+  --on-primary: #eff0a4;
+
+  --hl-soft: #f7f8d6;
+  --progress: #181e2a;
+  --track: #eeeee4;
+  --ring-track: rgba(24, 30, 42, 0.14);
+  --ring: #181e2a;
+  --ring-on-accent: #eff0a4;
+  --ring-on-accent-track: rgba(255, 255, 255, 0.14);
+
+  --warn-bg: #fae3b7;
+  --warn-ink: #70511a;
+  --danger-bg: #f7d5cc;
+  --danger-ink: #9b2c1c;
+  --ok-bg: #ddefd9;
+  --ok-ink: #3b6b3f;
+  --neutral-chip: #f0efe9;
+
+  --shadow: 0 1px 2px rgba(24, 30, 42, 0.04), 0 10px 30px rgba(24, 30, 42, 0.05);
+}
+
+/* ───────────── Графитово-синий · тёмная ───────────── */
+[data-variant='graphite'][data-theme='dark'] {
+  color-scheme: dark;
+  --stage: #0b0c10;
+  --bg: #101116;
+  --surface: #191c25;
+  --surface-2: #232733;
+  --surface-3: #1d2029;
+  --line: #262a35;
+  --input-bg: #1a1d27;
+  --input-line: #2e3342;
+
+  --ink: #f2f2ee;
+  --ink-2: #b9bdc6;
+  --ink-3: #7c8190;
+
+  --accent: #353c4e;
+  --accent-2: #3f4a5c;
+  --on-accent: #f2f2ee;
+  --on-accent-2: #aab1bf;
+  --on-accent-hl: #eff0a4;
+  --nav-badge: #bac6a2;
+  --on-nav-badge: #181e2a;
+
+  --strong: #eff0a4;
+  --on-strong: #181e2a;
+  --primary: #eff0a4;
+  --on-primary: #181e2a;
+
+  --hl-soft: #2b2c1c;
+  --progress: #eceee8;
+  --track: #2b303c;
+  --ring-track: rgba(24, 30, 42, 0.14);
+  --ring: #181e2a;
+  --ring-on-accent: #eff0a4;
+  --ring-on-accent-track: rgba(255, 255, 255, 0.12);
+
+  --warn-bg: #3a2f18;
+  --warn-ink: #e7bd6f;
+  --danger-bg: #3d1f17;
+  --danger-ink: #f0a08c;
+  --ok-bg: #1d3324;
+  --ok-ink: #8fc79a;
+  --neutral-chip: #262a35;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
