@@ -10,21 +10,24 @@ export const groups = pgTable('groups', {
   year: integer('year').notNull(),
 }, t => [check('group_year_positive', sql`${t.year} > 0`)]);
 
-export const students = pgTable('students', {
+export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
-  login: text('login').notNull().unique(),
+  email: text('email').notNull().unique(),
+  role: text('role').notNull().default('student'),
+  faculty: text('faculty').notNull(),
+  department: text('department'),
   passwordHash: text('password_hash').notNull(),
   fullName: text('full_name').notNull(),
-  groupId: uuid('group_id').notNull().references(() => groups.id),
+  groupId: uuid('group_id').references(() => groups.id),
   createdAt: createdAt(),
-}, t => [index('students_group_idx').on(t.groupId)]);
+}, t => [index('users_group_idx').on(t.groupId), check('user_role_valid', sql`${t.role} in ('student', 'teacher')`), check('student_requires_group', sql`${t.role} <> 'student' or ${t.groupId} is not null`), check('email_normalized', sql`${t.email} = lower(trim(${t.email}))`)]);
 
 export const sessions = pgTable('sessions', {
   tokenHash: text('token_hash').primaryKey(),
-  studentId: uuid('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: createdAt(),
-}, t => [index('sessions_student_idx').on(t.studentId), index('sessions_expiry_idx').on(t.expiresAt)]);
+}, t => [index('sessions_user_idx').on(t.userId), index('sessions_expiry_idx').on(t.expiresAt)]);
 
 export const subjects = pgTable('subjects', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -44,7 +47,7 @@ export const lessons = pgTable('lessons', {
 
 export const grades = pgTable('grades', {
   id: uuid('id').primaryKey().defaultRandom(),
-  studentId: uuid('student_id').notNull().references(() => students.id),
+  studentId: uuid('student_id').notNull().references(() => users.id),
   subjectId: uuid('subject_id').notNull().references(() => subjects.id),
   assessment: text('assessment').notNull(),
   result: text('result').notNull(),
@@ -53,7 +56,7 @@ export const grades = pgTable('grades', {
 
 export const requests = pgTable('requests', {
   id: uuid('id').primaryKey().defaultRandom(),
-  studentId: uuid('student_id').notNull().references(() => students.id),
+  studentId: uuid('student_id').notNull().references(() => users.id),
   type: text('type').notNull(),
   comment: text('comment').notNull().default(''),
   status: text('status').notNull().default('submitted'),
@@ -63,7 +66,7 @@ export const requests = pgTable('requests', {
 
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
-  studentId: uuid('student_id').notNull().references(() => students.id),
+  studentId: uuid('student_id').notNull().references(() => users.id),
   title: text('title').notNull(),
   body: text('body').notNull(),
   readAt: timestamp('read_at', { withTimezone: true }),

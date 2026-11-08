@@ -8,6 +8,13 @@
       "when": 1794031744639,
       "tag": "0000_true_cargill",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794162838646,
+      "tag": "0001_lowly_longshot",
+      "breakpoints": true
     }
   ]
 }

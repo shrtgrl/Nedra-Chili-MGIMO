@@ -1,49 +1,28 @@
-# Черновик API для согласования
+# Реализованный API
 
-Ответственный за API — Колясик, потребитель — Аслан, сценарии — Кирилл.
-Локальный адрес: http://127.0.0.1:3001. Реализованы GET /health, POST /api/auth/login, POST /api/auth/logout и GET /api/me.
+Источник требований — [spec.md](../spec.md). Макет пока не подключён к API.
 
-| Метод | Путь | Назначение |
-|---|---|---|
-| GET | /health | Проверка процесса: {"status":"ok"}; не проверяет базу |
-| POST | /api/auth/login | Вход: login и password; установка cookie сессии |
-| POST | /api/auth/logout | Завершение сессии |
-| GET | /api/me | Собственный профиль |
-| GET | /api/schedule?from=YYYY-MM-DD&to=YYYY-MM-DD | Занятия своей группы за период |
-| GET | /api/grades | Собственные оценки |
-| GET | /api/requests | Собственные заявки |
-| POST | /api/requests | Создание заявки: type и comment |
-| GET | /api/requests/:id | Своя заявка и статус |
-| GET | /api/notifications | Доступные студенту уведомления |
+## Авторизация
 
-Предложенный профиль: id, fullName, faculty, program, year, groupName.
-Предложенные статусы заявок: submitted, in_progress, ready, rejected.
-Кирилл согласует типы заявок, поля, статусы, содержимое расписания и оценок.
-Аслан согласует необходимые экрану действия и формат ответов.
+- `POST /api/auth/login`: JSON `{"email":"student@mukpid.example","password":"..."}`. Email приводится к нижнему регистру. Ответ 200: `{"data":{"authenticated":true}}`. JWT приходит только через Set-Cookie, не в теле ответа.
+- `POST /api/auth/logout`: 204 без тела; отзыв текущей серверной сессии и очистка cookie. Повторный выход допустим.
+- `GET /api/auth/me`: `{"data":{"id":"uuid","email":"...","role":"student","fullName":"...","faculty":"...","department":null,"program":"...","year":1,"groupName":"..."}}`. У преподавателя без группы program/year/groupName равны null; department содержит кафедру. Старый /api/me удалён.
+- `GET /health`: `{"status":"ok"}`, не проверяет PostgreSQL.
 
-Даты событий — ISO 8601 с часовым поясом, интерфейс показывает время Москвы.
-Предлагаемый формат ошибки: {"error":{"code":"UNAUTHORIZED","message":"Войдите в аккаунт"}}.
-401 — отсутствует действующая сессия; 404 — объект отсутствует или недоступен; 400 — ошибка ввода.
-Списки: {"items":[]}. Объект: {"data":{...}}. Исключение — /health.
+JWT: HS256, issuer mukpid-api, audience mukpid-web, sub — ID пользователя, jti — случайный идентификатор сессии. Проверяются подпись, обязательные claims, срок, совпадение пользователя и действующей сессии. Роль берётся из базы. В sessions.token_hash хранится SHA-256 от jti, не JWT. Срок 8 часов без продления. Новый успешный вход отзывает прежнюю сессию из cookie браузера. Cookie: session локально, __Host-session в production; HttpOnly, SameSite=Lax, Path=/, Secure в production.
 
-Владелец заявки определяется сервером по сессии. Студент не задаёт владельца или статус при создании.
-Cookie сессии: HttpOnly, Secure в HTTPS, SameSite; запросы изменения данных требуют защиты от CSRF.
-В продакшене интерфейс и /api размещаются на одном origin; локально фронтенд использует proxy на API.
+Для POST нужен `X-CSRF-Protection: 1`, для JSON — Content-Type: application/json. Origin должен совпадать с APP_ORIGIN (по умолчанию http://localhost:5173). Фронтенд использует относительные URL и proxy /api. CORS не включён; запросы cross-site запрещены.
 
-## Текущее состояние базы
+Ошибки имеют вид `{"error":{"code":"UNAUTHORIZED","message":"Войдите в аккаунт"}}`. 400 BAD_REQUEST — невалидный ввод; 401 INVALID_CREDENTIALS — неверные реквизиты; 401 UNAUTHORIZED — отсутствующая, поддельная, истёкшая или отозванная авторизация; 403 FORBIDDEN — CSRF; 429 RATE_LIMITED — больше 10 попыток входа в минуту с IP. Лимит в памяти процесса. Ответы не кешируются.
 
-Созданы восемь таблиц и два вымышленных студента в разных группах. Поля schema.ts остаются черновиком до согласования с Кириллом. Это не меняет готовность API: реализованы вход, выход и собственный профиль; остальные маршруты ещё не реализованы.
+## Окружение и демоданные
 
-## Авторизация — реализованный контракт
+JWT_SECRET — случайный секрет минимум 32 байта, только в окружении. Production требует NODE_ENV=production и HTTPS APP_ORIGIN. Смена JWT_SECRET инвалидирует все ранее выданные JWT.
 
-POST /api/auth/login принимает JSON `{"login":"student1","password":"..."}`. Ответ 200: `{"data":{"authenticated":true}}`; сервер устанавливает HttpOnly-cookie session (в production __Host-session с Secure). Срок — 8 часов без автоматического продления. В PostgreSQL хранится SHA-256 хеш случайного токена. Повторный успешный вход аннулирует прежнюю сессию из cookie этого браузера.
+Демо email: student@mukpid.example, student2@mukpid.example, teacher@mukpid.example. При создании пароли берутся из SEED_STUDENT_1_PASSWORD, SEED_STUDENT_2_PASSWORD, SEED_TEACHER_PASSWORD в .env. Уже существующим пользователям seed не меняет пароль и не требует его повторно; пустая переменная не означает пустой пароль в базе. Пароль demo123 из макета не используется сервером.
 
-POST /api/auth/logout возвращает 204 без тела, удаляет текущую сессию и очищает cookie. Повторный выход допустим.
+## Миграция и границы реализации
 
-GET /api/me возвращает `{"data":{"id":"uuid","fullName":"...","faculty":"...","program":"...","year":1,"groupName":"..."}}`. Параметры studentId/id не выбирают пользователя: он определяется только сессией. Пароль, его хеш и токен не входят в ответ.
+Миграция 0001 переименовывает students в users с сохранением ID, паролей и связей. Старые login student1/student2 преобразуются в указанные email; иные логины без @ — в <uuid>@legacy.example. Добавлены роли, faculty и department; group_id допускает null для преподавателя. Сессии ссылаются на user_id. Старые cookie перестают работать после перехода на JWT.
 
-Для обоих POST обязателен заголовок `X-CSRF-Protection: 1`, для входа также `Content-Type: application/json`. Origin браузера должен совпадать с APP_ORIGIN (по умолчанию http://localhost:5173). Cross-site запросы запрещены; CORS не включён. Фронтенд должен использовать Vite proxy для /api и относительные URL, cookie браузер отправляет автоматически.
-
-Ошибки: 400 BAD_REQUEST — некорректный ввод; 401 INVALID_CREDENTIALS — неверные реквизиты входа, одинаково для отсутствующего пользователя; 401 UNAUTHORIZED — нет действующей сессии; 403 FORBIDDEN — защита CSRF; 429 RATE_LIMITED — больше 10 попыток входа за минуту с одного IP. Все ответы имеют Cache-Control: no-store. Лимит хранится в памяти процесса; при масштабировании нужен общий limiter.
-
-Production: NODE_ENV=production и APP_ORIGIN=https://ваш-домен обязательны. API и интерфейс размещаются на одном origin. Истёкшие сессии не авторизуют запросы; периодическая очистка старых записей пока не настроена.
+Расписание, оценки, заявки, уведомления, ведомости и обращения пока не реализованы как API. Их старые таблицы ещё нуждаются в адаптации. Очистка истёкших сессий пока не автоматизирована.
