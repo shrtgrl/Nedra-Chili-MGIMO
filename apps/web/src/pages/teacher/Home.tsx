@@ -4,10 +4,12 @@ import { useData } from '../../context/data'
 import { DEMO_NOW, TEACHER_LESSONS } from '../../data/mock'
 import { eyebrowDate } from '../../lib/format'
 import { NextLessonHero, TodayTimeline } from '../../components/schedule'
+import { Countdown, useNewYear } from '../../components/newyear'
 import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, ThemeButton } from '../../components/ui'
 
 export function TeacherHome() {
   const user = useUser()
+  const ny = useNewYear()
   const { inquiries, newInquiries, sheets } = useData()
   const waiting = inquiries.filter((q) => q.status === 'new')
 
@@ -15,7 +17,16 @@ export function TeacherHome() {
     <>
       <PageHeader
         eyebrow={eyebrowDate(DEMO_NOW)}
-        title={`Добрый день, ${user.firstName} ${user.patronymic ?? ''}`.trim()}
+        title={
+          ny ? (
+            <>
+              С наступающим, {user.firstName} {user.patronymic}!
+              <Countdown />
+            </>
+          ) : (
+            `Добрый день, ${user.firstName} ${user.patronymic ?? ''}`.trim()
+          )
+        }
         actions={
           <>
             <ThemeButton />

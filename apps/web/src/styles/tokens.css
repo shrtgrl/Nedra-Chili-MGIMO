@@ -218,3 +218,134 @@
 
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
+
+/* ───────────── Новогодняя · светлая ─────────────
+   Ель · клюква · золото · сливки · ночное небо */
+[data-variant='newyear'] {
+  /* в праздничных макетах заголовки набраны тем же гротеском, что и текст */
+  --font-display: 'Manrope', system-ui, sans-serif;
+}
+
+[data-variant='newyear'][data-theme='light'] {
+  color-scheme: light;
+  --stage: #ebe6da;
+  --bg: #f7f3e9;
+  --bg-image: radial-gradient(rgba(150, 165, 185, 0.32) 1.2px, transparent 1.6px) 0 0 / 26px 26px,
+    linear-gradient(180deg, #eef3f8 0, #f7f3e9 520px);
+  --surface: #ffffff;
+  --surface-2: #f8f2e7;
+  --surface-3: #f1eadb;
+  --line: #eee6d6;
+  --input-bg: #ffffff;
+  --input-line: #ddd2bd;
+
+  --ink: #1c1b17;
+  --ink-2: #4f4b41;
+  --ink-3: #8f897b;
+
+  --hl: #f1c04d;            /* золото */
+  --on-hl: #1c1b17;
+  --hl-pill: rgba(255, 255, 255, 0.14);
+
+  --accent: #1d4c3a;        /* ель: сайдбар, нижнее меню */
+  --accent-2: #265f48;
+  --on-accent: #ffffff;
+  --on-accent-2: #b9d1c4;
+  --on-accent-hl: #f1c04d;
+  --nav-badge: #143829;
+  --on-nav-badge: #f1c04d;
+
+  --hero: #a51d34;          /* клюква: блок «Следующее занятие» */
+  --on-hero: #ffffff;
+  --on-hero-2: #f3c9cf;
+  --hero-hl: #f6c955;
+  --promo: #1d4c3a;
+  --on-promo: #ffffff;
+
+  --strong: #1d4c3a;
+  --on-strong: #ffffff;
+  --primary: #a51d34;
+  --on-primary: #ffffff;
+
+  --hl-soft: #fdf0d2;
+  --progress: #1c1b17;
+  --track: #efe8da;
+  --ring-track: rgba(28, 27, 23, 0.16);
+  --ring: #1c1b17;
+  --ring-on-accent: #f1c04d;
+  --ring-on-accent-track: rgba(255, 255, 255, 0.16);
+  --dot: #d32f47;
+
+  --warn-bg: #fae2b7;
+  --warn-ink: #70511a;
+  --danger-bg: #f7d4cb;
+  --danger-ink: #a51d34;
+  --ok-bg: #dcefdc;
+  --ok-ink: #2f6a43;
+  --neutral-chip: #f4ecdd;
+
+  --snow: 168, 186, 210;
+  --shadow: 0 1px 2px rgba(28, 27, 23, 0.04), 0 10px 30px rgba(28, 27, 23, 0.05);
+}
+
+/* ───────────── Новогодняя · тёмная ───────────── */
+[data-variant='newyear'][data-theme='dark'] {
+  color-scheme: dark;
+  --stage: #070c16;
+  --bg: #0c1525;
+  --bg-image: radial-gradient(rgba(150, 175, 215, 0.12) 1.2px, transparent 1.6px) 0 0 / 26px 26px;
+  --surface: #142137;
+  --surface-2: #1a2a45;
+  --surface-3: #111d31;
+  --line: #213150;
+  --input-bg: #152238;
+  --input-line: #2a3b5a;
+
+  --ink: #f4f0e6;
+  --ink-2: #b9c1d0;
+  --ink-3: #7d889c;
+
+  --hl: #f2c14e;
+  --on-hl: #1c1b17;
+  --hl-pill: rgba(255, 255, 255, 0.12);
+
+  --accent: #1d4c3a;
+  --accent-2: #265f48;
+  --on-accent: #ffffff;
+  --on-accent-2: #b9d1c4;
+  --on-accent-hl: #f2c14e;
+  --nav-badge: #143829;
+  --on-nav-badge: #f2c14e;
+
+  --hero: #8f1a2e;
+  --on-hero: #ffffff;
+  --on-hero-2: #e8bcc4;
+  --hero-hl: #f6c955;
+  --promo: #1d4c3a;
+  --on-promo: #ffffff;
+
+  --strong: #f2c14e;
+  --on-strong: #1c1b17;
+  --primary: #f2c14e;
+  --on-primary: #1c1b17;
+
+  --hl-soft: #2d2816;
+  --progress: #eef0f4;
+  --track: #25365a;
+  --ring-track: rgba(28, 27, 23, 0.16);
+  --ring: #1c1b17;
+  --ring-on-accent: #f2c14e;
+  --ring-on-accent-track: rgba(255, 255, 255, 0.14);
+  --dot: #e0485f;
+
+  --warn-bg: #3a2f18;
+  --warn-ink: #e7bd6f;
+  --danger-bg: #3d1f22;
+  --danger-ink: #f39aa6;
+  --ok-bg: #1b3526;
+  --ok-ink: #8fcf9f;
+  --neutral-chip: #22324f;
+
+  --snow: 255, 255, 255;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}

@@ -8,6 +8,7 @@ import { todayLessons } from '../../lib/lessons'
 import { Search } from '../../components/Search'
 import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, Ring, Stages, ThemeButton } from '../../components/ui'
 import { Icon } from '../../components/Icon'
+import { Countdown, useNewYear } from '../../components/newyear'
 
 const daysUntil = (iso: string) => {
   const d = new Date(iso)
@@ -18,6 +19,7 @@ const daysUntil = (iso: string) => {
 
 export function StudentHome() {
   const user = useUser()
+  const ny = useNewYear()
   const { requests, unreadCount } = useData()
   const avg = average(DISCIPLINES_AUTUMN.map((d) => d.score))
   const weakest = [...DISCIPLINES_AUTUMN].sort((a, b) => a.score - b.score)[0]
@@ -29,10 +31,17 @@ export function StudentHome() {
       <PageHeader
         eyebrow={eyebrowDate(DEMO_NOW)}
         title={
-          <>
-            <span className="only-desktop">Добрый день, {user.firstName}</span>
-            <span className="only-mobile">Привет, {user.firstName}</span>
-          </>
+          ny ? (
+            <>
+              С наступающим, {user.firstName}!
+              <Countdown />
+            </>
+          ) : (
+            <>
+              <span className="only-desktop">Добрый день, {user.firstName}</span>
+              <span className="only-mobile">Привет, {user.firstName}</span>
+            </>
+          )
         }
         actions={
           <>

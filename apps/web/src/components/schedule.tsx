@@ -5,6 +5,7 @@ import { nextLesson, NOW_MIN, TODAY_INDEX, todayLessons } from '../lib/lessons'
 import { addDays, humanDuration, monthShort, pluralize, toMinutes, weekRange, WEEKDAYS, WEEKDAYS_SHORT } from '../lib/format'
 import { Badge, ButtonLink, Segmented } from './ui'
 import { useIndicator } from '../lib/useIndicator'
+import { Garland, Ornaments, Snowflake, useNewYear } from './newyear'
 import { Icon } from './Icon'
 
 const kindTone = (k: Lesson['kind']) => (k === 'Лекция' ? 'accent' : 'neutral')
@@ -14,6 +15,7 @@ const subline = (l: Lesson, who: 'teacher' | 'group') => (who === 'teacher' ? l.
 /* ── Hero «Следующее занятие» ──────────────────── */
 export function NextLessonHero({ lessons, who, scheduleLink, compact }: { lessons: Lesson[]; who: 'teacher' | 'group'; scheduleLink?: string; compact?: boolean }) {
   const l = nextLesson(lessons)
+  const ny = useNewYear()
   if (!l)
     return (
       <section className="hero">
@@ -24,7 +26,14 @@ export function NextLessonHero({ lessons, who, scheduleLink, compact }: { lesson
     )
   const until = toMinutes(l.start) - NOW_MIN
   return (
-    <section className={`hero ${compact ? 'hero--compact' : ''}`} aria-label="Следующее занятие">
+    <section className={`hero ${compact ? 'hero--compact' : ''} ${ny ? 'hero--ny' : ''}`} aria-label="Следующее занятие">
+      {ny && (
+        <>
+          <Garland className="hero__garland" spacing={compact ? 70 : 64} />
+          {!compact && <Ornaments />}
+          <Snowflake size={compact ? 84 : 104} className="hero__flake" />
+        </>
+      )}
       <div className="eyebrow">{compact ? `Через ${humanDuration(until)}` : `Следующее занятие · через ${humanDuration(until)}`}</div>
       <div className="hero__time display">{l.start}</div>
       <div className="hero__title">{l.subject}</div>

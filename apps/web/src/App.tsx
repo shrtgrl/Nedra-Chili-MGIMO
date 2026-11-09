@@ -6,6 +6,7 @@ import { SettingsProvider } from './context/settings'
 import { ToastProvider } from './context/toast'
 import type { Role } from './types'
 import { AppLayout } from './components/Layout'
+import { Snow, useNewYear } from './components/newyear'
 import { LoginPage } from './pages/Login'
 import { ProfilePage } from './pages/Profile'
 import { StudentHome } from './pages/student/Home'
@@ -16,6 +17,10 @@ import { NotificationsPage } from './pages/student/Notifications'
 import { TeacherHome } from './pages/teacher/Home'
 import { GradebookPage } from './pages/teacher/Gradebook'
 import { InquiriesPage } from './pages/teacher/Inquiries'
+
+function NewYearBackdrop() {
+  return useNewYear() ? <Snow /> : null
+}
 
 function RequireRole({ role, children }: { role: Role; children: ReactElement }) {
   const { user } = useAuth()
@@ -40,6 +45,7 @@ export default function App() {
       <AuthProvider>
         <DataProvider>
           <ToastProvider>
+            <NewYearBackdrop />
             {/* HashRouter — чтобы сайт работал на любом статическом хостинге без настройки сервера */}
             <HashRouter>
               <Routes>

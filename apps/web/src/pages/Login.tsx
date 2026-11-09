@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '../assets/logo-full.webp'
+import logoGold from '../assets/logo-gold.webp'
 import { useAuth } from '../context/auth'
 import { useSettings } from '../context/settings'
 import { Button, Segmented, ThemeIcon } from '../components/ui'
 import { Icon } from '../components/Icon'
+import { Garland, Snowflake, Tree, TreeSilhouette, useNewYear } from '../components/newyear'
 import type { Role } from '../types'
 
 const DEMO: Record<Role, string> = {
@@ -16,6 +18,7 @@ export function LoginPage() {
   const { login } = useAuth()
   const { theme, toggleTheme } = useSettings()
   const navigate = useNavigate()
+  const ny = useNewYear()
   const [role, setRole] = useState<Role>('student')
   const [email, setEmail] = useState(DEMO.student)
   const [password, setPassword] = useState('')
@@ -41,15 +44,37 @@ export function LoginPage() {
 
   return (
     <div className="login">
-      <section className="login__promo" aria-label="О сервисе">
+      <section className={`login__promo ${ny ? 'login__promo--ny' : ''}`} aria-label="О сервисе">
+        {ny && (
+          <>
+            <Garland className="login__garland" spacing={96} />
+            <Snowflake size={46} className="promo-flake promo-flake--1" />
+            <Snowflake size={170} className="promo-flake promo-flake--2" />
+            <Snowflake size={90} className="promo-flake promo-flake--3" />
+            <div className="promo-forest" aria-hidden="true">
+              {Array.from({ length: 16 }, (_, i) => (
+                <TreeSilhouette key={i} height={60 + ((i * 41) % 70)} />
+              ))}
+            </div>
+          </>
+        )}
         <div className="login__promo-top">
           <span className="login__wordmark">МУКПиД</span>
           <span className="eyebrow">Онлайн деканат</span>
         </div>
         <div className="login__promo-body">
-          <img src={logo} alt="Герб МУКПиД им. Дженны Ортеги" className="login__logo" />
-          <h2 className="display login__headline">Вся учёба — в одном окне</h2>
-          <p className="login__lead">Расписание, баллы, справки и обращения к преподавателям. Для студентов и преподавателей.</p>
+          <img src={ny ? logoGold : logo} alt="Герб МУКПиД им. Дженны Ортеги" className="login__logo" />
+          {ny ? (
+            <>
+              <h2 className="display login__headline">С Новым годом, МУКПиД!</h2>
+              <p className="login__lead">Каникулы — с 31 декабря по 11 января. Зимняя сессия начинается 12 января: расписание и баллы уже здесь.</p>
+            </>
+          ) : (
+            <>
+              <h2 className="display login__headline">Вся учёба — в одном окне</h2>
+              <p className="login__lead">Расписание, баллы, справки и обращения к преподавателям. Для студентов и преподавателей.</p>
+            </>
+          )}
         </div>
         <ul className="login__pills">
           <li>Расписание</li>
@@ -59,7 +84,13 @@ export function LoginPage() {
         </ul>
       </section>
 
-      <section className="login__form-wrap">
+      <section className={`login__form-wrap ${ny ? 'login__form-wrap--ny' : ''}`}>
+        {ny && (
+          <div className="login__trees" aria-hidden="true">
+            <Tree height={160} delay={0.2} />
+            <Tree height={180} delay={0.9} />
+          </div>
+        )}
         <button type="button" className="login__theme" onClick={toggleTheme}>
           <ThemeIcon size={17} />
           {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}

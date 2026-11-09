@@ -6,6 +6,7 @@ import { Avatar, Brand, IconButton, ThemeButton } from './ui'
 import { useUser } from '../context/auth'
 import { useData } from '../context/data'
 import { DEADLINES } from '../data/mock'
+import { Forest, Garland, Snowflake, useNewYear } from './newyear'
 
 interface NavItem {
   to: string
@@ -38,6 +39,16 @@ function useNav(): NavItem[] {
 function SidebarCard() {
   const user = useUser()
   const { sheets } = useData()
+  const ny = useNewYear()
+  if (user.role === 'student' && ny) {
+    return (
+      <Link to="/student/schedule" className="side-card">
+        <div className="eyebrow">Каникулы</div>
+        <div className="side-card__title">31 декабря — 11 января</div>
+        <div className="side-card__meta">Сессия с 12 января</div>
+      </Link>
+    )
+  }
   if (user.role === 'student') {
     const d = DEADLINES[0]
     return (
@@ -66,8 +77,16 @@ function Sidebar() {
   const profile = user.role === 'student' ? '/student/profile' : '/teacher/profile'
   const { pathname } = useLocation()
   const { box, ind } = useIndicator<HTMLElement>(pathname)
+  const ny = useNewYear()
   return (
     <aside className="sidebar" aria-label="Основная навигация">
+      {ny && (
+        <>
+          <Garland className="sidebar__garland" spacing={52} />
+          <Snowflake size={96} className="sidebar__flake sidebar__flake--1" />
+          <Snowflake size={44} className="sidebar__flake sidebar__flake--2" />
+        </>
+      )}
       <Link to={user.role === 'student' ? '/student' : '/teacher'} className="sidebar__brand">
         <Brand />
       </Link>
@@ -143,6 +162,10 @@ function BottomNav() {
   )
 }
 
+function ForestSlot() {
+  return useNewYear() ? <Forest /> : null
+}
+
 export function AppLayout() {
   const { pathname } = useLocation()
   useEffect(() => {
@@ -156,6 +179,7 @@ export function AppLayout() {
         <main className="content" id="main">
           <Outlet />
         </main>
+        <ForestSlot />
       </div>
       <BottomNav />
     </div>

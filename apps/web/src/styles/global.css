@@ -14,6 +14,8 @@ body {
   line-height: 1.45;
   color: var(--ink);
   background: var(--bg);
+  background-image: var(--bg-image, none);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.25s ease, color 0.25s ease;
@@ -576,8 +578,10 @@ img {
 
 /* ═════════ Hero ═════════ */
 .hero {
-  background: var(--accent);
-  color: var(--on-accent);
+  position: relative;
+  overflow: hidden;
+  background: var(--hero, var(--accent));
+  color: var(--on-hero, var(--on-accent));
   border-radius: var(--r-xl);
   padding: 30px 32px;
   display: flex;
@@ -586,13 +590,13 @@ img {
   transition: background-color 0.25s ease;
 }
 .hero .eyebrow {
-  color: var(--on-accent);
+  color: var(--on-hero, var(--on-accent));
   opacity: 0.85;
 }
 .hero__time {
   font-size: clamp(56px, 6vw, 84px);
   margin-top: 8px;
-  color: var(--on-accent-hl);
+  color: var(--hero-hl, var(--on-accent-hl));
 }
 .hero__title {
   margin-top: 12px;
@@ -601,7 +605,7 @@ img {
 }
 .hero__meta {
   margin-top: 6px;
-  color: var(--on-accent-2);
+  color: var(--on-hero-2, var(--on-accent-2));
   font-size: 15px;
 }
 .hero .pill-warn {
@@ -1337,8 +1341,10 @@ a.stat:hover {
   padding: 20px;
 }
 .login__promo {
-  background: var(--hl);
-  color: var(--on-hl);
+  position: relative;
+  overflow: hidden;
+  background: var(--promo, var(--hl));
+  color: var(--on-promo, var(--on-hl));
   border-radius: 36px;
   padding: 44px 48px;
   display: flex;
@@ -1351,7 +1357,7 @@ a.stat:hover {
   align-items: center;
 }
 .login__promo-top .eyebrow {
-  color: var(--on-hl);
+  color: var(--on-promo, var(--on-hl));
 }
 .login__wordmark {
   font-family: var(--font-display);
@@ -2589,4 +2595,386 @@ a.stat:hover {
   .collapse.is-open .collapse__inner {
     padding-bottom: 22px;
   }
+}
+
+/* ═════════════════════ Новогодняя тема ═════════════════════ */
+.ny-snow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+[data-variant='newyear'] .app,
+[data-variant='newyear'] .login {
+  position: relative;
+  z-index: 1;
+}
+
+/* гирлянда: лампочки вспыхивают по очереди */
+.garland {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  pointer-events: none;
+  z-index: 2;
+}
+.garland svg {
+  display: block;
+  overflow: visible;
+}
+.bulb__glass {
+  animation: ny-bulb var(--p, 2.4s) ease-in-out var(--d, 0s) infinite;
+  opacity: 0.6;
+}
+.bulb__halo {
+  opacity: 0;
+  animation: ny-halo var(--p, 2.4s) ease-in-out var(--d, 0s) infinite;
+}
+@keyframes ny-bulb {
+  0%, 100% { opacity: 0.6; }
+  12% { opacity: 1; }
+  30% { opacity: 0.6; }
+}
+@keyframes ny-halo {
+  0%, 100% { opacity: 0; }
+  12% { opacity: 0.45; }
+  30% { opacity: 0; }
+}
+
+/* шары на нитках слегка покачиваются */
+.ornaments {
+  position: absolute;
+  top: 18px;
+  right: 25%;
+  z-index: 2;
+  pointer-events: none;
+  overflow: visible;
+}
+.ornament {
+  animation: ny-swing 4.5s ease-in-out infinite;
+}
+@keyframes ny-swing {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+.snowflake {
+  position: absolute;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.14);
+}
+
+/* ёлка: огоньки бегут волной, звезда мерцает */
+.tree {
+  display: block;
+  overflow: visible;
+}
+.tl__core {
+  fill: #ffe08a;
+  opacity: 0.5;
+  animation: ny-light 3.6s ease-in-out var(--d, 0s) infinite;
+}
+.tl__halo {
+  fill: #ffd25e;
+  opacity: 0;
+  animation: ny-light-halo 3.6s ease-in-out var(--d, 0s) infinite;
+}
+@keyframes ny-light {
+  0%, 100% { opacity: 0.5; }
+  8% { opacity: 1; }
+  22% { opacity: 0.5; }
+}
+@keyframes ny-light-halo {
+  0%, 100% { opacity: 0; }
+  8% { opacity: 0.55; }
+  22% { opacity: 0; }
+}
+.tree__star {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ny-star 2.8s ease-in-out var(--d, 0s) infinite;
+}
+.tree__star-halo {
+  fill: #ffd25e;
+  opacity: 0.18;
+}
+@keyframes ny-star {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 210, 94, 0)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 5px rgba(255, 210, 94, 0.9)); }
+}
+.sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ny-sparkle 2.4s ease-in-out infinite;
+  opacity: 0.2;
+}
+@keyframes ny-sparkle {
+  0%, 100% { transform: scale(0.4) rotate(0deg); opacity: 0.2; }
+  45% { transform: scale(1.1) rotate(45deg); opacity: 1; }
+}
+
+/* сайдбар */
+[data-variant='newyear'] .sidebar {
+  overflow: hidden;
+  padding-top: 40px;
+}
+.sidebar__garland {
+  left: -6px;
+  right: -6px;
+}
+.sidebar__flake--1 {
+  right: -26px;
+  top: 46%;
+}
+.sidebar__flake--2 {
+  left: 26px;
+  top: 62%;
+}
+.sidebar > *:not(.garland):not(.snowflake) {
+  position: relative;
+  z-index: 1;
+}
+
+/* hero «Следующее занятие» */
+.hero--ny {
+  padding-top: 52px;
+}
+.hero__garland {
+  left: -6px;
+  right: -6px;
+}
+.hero__flake {
+  right: 28px;
+  top: 40px;
+  color: rgba(255, 255, 255, 0.16);
+}
+.hero--ny > *:not(.garland):not(.snowflake):not(.ornaments) {
+  position: relative;
+  z-index: 1;
+}
+.hero--ny .btn--hl {
+  background: var(--hl);
+}
+
+/* шапка: отсчёт до Нового года */
+.ny-countdown {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-top: 14px;
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}
+.ny-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #a51d34;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+.twin-trees {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+[data-variant='newyear'] .page-head {
+  align-items: flex-end;
+}
+
+/* лес внизу страницы */
+.forest {
+  position: relative;
+  height: 250px;
+  margin-top: 10px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.forest__back {
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  color: #c9d8d1;
+  opacity: 0.7;
+}
+[data-theme='dark'] .forest__back {
+  color: #1d3346;
+  opacity: 1;
+}
+[data-theme='dark'] .tree-sil path:nth-child(2) {
+  opacity: 0.12;
+}
+.forest__row {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 16px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+.forest__ground {
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  bottom: 0;
+  height: 24px;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background: #ffffff;
+  box-shadow: 0 -2px 10px rgba(255, 255, 255, 0.8);
+}
+[data-theme='dark'] .forest__ground {
+  background: #16233a;
+  box-shadow: none;
+}
+
+/* выбор варианта — три карточки */
+.theme-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.theme-grid--3 .preview {
+  height: 64px;
+}
+.theme-grid--3 .theme-opt {
+  font-size: 14px;
+}
+
+/* вход */
+.login__promo--ny {
+  padding-top: 64px;
+}
+.login__garland {
+  left: 10px;
+  right: 10px;
+}
+.login__promo--ny > *:not(.garland):not(.snowflake):not(.promo-forest) {
+  position: relative;
+  z-index: 1;
+}
+.promo-flake--1 {
+  left: 38%;
+  top: 70px;
+}
+.promo-flake--2 {
+  right: 6%;
+  top: 110px;
+}
+.promo-flake--3 {
+  right: 6%;
+  top: 64%;
+}
+.promo-forest {
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  bottom: -6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  color: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+.promo-forest .tree-sil path:nth-child(2) {
+  opacity: 0.12;
+}
+.login__promo--ny .login__pills li {
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(4px);
+}
+.login__trees {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 24px 6px;
+  pointer-events: none;
+}
+.login__form {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 1100px) {
+  .forest__tree--wide {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  .login__trees {
+    display: none;
+  }
+}
+@media (max-width: 860px) {
+  [data-variant='newyear'] .mobile-bar {
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+  }
+  .forest {
+    height: 200px;
+    margin-inline: -16px;
+  }
+  .forest .tree {
+    width: auto;
+    height: 140px;
+  }
+}
+@media (max-width: 760px) {
+  .ny-countdown {
+    margin-top: 10px;
+  }
+  .ny-chip {
+    font-size: 13px;
+    height: 32px;
+  }
+  .ornaments {
+    display: none;
+  }
+  .theme-grid--3 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+[data-variant='newyear'] .display {
+  letter-spacing: -0.025em;
+}
+[data-variant='newyear'] .page-head__title {
+  font-size: clamp(28px, 2.6vw, 40px);
+}
+.bulb__glass {
+  opacity: 0.78;
+}
+@keyframes ny-bulb {
+  0%, 100% { opacity: 0.78; }
+  12% { opacity: 1; filter: brightness(1.25); }
+  30% { opacity: 0.78; }
+}
+.login__form-wrap--ny {
+  padding-bottom: 190px;
+}
+@media (max-width: 900px) {
+  .login__form-wrap--ny {
+    padding-bottom: 40px;
+  }
+}
+
+[data-variant='newyear'] .badge--accent {
+  background: var(--hero);
+  color: #fff;
+}
+.login__promo--ny .login__logo {
+  width: min(250px, 50%);
+}
+.login__promo--ny .login__headline {
+  margin-top: 26px;
 }

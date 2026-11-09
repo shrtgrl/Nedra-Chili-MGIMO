@@ -1,6 +1,6 @@
 export type Role = 'student' | 'teacher'
 export type Theme = 'light' | 'dark'
-export type Variant = 'fog' | 'graphite'
+export type Variant = 'fog' | 'graphite' | 'newyear'
 
 export interface User {
   id: string

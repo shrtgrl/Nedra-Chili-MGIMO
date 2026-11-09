@@ -9,7 +9,11 @@ import { Icon } from '../components/Icon'
 import { Avatar, Button, Disclaimer, IconButton, PageHeader, Toggle } from '../components/ui'
 
 // Цвета для мини-превью (совпадают с tokens.css)
-const PREVIEW: Record<Variant, Record<Theme, { bg: string; side: string; card: string }>> = {
+const PREVIEW: Record<Variant, Record<Theme, { bg: string; side: string; card: string; hero?: string }>> = {
+  newyear: {
+    light: { bg: '#f7f3e9', side: '#1d4c3a', card: '#ffffff', hero: '#a51d34' },
+    dark: { bg: '#0c1525', side: '#1d4c3a', card: '#142137', hero: '#8f1a2e' },
+  },
   fog: {
     light: { bg: '#f5f4ef', side: '#c3cbd8', card: '#ffffff' },
     dark: { bg: '#101116', side: '#afb8c9', card: '#191c25' },
@@ -26,7 +30,7 @@ function Preview({ variant, theme }: { variant: Variant; theme: Theme }) {
     <span className="preview" style={{ background: c.bg }} aria-hidden="true">
       <span className="preview__side" style={{ background: c.side }} />
       <span className="preview__main">
-        <span className="preview__hero" style={{ background: c.side }} />
+        <span className="preview__hero" style={{ background: c.hero ?? c.side }} />
         <span className="preview__row">
           <span style={{ background: c.card }} />
           <span style={{ background: '#eff0a4' }} />
@@ -108,7 +112,7 @@ export function ProfilePage() {
               <span>
                 <span className="card__title card__title--lg">Оформление</span>
                 <span className="collapse__summary">
-                  {theme === 'light' ? 'Светлая' : 'Тёмная'} · {variant === 'fog' ? 'Туман' : 'Графитово-синий'}
+                  {theme === 'light' ? 'Светлая' : 'Тёмная'} · {variant === 'fog' ? 'Туман' : variant === 'graphite' ? 'Графитово-синий' : 'Новогодняя'}
                 </span>
               </span>
               <Icon name="chevronDown" size={22} className="collapse__chevron" />
@@ -125,12 +129,12 @@ export function ProfilePage() {
             </div>
 
             <h3 className="subhead">Цветовой вариант</h3>
-            <div className="theme-grid" role="radiogroup" aria-label="Цветовой вариант">
-              {(['fog', 'graphite'] as Variant[]).map((v) => (
+            <div className="theme-grid theme-grid--3" role="radiogroup" aria-label="Цветовой вариант">
+              {(['fog', 'graphite', 'newyear'] as Variant[]).map((v) => (
                 <button key={v} type="button" role="radio" aria-checked={variant === v} className={`theme-opt ${variant === v ? 'is-active' : ''}`} onClick={() => setVariant(v)}>
                   <Preview variant={v} theme={theme} />
                   <span>
-                    {v === 'fog' ? 'Туман' : 'Графитово-синий'}
+                    {v === 'fog' ? 'Туман' : v === 'graphite' ? 'Графитово-синий' : 'Новогодняя'}
                     {v === 'fog' && <small className="muted"> · основной</small>}
                   </span>
                 </button>
