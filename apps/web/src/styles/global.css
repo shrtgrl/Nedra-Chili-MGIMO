@@ -2978,3 +2978,75 @@ a.stat:hover {
 .login__promo--ny .login__headline {
   margin-top: 26px;
 }
+
+/* плитки «Занятий сегодня» / «Заявок в работе» на главной */
+.stat--row {
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+}
+.stat__icon {
+  flex: none;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--hl);
+  color: var(--on-hl);
+}
+.stat--row + .stat--row .stat__icon {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.stat__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat--row .stat__value {
+  font-size: 32px;
+  line-height: 1;
+}
+.stat__hint {
+  font-size: 13px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat__arrow {
+  flex: none;
+  color: var(--ink-3);
+  transition: transform 0.3s var(--ease-spring, ease), color 0.2s ease;
+}
+.stat--row:hover .stat__arrow {
+  transform: translateX(4px);
+  color: var(--ink);
+}
+.stats--2.only-desktop {
+  container-type: inline-size;
+}
+.stat--row .stat__label {
+  white-space: nowrap;
+}
+@container (max-width: 600px) {
+  .stat--row {
+    gap: 14px;
+    padding: 18px;
+  }
+  .stat--row .stat__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+  .stat--row .stat__arrow {
+    display: none;
+  }
+  .stat--row .stat__hint {
+    white-space: normal;
+  }
+}

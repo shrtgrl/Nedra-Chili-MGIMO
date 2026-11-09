@@ -24,7 +24,11 @@ export function StudentHome() {
   const avg = average(DISCIPLINES_AUTUMN.map((d) => d.score))
   const weakest = [...DISCIPLINES_AUTUMN].sort((a, b) => a.score - b.score)[0]
   const inWork = requests.filter((r) => r.stage < 2).length
-  const todayCount = todayLessons(STUDENT_LESSONS).filter((l) => l.status !== 'cancelled').length
+  const todayList = todayLessons(STUDENT_LESSONS).filter((l) => l.status !== 'cancelled')
+  const todayCount = todayList.length
+  const lastEnd = todayList.at(-1)?.end
+  const working = requests.filter((r) => r.stage < 2)
+  const workTitle = working.length ? working.map((r) => REQUEST_TYPES[r.type]).join(', ') : null
 
   return (
     <>
@@ -61,21 +65,28 @@ export function StudentHome() {
             <NextLessonHero lessons={STUDENT_LESSONS} who="teacher" compact />
           </div>
 
-          <div className="stats only-desktop">
-            <div className="stat">
-              <span className="stat__label">Средний балл</span>
-              <span className="stat__value display">
-                {avg}
-                <small> / 100</small>
+          <div className="stats stats--2 only-desktop">
+            <Link to="/student/schedule" className="stat stat--row">
+              <span className="stat__icon">
+                <Icon name="calendar" size={22} />
               </span>
-            </div>
-            <div className="stat">
-              <span className="stat__label">Занятий сегодня</span>
-              <span className="stat__value display">{todayCount}</span>
-            </div>
-            <Link to="/student/requests" className="stat">
-              <span className="stat__label">Заявок в работе</span>
-              <span className="stat__value display">{inWork}</span>
+              <span className="stat__body">
+                <span className="stat__label">Занятий сегодня</span>
+                <span className="stat__value display">{todayCount}</span>
+                <span className="stat__hint">{lastEnd ? `последнее до ${lastEnd}` : 'сегодня свободно'}</span>
+              </span>
+              <Icon name="arrowRight" size={20} className="stat__arrow" />
+            </Link>
+            <Link to="/student/requests" className="stat stat--row">
+              <span className="stat__icon">
+                <Icon name="doc" size={22} />
+              </span>
+              <span className="stat__body">
+                <span className="stat__label">Заявок в работе</span>
+                <span className="stat__value display">{inWork}</span>
+                <span className="stat__hint">{workTitle ?? 'всё готово'}</span>
+              </span>
+              <Icon name="arrowRight" size={20} className="stat__arrow" />
             </Link>
           </div>
 
