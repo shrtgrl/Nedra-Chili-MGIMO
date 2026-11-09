@@ -6,12 +6,16 @@
   ],
   "scripts": {
     "dev": "npm run dev -w apps/api",
+    "dev:all": "node scripts/dev-all.mjs",
+    "dev:stop": "docker compose stop db",
     "build": "npm run build -w apps/api",
     "start": "npm run start -w apps/api",
     "check": "npm run check -w apps/api",
     "db:generate": "npm run db:generate -w apps/api",
     "db:migrate": "npm run db:migrate -w apps/api",
     "db:seed": "npm run db:seed -w apps/api",
+    "db:reset-demo-passwords": "npm run db:reset-demo-passwords -w apps/api",
+    "db:reset-demo-teacher-password": "npm run db:reset-demo-teacher-password -w apps/api",
     "test": "npm run test -w apps/api"
   }
 }

@@ -1,5 +1,5 @@
 import { useSettings } from '../../context/settings'
-import { DEMO_NOW } from '../../data/mock'
+import { useNow } from '../../context/clock'
 import { pluralize } from '../../lib/format'
 import { Tree, TreeSilhouette } from './Tree'
 
@@ -9,8 +9,7 @@ export { Tree, TreeSilhouette } from './Tree'
 
 export const useNewYear = () => useSettings().variant === 'newyear'
 
-/** «До Нового года — 51 день» (от демо-«сейчас»). */
-export function newYearCountdown(now = DEMO_NOW) {
+export function newYearCountdown(now: Date) {
   const ny = new Date(now.getFullYear() + 1, 0, 1)
   const days = Math.ceil((ny.getTime() - now.getTime()) / 86_400_000)
   return `До Нового года — ${days} ${pluralize(days, 'день', 'дня', 'дней')}`
@@ -56,6 +55,7 @@ export function TwinTrees() {
 }
 
 export function Countdown() {
+  const now = useNow()
   return (
     <span className="ny-countdown">
       <span className="ny-chip">
@@ -63,7 +63,7 @@ export function Countdown() {
           <path d="M6 0 L10 6 H8 L11 11 H1 L4 6 H2 Z" fill="#f2c14e" />
           <rect x="5" y="11" width="2" height="3" fill="#f2c14e" />
         </svg>
-        {newYearCountdown()}
+        {newYearCountdown(now)}
       </span>
       <TwinTrees />
     </span>

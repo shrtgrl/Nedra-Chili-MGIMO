@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Lesson } from '../types'
-import { BASE_MONDAY } from '../data/mock'
-import { nextLesson, NOW_MIN, TODAY_INDEX, todayLessons } from '../lib/lessons'
+import { DEMO_WEEK_MONDAY } from '../data/mock'
+import { nextLesson, nowMinutes, todayIndex, todayLessons } from '../lib/lessons'
+import { useNow } from '../context/clock'
 import { addDays, humanDuration, monthShort, pluralize, toMinutes, weekRange, WEEKDAYS, WEEKDAYS_SHORT } from '../lib/format'
 import { Badge, ButtonLink, Segmented } from './ui'
 import { useIndicator } from '../lib/useIndicator'
@@ -14,7 +15,8 @@ const subline = (l: Lesson, who: 'teacher' | 'group') => (who === 'teacher' ? l.
 
 /* ── Hero «Следующее занятие» ──────────────────── */
 export function NextLessonHero({ lessons, who, scheduleLink, compact }: { lessons: Lesson[]; who: 'teacher' | 'group'; scheduleLink?: string; compact?: boolean }) {
-  const l = nextLesson(lessons)
+  const now = useNow()
+  const l = nextLesson(lessons, now)
   const ny = useNewYear()
   if (!l)
     return (
@@ -24,7 +26,7 @@ export function NextLessonHero({ lessons, who, scheduleLink, compact }: { lesson
         <div className="hero__title">Занятий больше нет</div>
       </section>
     )
-  const until = toMinutes(l.start) - NOW_MIN
+  const until = toMinutes(l.start) - nowMinutes(now)
   return (
     <section className={`hero ${compact ? 'hero--compact' : ''} ${ny ? 'hero--ny' : ''}`} aria-label="Следующее занятие">
       {ny && (
@@ -59,8 +61,9 @@ export function NextLessonHero({ lessons, who, scheduleLink, compact }: { lesson
 
 /* ── «Сегодня» — таймлайн ──────────────────────── */
 export function TodayTimeline({ lessons, who }: { lessons: Lesson[]; who: 'teacher' | 'group' }) {
-  const list = todayLessons(lessons)
-  const next = nextLesson(lessons)
+  const now = useNow()
+  const list = todayLessons(lessons, now)
+  const next = nextLesson(lessons, now)
   const lastEnd = list.length ? list[list.length - 1].end : ''
   return (
     <section className="card">
@@ -74,8 +77,8 @@ export function TodayTimeline({ lessons, who }: { lessons: Lesson[]; who: 'teach
       {list.length === 0 && <p className="muted">Сегодня занятий нет.</p>}
       <ol className="timeline">
         {list.map((l) => {
-          const past = toMinutes(l.end) <= NOW_MIN
-          const ongoing = !past && toMinutes(l.start) <= NOW_MIN
+          const past = toMinutes(l.end) <= nowMinutes(now)
+          const ongoing = !past && toMinutes(l.start) <= nowMinutes(now)
           const isNext = next?.id === l.id
           return (
             <li key={l.id} className={`timeline__row ${past || ongoing ? 'is-past' : ''} ${isNext ? 'is-next' : ''}`}>
@@ -130,14 +133,18 @@ function LessonCard({ l, who }: { l: Lesson; who: 'teacher' | 'group' }) {
 }
 
 export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teacher' | 'group' }) {
+  const now = useNow()
+  const today = todayIndex(now)
+  const currentMonday = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -today)
   const [week, setWeek] = useState(0)
   const [mode, setMode] = useState<'day' | 'week'>(() => (window.matchMedia?.('(max-width: 760px)').matches ? 'day' : 'week'))
-  const [day, setDay] = useState(TODAY_INDEX)
-  const monday = addDays(BASE_MONDAY, week * 7)
+  const [day, setDay] = useState(today)
+  useEffect(() => { if (week === 0) setDay(today) }, [today, week])
+  const monday = addDays(currentMonday, week * 7)
   const dayInd = useIndicator<HTMLDivElement>(`${day}-${mode}`)
 
   // Переносы и отмены есть только на текущей неделе — на остальных показываем базовое расписание.
-  const weekLessons = week === 0 ? lessons : lessons.map((l) => ({ ...l, status: undefined, movedFrom: undefined }))
+  const weekLessons = monday.getTime() === DEMO_WEEK_MONDAY.getTime() ? lessons : lessons.map((l) => ({ ...l, status: undefined, movedFrom: undefined }))
   const byDay = WEEKDAYS.map((_, i) => weekLessons.filter((l) => l.day === i).sort((a, b) => toMinutes(a.start) - toMinutes(b.start)))
   const visibleDays = mode === 'week' ? WEEKDAYS.map((_, i) => i) : [day]
 
@@ -175,7 +182,7 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
           {WEEKDAYS_SHORT.map((d, i) => {
             const date = addDays(monday, i)
             return (
-              <button key={d} role="tab" aria-selected={day === i} type="button" className={`day-picker__btn ${day === i ? 'is-active' : ''} ${week === 0 && i === TODAY_INDEX ? 'is-today' : ''}`} onClick={() => setDay(i)}>
+              <button key={d} role="tab" aria-selected={day === i} type="button" className={`day-picker__btn ${day === i ? 'is-active' : ''} ${week === 0 && i === today ? 'is-today' : ''}`} onClick={() => setDay(i)}>
                 <span>{d}</span>
                 <b>{date.getDate()}</b>
               </button>
@@ -187,7 +194,7 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
       <div className={`week ${mode === 'day' ? 'week--day' : ''}`}>
         {visibleDays.map((i) => {
           const date = addDays(monday, i)
-          const isToday = week === 0 && i === TODAY_INDEX
+          const isToday = week === 0 && i === today
           return (
             <section key={i} className={`week__col ${isToday ? 'is-today' : ''}`} aria-label={WEEKDAYS[i]}>
               <header className="week__head">

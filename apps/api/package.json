@@ -10,6 +10,8 @@
     "db:generate": "node --env-file=../../.env ../../node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "node --env-file=../../.env ../../node_modules/drizzle-kit/bin.cjs migrate",
     "db:seed": "tsx --env-file=../../.env src/scripts/seed.ts",
+    "db:reset-demo-passwords": "tsx --env-file=../../.env src/scripts/reset-demo-student-passwords.ts",
+    "db:reset-demo-teacher-password": "tsx --env-file=../../.env src/scripts/reset-demo-teacher-password.ts",
     "test": "node --env-file=../../.env --import tsx --test tests/*.test.ts"
   },
   "dependencies": {

@@ -10,12 +10,8 @@ import type {
   User,
 } from '../types'
 
-/** Демо-«сейчас»: макеты нарисованы на среду, 11 ноября 2026, 10:20. */
-export const DEMO_NOW = new Date(2026, 10, 11, 10, 20)
-/** Понедельник базовой недели макетов. */
-export const BASE_MONDAY = new Date(2026, 10, 9)
-
-export const DEMO_PASSWORD = 'demo123'
+/** Неделя, на которую подготовлены разовые переносы и отмены занятий. */
+export const DEMO_WEEK_MONDAY = new Date(2026, 10, 9)
 
 export const USERS: User[] = [
   {
@@ -101,16 +97,16 @@ export const REQUEST_TYPES = {
 export const REQUEST_STAGES = ['Принята', 'В работе', 'Готова', 'Выдана'] as const
 
 export const INITIAL_REQUESTS: StudentRequest[] = [
-  { id: 'r1', type: 'study', purpose: 'По месту требования', comment: '', delivery: 'pdf', createdLabel: '3 ноября', stage: 2 },
-  { id: 'r2', type: 'retake', purpose: 'Теория вероятностей', comment: 'Болел в день экзамена, справка есть.', delivery: 'office', createdLabel: '4 ноября', stage: 1 },
+  { id: 'r1', type: 'study', purpose: 'По месту требования', comment: '', delivery: 'pdf', createdLabel: '3 ноября 2026', stage: 2 },
+  { id: 'r2', type: 'retake', purpose: 'Теория вероятностей', comment: 'Болел в день экзамена, справка есть.', delivery: 'office', createdLabel: '4 ноября 2026', stage: 1 },
 ]
 
 export const INITIAL_NOTICES: Notice[] = [
-  { id: 'n1', icon: 'alert', title: 'Срок сдачи проекта по вайб-кодингу — 12 ноября', text: 'Загрузите ссылку на работу в систему до 23:59.', time: 'Сегодня, 08:30', unread: true, accent: true },
-  { id: 'n2', icon: 'calendar', title: 'Изменение в расписании', text: 'Проектирование интерфейсов в среду перенесено на 10:45, ауд. 305.', time: 'Вчера, 18:10', unread: true, accent: true },
-  { id: 'n3', icon: 'doc', title: 'Заявка «Справка об обучении» готова', text: 'Электронную версию можно скачать в разделе «Заявки».', time: '5 ноября, 12:05', unread: false },
-  { id: 'n4', icon: 'bell', title: 'День открытых дверей деканата', text: '15 ноября с 11:00 до 15:00, ауд. 101.', time: '3 ноября, 09:00', unread: false },
-  { id: 'n5', icon: 'calendar', title: 'Отмена занятия', text: 'История России во вторник (семинар) не состоится.', time: '2 ноября, 16:40', unread: false },
+  { id: 'n1', icon: 'alert', title: 'Срок сдачи проекта по вайб-кодингу — 12 ноября', text: 'Загрузите ссылку на работу в систему до 23:59.', time: '11 ноября 2026, 08:30', unread: true, accent: true },
+  { id: 'n2', icon: 'calendar', title: 'Изменение в расписании', text: 'Проектирование интерфейсов в среду перенесено на 10:45, ауд. 305.', time: '10 ноября 2026, 18:10', unread: true, accent: true },
+  { id: 'n3', icon: 'doc', title: 'Заявка «Справка об обучении» готова', text: 'Электронную версию можно скачать в разделе «Заявки».', time: '5 ноября 2026, 12:05', unread: false },
+  { id: 'n4', icon: 'bell', title: 'День открытых дверей деканата', text: '15 ноября с 11:00 до 15:00, ауд. 101.', time: '3 ноября 2026, 09:00', unread: false },
+  { id: 'n5', icon: 'calendar', title: 'Отмена занятия', text: 'История России во вторник (семинар) не состоится.', time: '2 ноября 2026, 16:40', unread: false },
 ]
 
 export const ANNOUNCEMENTS = [

@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom'
 import { useUser } from '../../context/auth'
 import { useData } from '../../context/data'
-import { DEMO_NOW, TEACHER_LESSONS } from '../../data/mock'
+import { TEACHER_LESSONS } from '../../data/mock'
+import { useNow } from '../../context/clock'
 import { eyebrowDate } from '../../lib/format'
 import { NextLessonHero, TodayTimeline } from '../../components/schedule'
 import { Countdown, useNewYear } from '../../components/newyear'
 import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, ThemeButton } from '../../components/ui'
 
 export function TeacherHome() {
+  const now = useNow()
   const user = useUser()
   const ny = useNewYear()
   const { inquiries, newInquiries, sheets } = useData()
@@ -16,7 +18,7 @@ export function TeacherHome() {
   return (
     <>
       <PageHeader
-        eyebrow={eyebrowDate(DEMO_NOW)}
+        eyebrow={eyebrowDate(now)}
         title={
           ny ? (
             <>

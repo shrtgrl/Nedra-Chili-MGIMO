@@ -127,7 +127,7 @@ export function LoginPage() {
               </button>
             </div>
             <input id="pwd" className="input" type="password" autoComplete="current-password" placeholder="•••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            {forgot && <p className="field__hint">Восстановление пароля — через учебный офис деканата, ауд. 101. В демо пароль: demo123.</p>}
+            {forgot && <p className="field__hint">Для демонстрационного аккаунта используйте пароль, заданный при заполнении базы.</p>}
           </div>
 
           {error && (
@@ -143,7 +143,7 @@ export function LoginPage() {
           <div className="login__demo">
             <b>Тестовые аккаунты</b>
             <span>
-              student@mukpid.example · teacher@mukpid.example — пароль demo123
+              student@mukpid.example · teacher@mukpid.example — пароли задаются при заполнении базы
             </span>
           </div>
           <p className="login__note">Концепт для конкурса «Вайб-кодинг». Не является официальным сервисом вуза. Все данные вымышлены.</p>

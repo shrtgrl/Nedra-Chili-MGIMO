@@ -5,6 +5,7 @@ import { Icon, type IconName } from './Icon'
 import { Avatar, Brand, IconButton, ThemeButton } from './ui'
 import { useUser } from '../context/auth'
 import { useData } from '../context/data'
+import { useNow } from '../context/clock'
 import { DEADLINES } from '../data/mock'
 import { Forest, Garland, Snowflake, useNewYear } from './newyear'
 
@@ -38,6 +39,7 @@ function useNav(): NavItem[] {
 
 function SidebarCard() {
   const user = useUser()
+  const now = useNow()
   const { sheets } = useData()
   const ny = useNewYear()
   if (user.role === 'student' && ny) {
@@ -50,12 +52,12 @@ function SidebarCard() {
     )
   }
   if (user.role === 'student') {
-    const d = DEADLINES[0]
+    const d = DEADLINES.find((item) => new Date(item.date).getTime() >= now.getTime())
     return (
       <Link to="/student/notifications" className="side-card">
         <div className="eyebrow">Дедлайн</div>
-        <div className="side-card__title">{d.title}</div>
-        <div className="side-card__meta">Завтра, 23:59</div>
+        <div className="side-card__title">{d?.title ?? 'Ближайших дедлайнов нет'}</div>
+        {d && <div className="side-card__meta">{d.dateLabel} 2026</div>}
       </Link>
     )
   }

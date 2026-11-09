@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { GradeSheet, Inquiry, InquiryStatus, Notice, NotifyPrefs, StudentRequest } from '../types'
-import { DEMO_NOW, INITIAL_INQUIRIES, INITIAL_NOTICES, INITIAL_REQUESTS, INITIAL_SHEETS } from '../data/mock'
+import { INITIAL_INQUIRIES, INITIAL_NOTICES, INITIAL_REQUESTS, INITIAL_SHEETS } from '../data/mock'
 import { load, save } from '../lib/storage'
 import { dayMonth } from '../lib/format'
+import { useAuth } from './auth'
 
 /*
   Клиентское «хранилище» демо-данных. В реальном проекте здесь будут запросы к API
@@ -41,18 +42,19 @@ function usePersisted<T>(key: string, initial: T) {
 }
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [requests, setRequests] = usePersisted('requests', INITIAL_REQUESTS)
-  const [notices, setNotices] = usePersisted('notices', INITIAL_NOTICES)
-  const [prefs, setPrefs] = usePersisted<NotifyPrefs>('prefs', { deadlines: true, schedule: true, news: false })
-  const [inquiries, setInquiries] = usePersisted('inquiries', INITIAL_INQUIRIES)
-  const [sheets, setSheets] = usePersisted('sheets', INITIAL_SHEETS)
+  const { user } = useAuth()
+  const key = user?.id ?? 'guest'
+  const [requests, setRequests] = usePersisted(`${key}:requests`, INITIAL_REQUESTS)
+  const [notices, setNotices] = usePersisted(`${key}:notices`, INITIAL_NOTICES)
+  const [prefs, setPrefs] = usePersisted<NotifyPrefs>(`${key}:prefs`, { deadlines: true, schedule: true, news: false })
+  const [inquiries, setInquiries] = usePersisted(`${key}:inquiries`, INITIAL_INQUIRIES)
+  const [sheets, setSheets] = usePersisted(`${key}:sheets`, INITIAL_SHEETS)
 
   const value = useMemo<Data>(() => {
-    const createdLabel = dayMonth(DEMO_NOW)
     return {
       requests,
       addRequest: (r) =>
-        setRequests((xs) => [{ ...r, id: `r${Date.now()}`, stage: 0, createdLabel }, ...xs]),
+        setRequests((xs) => [{ ...r, id: `r${Date.now()}`, stage: 0, createdLabel: `${dayMonth(new Date())} ${new Date().getFullYear()}` }, ...xs]),
       cancelRequest: (id) => setRequests((xs) => xs.filter((x) => x.id !== id)),
 
       notices,

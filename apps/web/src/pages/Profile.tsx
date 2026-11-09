@@ -167,8 +167,10 @@ export function ProfilePage() {
             block
             icon="logout"
             onClick={() => {
-              logout()
-              navigate('/login', { replace: true })
+              void logout().then((error) => {
+                if (error) toast(error)
+                else navigate('/login', { replace: true })
+              })
             }}
           >
             Выйти из кабинета

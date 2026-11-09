@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 import { AuthProvider, useAuth } from './context/auth'
 import { DataProvider } from './context/data'
 import { SettingsProvider } from './context/settings'
+import { ClockProvider } from './context/clock'
 import { ToastProvider } from './context/toast'
 import type { Role } from './types'
 import { AppLayout } from './components/Layout'
@@ -22,6 +23,12 @@ function NewYearBackdrop() {
   return useNewYear() ? <Snow /> : null
 }
 
+function AuthenticatedApp() {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="login" role="status">Проверяем сессию…</div>
+  return <DataProvider key={user?.id ?? 'guest'}><AppRoutes /></DataProvider>
+}
+
 function RequireRole({ role, children }: { role: Role; children: ReactElement }) {
   const { user } = useAuth()
   if (!user) return <Navigate to="/login" replace />
@@ -39,11 +46,8 @@ function GuestOnly({ children }: { children: ReactElement }) {
   return user ? <Navigate to={`/${user.role}`} replace /> : children
 }
 
-export default function App() {
+function AppRoutes() {
   return (
-    <SettingsProvider>
-      <AuthProvider>
-        <DataProvider>
           <ToastProvider>
             <NewYearBackdrop />
             {/* HashRouter — чтобы сайт работал на любом статическом хостинге без настройки сервера */}
@@ -91,8 +95,9 @@ export default function App() {
               </Routes>
             </HashRouter>
           </ToastProvider>
-        </DataProvider>
-      </AuthProvider>
-    </SettingsProvider>
   )
+}
+
+export default function App() {
+  return <ClockProvider><SettingsProvider><AuthProvider><AuthenticatedApp /></AuthProvider></SettingsProvider></ClockProvider>
 }

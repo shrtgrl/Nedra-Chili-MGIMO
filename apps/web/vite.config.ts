@@ -6,5 +6,6 @@ import { viteSingleFile } from 'vite-plugin-singlefile'
 export default defineConfig(({ mode }) => ({
   base: './',
   plugins: [react(), ...(mode === 'single' ? [viteSingleFile()] : [])],
+  server: { proxy: { '/api': 'http://127.0.0.1:3001' } },
   build: mode === 'single' ? { outDir: 'dist-single', assetsInlineLimit: 100_000_000 } : {},
 }))

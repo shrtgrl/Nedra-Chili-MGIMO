@@ -16,9 +16,11 @@ export const monthShort = (d: Date) => MONTHS_GEN[d.getMonth()].slice(0, 3)
 /** «9 – 14 ноября» или «30 ноября – 5 декабря» */
 export const weekRange = (monday: Date) => {
   const sat = addDays(monday, 5)
+  if (monday.getFullYear() !== sat.getFullYear())
+    return `${monday.getDate()} ${MONTHS_GEN[monday.getMonth()]} ${monday.getFullYear()} – ${sat.getDate()} ${MONTHS_GEN[sat.getMonth()]} ${sat.getFullYear()}`
   return monday.getMonth() === sat.getMonth()
-    ? `${monday.getDate()} – ${sat.getDate()} ${MONTHS_GEN[sat.getMonth()]}`
-    : `${monday.getDate()} ${MONTHS_GEN[monday.getMonth()]} – ${sat.getDate()} ${MONTHS_GEN[sat.getMonth()]}`
+    ? `${monday.getDate()} – ${sat.getDate()} ${MONTHS_GEN[sat.getMonth()]} ${sat.getFullYear()}`
+    : `${monday.getDate()} ${MONTHS_GEN[monday.getMonth()]} – ${sat.getDate()} ${MONTHS_GEN[sat.getMonth()]} ${sat.getFullYear()}`
 }
 
 /** «СРЕДА, 11 НОЯБРЯ · 10:20» */
@@ -52,7 +54,8 @@ const plural = (n: number, one: string, few: string, many: string) => {
 export const pluralize = plural
 
 export const daysLeftLabel = (days: number) => {
-  if (days <= 0) return 'сегодня'
+  if (days < 0) return 'срок прошёл'
+  if (days === 0) return 'сегодня'
   if (days === 1) return 'завтра'
   return `через ${days} ${plural(days, 'день', 'дня', 'дней')}`
 }

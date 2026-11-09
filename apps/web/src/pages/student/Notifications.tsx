@@ -35,7 +35,7 @@ export function NotificationsPage() {
                     {n.title} {n.unread && <Badge tone="orange">новое</Badge>}
                   </h3>
                   <p>{n.text}</p>
-                  <span className="small muted">{n.time}</span>
+                  <span className="small muted">{n.time === 'Сегодня, 08:30' ? '11 ноября 2026, 08:30' : n.time === 'Вчера, 18:10' ? '10 ноября 2026, 18:10' : n.time}</span>
                 </div>
                 {n.unread && (
                   <Button variant="ghost" size="sm" onClick={() => markRead(n.id)}>

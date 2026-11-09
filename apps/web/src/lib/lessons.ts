@@ -1,15 +1,22 @@
 import type { Lesson } from '../types'
-import { DEMO_NOW } from '../data/mock'
 import { toMinutes } from './format'
+import { DEMO_WEEK_MONDAY } from '../data/mock'
 
-export const TODAY_INDEX = (DEMO_NOW.getDay() + 6) % 7 // 0 = пн
-export const NOW_MIN = DEMO_NOW.getHours() * 60 + DEMO_NOW.getMinutes()
+export const todayIndex = (now: Date) => (now.getDay() + 6) % 7 // 0 = пн
+export const nowMinutes = (now: Date) => now.getHours() * 60 + now.getMinutes()
 
-export function todayLessons(all: Lesson[]) {
-  return all.filter((l) => l.day === TODAY_INDEX).sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
+export function lessonsForDate(all: Lesson[], now: Date) {
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - todayIndex(now))
+  return monday.getTime() === DEMO_WEEK_MONDAY.getTime()
+    ? all
+    : all.map((lesson) => ({ ...lesson, status: undefined, movedFrom: undefined }))
 }
 
-export function nextLesson(all: Lesson[]) {
-  return todayLessons(all).find((l) => l.status !== 'cancelled' && toMinutes(l.start) >= NOW_MIN)
+export function todayLessons(all: Lesson[], now: Date) {
+  return lessonsForDate(all, now).filter((l) => l.day === todayIndex(now)).sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
+}
+
+export function nextLesson(all: Lesson[], now: Date) {
+  return todayLessons(all, now).find((l) => l.status !== 'cancelled' && toMinutes(l.start) >= nowMinutes(now))
 }
 

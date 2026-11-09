@@ -106,7 +106,7 @@ export function GradesPage() {
             <h2 className="card__title card__title--lg">Обратите внимание</h2>
             <p>
               «{weakest.name}» — {weakest.score} баллов: {weakest.score >= 50 ? (weakest.form === 'Зачёт' ? 'зачёт есть' : 'допуск есть') : 'допуска пока нет'}, но это самый низкий результат семестра.
-              {term === 'autumn' && ' Впереди эссе — 20 ноября.'}
+              {term === 'autumn' && ' Эссе — 20 ноября 2026 года.'}
             </p>
           </section>
 
