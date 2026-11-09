@@ -3,11 +3,12 @@ import type { Lesson } from '../types'
 import { DEMO_WEEK_MONDAY } from '../data/mock'
 import { nextLesson, nowMinutes, todayIndex, todayLessons } from '../lib/lessons'
 import { useNow } from '../context/clock'
-import { addDays, humanDuration, monthShort, pluralize, toMinutes, weekRange, WEEKDAYS, WEEKDAYS_SHORT } from '../lib/format'
+import { addDays, humanDuration, monthShort, pluralize, toMinutes, WEEKDAYS, WEEKDAYS_SHORT } from '../lib/format'
 import { Badge, ButtonLink, Segmented } from './ui'
 import { useIndicator } from '../lib/useIndicator'
 import { Garland, Ornaments, Snowflake, useNewYear } from './newyear'
 import { Icon } from './Icon'
+import { WeekPicker } from './WeekPicker'
 
 const kindTone = (k: Lesson['kind']) => (k === 'Лекция' ? 'accent' : 'neutral')
 
@@ -16,32 +17,55 @@ const subline = (l: Lesson, who: 'teacher' | 'group') => (who === 'teacher' ? l.
 /* ── Hero «Следующее занятие» ──────────────────── */
 export function NextLessonHero({ lessons, who, scheduleLink, compact }: { lessons: Lesson[]; who: 'teacher' | 'group'; scheduleLink?: string; compact?: boolean }) {
   const now = useNow()
-  const l = nextLesson(lessons, now)
+  const m = nowMinutes(now)
+  // сначала — пара, которая идёт прямо сейчас, иначе — ближайшая следующая
+  const current = todayLessons(lessons, now).find((x) => x.status !== 'cancelled' && toMinutes(x.start) <= m && m < toMinutes(x.end))
+  const l = current ?? nextLesson(lessons, now)
   const ny = useNewYear()
+  const decor = ny && (
+    <>
+      <Garland className="hero__garland" spacing={compact ? 70 : 64} />
+      {!compact && <Ornaments />}
+      <Snowflake size={compact ? 84 : 104} className="hero__flake" />
+    </>
+  )
   if (!l)
     return (
-      <section className="hero">
+      <section className={`hero ${compact ? 'hero--compact' : ''} ${ny ? 'hero--ny' : ''}`}>
+        {decor}
         <div className="eyebrow">Сегодня</div>
-        <div className="hero__time display">—</div>
-        <div className="hero__title">Занятий больше нет</div>
+        <div className="hero__title hero__title--empty">Занятий больше нет</div>
+        <div className="hero__meta">Расписание на неделю — в разделе «Расписание»</div>
       </section>
     )
-  const until = toMinutes(l.start) - nowMinutes(now)
+  const left = toMinutes(l.end) - m
+  const until = toMinutes(l.start) - m
+  const progress = current ? (m - toMinutes(l.start)) / (toMinutes(l.end) - toMinutes(l.start)) : 0
   return (
-    <section className={`hero ${compact ? 'hero--compact' : ''} ${ny ? 'hero--ny' : ''}`} aria-label="Следующее занятие">
-      {ny && (
-        <>
-          <Garland className="hero__garland" spacing={compact ? 70 : 64} />
-          {!compact && <Ornaments />}
-          <Snowflake size={compact ? 84 : 104} className="hero__flake" />
-        </>
-      )}
-      <div className="eyebrow">{compact ? `Через ${humanDuration(until)}` : `Следующее занятие · через ${humanDuration(until)}`}</div>
+    <section className={`hero ${compact ? 'hero--compact' : ''} ${ny ? 'hero--ny' : ''} ${current ? 'hero--now' : ''}`} aria-label={current ? 'Текущее занятие' : 'Следующее занятие'}>
+      {decor}
+      <div className="eyebrow">
+        {current ? (
+          <span className="hero__live">
+            <span className="now-dot" aria-hidden="true" />
+            Идёт сейчас · ещё {humanDuration(left)}
+          </span>
+        ) : compact ? (
+          `Через ${humanDuration(until)}`
+        ) : (
+          `Следующее занятие · через ${humanDuration(until)}`
+        )}
+      </div>
       <div className="hero__time display">{l.start}</div>
       <div className="hero__title">{l.subject}</div>
       <div className="hero__meta">
         {l.kind} · {who === 'group' ? `группа ${l.group} · ${l.room}` : `${l.room} · ${l.teacher}`}
       </div>
+      {current && (
+        <span className="hero__progress" role="progressbar" aria-label="Прошло времени" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+          <span style={{ width: `${progress * 100}%` }} />
+        </span>
+      )}
       {l.status === 'moved' && (
         <span className="pill-warn">
           {!compact && <Icon name="alert" size={15} />}
@@ -78,10 +102,10 @@ export function TodayTimeline({ lessons, who }: { lessons: Lesson[]; who: 'teach
       <ol className="timeline">
         {list.map((l) => {
           const past = toMinutes(l.end) <= nowMinutes(now)
-          const ongoing = !past && toMinutes(l.start) <= nowMinutes(now)
+          const ongoing = !past && l.status !== 'cancelled' && toMinutes(l.start) <= nowMinutes(now)
           const isNext = next?.id === l.id
           return (
-            <li key={l.id} className={`timeline__row ${past || ongoing ? 'is-past' : ''} ${isNext ? 'is-next' : ''}`}>
+            <li key={l.id} className={`timeline__row ${past ? 'is-past' : ''} ${ongoing ? 'is-now' : ''} ${isNext ? 'is-next' : ''}`} aria-current={ongoing ? 'time' : undefined}>
               <div className="timeline__time">
                 <b>{l.start}</b>
                 <span>{l.end}</span>
@@ -93,10 +117,16 @@ export function TodayTimeline({ lessons, who }: { lessons: Lesson[]; who: 'teach
                   <Badge tone={isNext ? 'accent' : kindTone(l.kind)}>{l.kind}</Badge>
                   {l.status === 'moved' && <Badge tone="warn">Перенос</Badge>}
                   {l.status === 'cancelled' && <Badge tone="danger">Отменено</Badge>}
+                  {ongoing && (
+                    <span className="now-badge">
+                      <span className="now-dot" aria-hidden="true" />
+                      Сейчас
+                    </span>
+                  )}
                 </div>
                 <div className="timeline__meta">
                   {subline(l, who)} · {l.room}
-                  {past ? ' · прошло' : ongoing ? ' · идёт сейчас' : ''}
+                  {past ? ' · прошло' : ongoing ? ` · ещё ${humanDuration(toMinutes(l.end) - nowMinutes(now))}` : ''}
                   {l.status === 'moved' ? ` · было ${l.movedFrom?.replace(' · ', ', ')}` : ''}
                 </div>
               </div>
@@ -109,9 +139,25 @@ export function TodayTimeline({ lessons, who }: { lessons: Lesson[]; who: 'teach
 }
 
 /* ── Недельное расписание ──────────────────────── */
-function LessonCard({ l, who }: { l: Lesson; who: 'teacher' | 'group' }) {
+/** Доля прошедшего времени для идущей сейчас пары, иначе undefined. */
+function liveProgress(l: Lesson, now: Date) {
+  if (l.status === 'cancelled') return undefined
+  const m = nowMinutes(now)
+  const s = toMinutes(l.start)
+  const e = toMinutes(l.end)
+  return m >= s && m < e ? (m - s) / (e - s) : undefined
+}
+
+function LessonCard({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; progress?: number }) {
+  const live = progress != null
   return (
-    <article className={`lesson ${l.status ? `lesson--${l.status}` : ''}`}>
+    <article className={`lesson ${l.status ? `lesson--${l.status}` : ''} ${live ? 'lesson--now' : ''}`} aria-current={live ? 'time' : undefined}>
+      {live && (
+        <span className="now-badge">
+          <span className="now-dot" aria-hidden="true" />
+          Идёт сейчас
+        </span>
+      )}
       <div className="lesson__time">
         {l.start} – {l.end}
       </div>
@@ -127,6 +173,11 @@ function LessonCard({ l, who }: { l: Lesson; who: 'teacher' | 'group' }) {
       )}
       {l.status === 'moved' && (
         <span className="lesson__moved">Перенос: было {l.movedFrom}</span>
+      )}
+      {live && (
+        <span className="lesson__progress" role="progressbar" aria-label="Прошло времени" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+          <span style={{ width: `${progress * 100}%` }} />
+        </span>
       )}
     </article>
   )
@@ -151,15 +202,16 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
   return (
     <>
       <div className="sched-toolbar">
-        <div className="week-nav">
-          <button type="button" className="week-nav__btn" aria-label="Предыдущая неделя" onClick={() => setWeek((w) => w - 1)}>
-            <Icon name="chevronLeft" />
-          </button>
-          <span className="week-nav__label">{weekRange(monday)}</span>
-          <button type="button" className="week-nav__btn" aria-label="Следующая неделя" onClick={() => setWeek((w) => w + 1)}>
-            <Icon name="chevronRight" />
-          </button>
-        </div>
+        <WeekPicker
+          monday={monday}
+          today={now}
+          onPrev={() => setWeek((w) => w - 1)}
+          onNext={() => setWeek((w) => w + 1)}
+          onPick={(mon, weekday) => {
+            setWeek(Math.round((mon.getTime() - currentMonday.getTime()) / (7 * 86_400_000)))
+            setDay(weekday)
+          }}
+        />
         <div className="legend" aria-hidden="true">
           <span className="legend__item legend__item--warn">Перенос</span>
           <span className="legend__item legend__item--danger">Отмена</span>
@@ -205,7 +257,7 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
               </header>
               {byDay[i].length === 0 && <p className="week__empty">Занятий нет</p>}
               {byDay[i].map((l) => (
-                <LessonCard key={l.id} l={l} who={who} />
+                <LessonCard key={l.id} l={l} who={who} progress={isToday ? liveProgress(l, now) : undefined} />
               ))}
             </section>
           )

@@ -2,7 +2,7 @@ import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useIndicator } from '../lib/useIndicator'
 import { Icon, type IconName } from './Icon'
-import { Avatar, Brand, IconButton, ThemeButton } from './ui'
+import { Avatar, Brand, IconButton, NewYearButton, ThemeButton } from './ui'
 import { useUser } from '../context/auth'
 import { useData } from '../context/data'
 import { useNow } from '../context/clock'
@@ -126,6 +126,8 @@ function MobileBar() {
   const user = useUser()
   const { unreadCount, newInquiries } = useData()
   const isStudent = user.role === 'student'
+  const { pathname } = useLocation()
+  const isHome = pathname === '/student' || pathname === '/teacher'
   return (
     <header className="mobile-bar">
       <Link to={isStudent ? '/student' : '/teacher'} aria-label="На главную">
@@ -133,6 +135,7 @@ function MobileBar() {
       </Link>
       <div className="mobile-bar__actions">
         <ThemeButton />
+        {isHome && <NewYearButton />}
         <IconButton
           icon={isStudent ? 'bell' : 'inbox'}
           label={isStudent ? 'Уведомления' : 'Обращения'}

@@ -11,8 +11,24 @@ interface Auth {
 
 const Ctx = createContext<Auth | null>(null)
 
+/**
+ * Разбор полного имени. В базе встречаются оба порядка:
+ * «Фамилия Имя Отчество» (если третье слово — отчество) и «Имя Фамилия …».
+ * Пометки в скобках вроде «(демо)» отбрасываем.
+ */
+function splitName(fullName: string) {
+  const words = fullName.replace(/\(.*?\)/g, ' ').trim().split(/\s+/).filter(Boolean)
+  const isPatronymic = (w = '') => /(вич|вна|ична|инична|оглы|кызы)$/i.test(w)
+  if (words.length >= 3 && isPatronymic(words[2])) {
+    const [lastName, firstName, ...rest] = words
+    return { lastName, firstName, rest }
+  }
+  const [firstName = '', lastName = '', ...rest] = words
+  return { firstName, lastName, rest }
+}
+
 function toUser(profile: ApiProfile): User {
-  const [lastName = '', firstName = '', ...rest] = profile.fullName.trim().split(/\s+/)
+  const { firstName, lastName, rest } = splitName(profile.fullName)
   const group = profile.groupName ?? undefined
   return {
     id: profile.id, role: profile.role, email: profile.email,

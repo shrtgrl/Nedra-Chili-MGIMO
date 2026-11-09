@@ -3348,3 +3348,373 @@ html.lock-scroll body {
 .login__form-wrap--ny .login__form {
   width: min(100%, 530px, calc(100% - 2 * clamp(70px, 10vh, 110px)));
 }
+
+/* ═════════ Переключатель недель с календарём ═════════ */
+.week-nav {
+  position: relative;
+}
+.week-nav__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  transition: background-color 0.2s ease;
+}
+.week-nav__label:hover,
+.week-nav.is-open .week-nav__label {
+  background: var(--surface-2);
+}
+.week-nav__text {
+  display: inline-block;
+  white-space: nowrap;
+}
+.week-nav__caret {
+  color: var(--ink-3);
+  transition: transform 0.35s var(--ease-spring, ease);
+}
+.week-nav.is-open .week-nav__caret {
+  transform: rotate(180deg);
+}
+.slide-in-l {
+  animation: wp-in-l 0.32s var(--ease-out, ease) both;
+}
+.slide-in-r {
+  animation: wp-in-r 0.32s var(--ease-out, ease) both;
+}
+.fade-l,
+.fade-r {
+  animation: wp-fade 0.3s ease both;
+}
+@keyframes wp-in-l {
+  from { opacity: 0; transform: translateX(18px); }
+}
+@keyframes wp-in-r {
+  from { opacity: 0; transform: translateX(-18px); }
+}
+@keyframes wp-fade {
+  from { opacity: 0; }
+}
+
+.wp {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 10px);
+  left: 50%;
+  width: 330px;
+  padding: 16px 16px 12px;
+  border-radius: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 60px rgba(14, 18, 28, 0.18), 0 4px 14px rgba(14, 18, 28, 0.08);
+  transform-origin: 50% -12px;
+  transform: translateX(-50%) translateY(-6px) scale(0.94);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, transform 0.32s var(--ease-spring, ease), visibility 0s linear 0.32s;
+}
+.wp[data-open] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+  transition: opacity 0.2s ease, transform 0.38s var(--ease-spring, ease), visibility 0s;
+}
+.wp::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: calc(50% - 7px);
+  width: 14px;
+  height: 14px;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  transform: rotate(45deg);
+  border-radius: 3px 0 0 0;
+}
+.wp__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.wp__title {
+  font-weight: 700;
+  font-size: 16px;
+}
+.wp__nav {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  transition: background-color 0.15s ease;
+}
+.wp__nav:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.wp__dow,
+.wp__week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.wp__dow span {
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 4px 0 8px;
+}
+.wp__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.wp__week {
+  position: relative;
+  border-radius: 14px;
+  transition: background-color 0.18s ease;
+}
+.wp__week:hover {
+  background: var(--surface-2);
+}
+.wp__week.is-current:not(.is-selected) {
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+.wp__week.is-selected {
+  background: var(--strong);
+  color: var(--on-strong);
+  animation: wp-pop 0.35s var(--ease-spring, ease);
+}
+@keyframes wp-pop {
+  from { transform: scale(0.96); }
+}
+.wp__day {
+  height: 38px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  position: relative;
+}
+.wp__day.is-out {
+  opacity: 0.38;
+}
+.wp__day.is-sun {
+  color: var(--ink-3);
+}
+.wp__week.is-selected .wp__day.is-sun {
+  color: inherit;
+  opacity: 0.7;
+}
+.wp__day.is-today::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+.wp__day:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+.wp__week.is-selected .wp__day:hover {
+  background: color-mix(in srgb, var(--on-strong) 14%, transparent);
+}
+.wp__foot {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.wp__today {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--hl);
+  color: var(--on-hl);
+  transition: transform 0.2s var(--ease-spring, ease);
+}
+.wp__today:active {
+  transform: scale(0.96);
+}
+@media (max-width: 760px) {
+  .wp {
+    width: min(330px, calc(100vw - 32px));
+  }
+  .week-nav__label {
+    padding: 0 8px;
+    gap: 4px;
+  }
+}
+
+/* ═════════ Текущая пара ═════════ */
+.now-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px 0 8px;
+  border-radius: 999px;
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.now-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.now-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  animation: now-ping 1.6s ease-out infinite;
+}
+@keyframes now-ping {
+  from { transform: scale(1); opacity: 0.7; }
+  to { transform: scale(2.6); opacity: 0; }
+}
+.lesson--now {
+  position: relative;
+  box-shadow: 0 0 0 2px var(--ok-ink), 0 10px 26px color-mix(in srgb, var(--ok-ink) 22%, transparent);
+  transform: translateY(-1px);
+}
+.lesson--now .now-badge {
+  margin-bottom: 4px;
+}
+.lesson__progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 9px;
+  background: var(--track);
+  overflow: hidden;
+}
+.lesson__progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ok-ink);
+  transition: width 1s ease;
+}
+.timeline__row.is-now .timeline__body {
+  background: var(--ok-bg);
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin: -6px 0;
+}
+.timeline__row.is-now .timeline__meta {
+  color: var(--ok-ink);
+}
+.timeline__row.is-now .timeline__dot {
+  border-color: var(--ok-ink);
+  background: var(--ok-ink);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok-ink) 22%, transparent);
+}
+.timeline__row.is-now .now-badge {
+  background: var(--surface);
+}
+
+/* ═════════ Кнопка-ёлочка ═════════ */
+.ny-btn__body {
+  fill: #2f7f57;
+  transition: fill 0.3s ease;
+}
+.ny-btn__trunk {
+  fill: #8a5a35;
+}
+.ny-btn__star {
+  fill: #f2c14e;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.ny-btn__light {
+  fill: #f6d36b;
+  opacity: 0.55;
+}
+.ny-btn__tree {
+  transform-origin: 50% 100%;
+  transition: transform 0.4s var(--ease-spring, ease);
+}
+.ny-btn:hover .ny-btn__tree {
+  animation: ny-wiggle 0.7s ease-in-out;
+}
+.ny-btn:hover .ny-btn__light {
+  animation: ny-btn-light 1.4s ease-in-out infinite;
+}
+.ny-btn:hover .ny-btn__star {
+  animation: ny-btn-star 1.4s ease-in-out infinite;
+}
+.ny-btn:active .ny-btn__tree {
+  transform: scale(0.88);
+}
+@keyframes ny-wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-8deg); }
+  60% { transform: rotate(6deg); }
+}
+@keyframes ny-btn-light {
+  0%, 100% { opacity: 0.45; fill: #f6d36b; }
+  30% { opacity: 1; fill: #ff6b81; }
+  60% { opacity: 1; fill: #8fc2ff; }
+}
+@keyframes ny-btn-star {
+  50% { transform: scale(1.25) rotate(20deg); }
+}
+
+/* hero: идёт сейчас */
+.hero__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.hero__live .now-dot {
+  color: #3fbf6f;
+}
+.hero__progress {
+  display: block;
+  width: min(100%, 420px);
+  height: 6px;
+  margin-top: 16px;
+  border-radius: 9px;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  overflow: hidden;
+}
+.hero__progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--hero-hl, var(--on-accent-hl));
+  transition: width 1s ease;
+}
+[data-variant='fog'][data-theme='light'] .hero__progress span,
+[data-variant='fog'][data-theme='dark'] .hero__progress span {
+  background: var(--on-accent);
+}
+.hero__title--empty {
+  margin-top: 14px;
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 700;
+}

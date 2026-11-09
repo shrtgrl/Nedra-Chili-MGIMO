@@ -6,7 +6,7 @@ import { useNow } from '../../context/clock'
 import { eyebrowDate } from '../../lib/format'
 import { NextLessonHero, TodayTimeline } from '../../components/schedule'
 import { Countdown, useNewYear } from '../../components/newyear'
-import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, ThemeButton } from '../../components/ui'
+import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, NewYearButton, ThemeButton } from '../../components/ui'
 
 export function TeacherHome() {
   const now = useNow()
@@ -32,6 +32,7 @@ export function TeacherHome() {
         actions={
           <>
             <ThemeButton />
+            <NewYearButton />
             <IconButton icon="inbox" label="Обращения" to="/teacher/inquiries" dot={newInquiries > 0} />
           </>
         }

@@ -7,7 +7,7 @@ import { average, daysLeftLabel, eyebrowDate } from '../../lib/format'
 import { NextLessonHero, TodayTimeline } from '../../components/schedule'
 import { todayLessons } from '../../lib/lessons'
 import { Search } from '../../components/Search'
-import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, Ring, Stages, ThemeButton } from '../../components/ui'
+import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, Ring, Stages, NewYearButton, ThemeButton } from '../../components/ui'
 import { Icon } from '../../components/Icon'
 import { Countdown, useNewYear } from '../../components/newyear'
 
@@ -54,6 +54,7 @@ export function StudentHome() {
           <>
             <Search />
             <ThemeButton />
+            <NewYearButton />
             <IconButton icon="bell" label="Уведомления" to="/student/notifications" dot={unreadCount > 0} />
           </>
         }

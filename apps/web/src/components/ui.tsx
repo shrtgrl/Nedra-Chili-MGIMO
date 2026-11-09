@@ -76,6 +76,25 @@ export function ThemeIcon({ size = 19 }: { size?: number }) {
   )
 }
 
+/** Кнопка-ёлочка: включает новогоднее оформление (в самой новогодней теме не показывается). */
+export function NewYearButton() {
+  const { variant, setVariant } = useSettings()
+  if (variant === 'newyear') return null
+  return (
+    <button type="button" className="icon-btn ny-btn" aria-label="Новогоднее оформление" title="Новогоднее оформление" onClick={() => setVariant('newyear')}>
+      <svg width="22" height="24" viewBox="0 0 22 24" aria-hidden="true" className="ny-btn__tree">
+        <path className="ny-btn__star" d="M11 0.6l1.15 2.35 2.6.38-1.88 1.83.44 2.58L11 6.52 8.69 7.74l.44-2.58L7.25 3.33l2.6-.38z" />
+        <path className="ny-btn__body" d="M11 6.5 15.6 12.4h-2.3l4 5.1h-2.6l3.8 4.2H3.5l3.8-4.2H4.7l4-5.1H6.4z" />
+        <rect className="ny-btn__trunk" x="9.6" y="21.6" width="2.8" height="2.2" rx="0.5" />
+        <circle className="ny-btn__light" cx="9.4" cy="11.6" r="0.95" style={{ animationDelay: '0s' }} />
+        <circle className="ny-btn__light" cx="13" cy="15.6" r="0.95" style={{ animationDelay: '0.35s' }} />
+        <circle className="ny-btn__light" cx="8.4" cy="18.9" r="0.95" style={{ animationDelay: '0.7s' }} />
+        <circle className="ny-btn__light" cx="14.6" cy="19.6" r="0.95" style={{ animationDelay: '1.05s' }} />
+      </svg>
+    </button>
+  )
+}
+
 export function ThemeButton() {
   const { theme, toggleTheme } = useSettings()
   const label = theme === 'light' ? 'Тёмная тема' : 'Светлая тема'
