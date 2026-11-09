@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logo from '../assets/logo-full.webp'
 import logoGold from '../assets/logo-gold.webp'
@@ -19,6 +19,12 @@ export function LoginPage() {
   const { theme, toggleTheme } = useSettings()
   const navigate = useNavigate()
   const ny = useNewYear()
+
+  // страница входа статична: прокрутку документа выключаем, пока она открыта
+  useEffect(() => {
+    document.documentElement.classList.add('lock-scroll')
+    return () => document.documentElement.classList.remove('lock-scroll')
+  }, [])
   const [role, setRole] = useState<Role>('student')
   const [email, setEmail] = useState(DEMO.student)
   const [password, setPassword] = useState('')
@@ -77,7 +83,7 @@ export function LoginPage() {
             </>
           )}
         </div>
-        <ul className="login__pills">
+        <ul className="login__pills" aria-label="Разделы">
           <li>Расписание</li>
           <li>Успеваемость</li>
           <li>Заявки и справки</li>
@@ -92,9 +98,9 @@ export function LoginPage() {
             <Tree height={180} delay={0.9} />
           </div>
         )}
-        <button type="button" className="login__theme" onClick={toggleTheme}>
+        <button type="button" className="login__theme" onClick={toggleTheme} aria-label={theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}>
           <ThemeIcon size={17} />
-          {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+          <span className="login__theme-label">{theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}</span>
         </button>
 
         <form className="login__form" onSubmit={submit} noValidate>
