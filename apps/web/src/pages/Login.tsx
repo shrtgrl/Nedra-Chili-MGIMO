@@ -25,6 +25,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [forgot, setForgot] = useState(false)
+  const [showPwd, setShowPwd] = useState(false)
 
   const switchRole = (r: Role) => {
     setRole(r)
@@ -126,7 +127,35 @@ export function LoginPage() {
                 Забыли пароль?
               </button>
             </div>
-            <input id="pwd" className="input" type="password" autoComplete="current-password" placeholder="•••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <div className="input-wrap">
+              <input
+                id="pwd"
+                className="input input--with-btn"
+                type={showPwd ? 'text' : 'password'}
+                autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                placeholder="•••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="input-btn"
+                aria-label={showPwd ? 'Скрыть пароль' : 'Показать пароль'}
+                aria-pressed={showPwd}
+                aria-controls="pwd"
+                title={showPwd ? 'Скрыть пароль' : 'Показать пароль'}
+                onClick={() => setShowPwd((v) => !v)}
+              >
+                <span className={`eye-toggle ${showPwd ? 'is-shown' : ''}`}>
+                  <Icon name="eye" size={20} className="eye-toggle__open" />
+                  <Icon name="eyeOff" size={20} className="eye-toggle__closed" />
+                </span>
+              </button>
+            </div>
             {forgot && <p className="field__hint">Для демонстрационного аккаунта используйте пароль, заданный при заполнении базы.</p>}
           </div>
 

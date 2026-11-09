@@ -3068,3 +3068,50 @@ a.stat:hover {
 .app {
   overflow-x: clip;
 }
+
+/* поле пароля с кнопкой «показать» */
+.input-wrap {
+  position: relative;
+}
+.input--with-btn {
+  padding-right: 60px;
+}
+.input-btn {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.input-btn:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.eye-toggle {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+.eye-toggle svg {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.2s ease, transform 0.25s var(--ease-spring, ease);
+}
+.eye-toggle__open {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.eye-toggle.is-shown .eye-toggle__open {
+  opacity: 1;
+  transform: scale(1);
+}
+.eye-toggle.is-shown .eye-toggle__closed {
+  opacity: 0;
+  transform: scale(0.6);
+}
