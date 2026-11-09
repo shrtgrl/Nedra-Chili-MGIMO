@@ -2423,8 +2423,8 @@ a.stat:hover {
 }
 
 /* меню сайдбара и нижняя навигация */
-.sidebar__nav,
-.bottom-nav {
+/* .bottom-nav не трогаем: она position: fixed и сама служит опорой для подложки */
+.sidebar__nav {
   position: relative;
 }
 .nav-item,
