@@ -41,7 +41,8 @@ function assertFreePort(port, host) {
 
 const services = [];
 let stopping = false;
-function stop(code = 0) {
+let databaseStarted = false;
+async function stop(code = 0) {
   if (stopping) return;
   stopping = true;
   for (const child of services) {
@@ -53,16 +54,25 @@ function stop(code = 0) {
       if (error.code !== 'ESRCH') console.error(error);
     }
   }
+  if (databaseStarted) {
+    try {
+      await run(docker, ['compose', 'stop', 'db']);
+    } catch (error) {
+      console.error(`Не удалось остановить базу: ${error.message}`);
+      code = 1;
+    }
+  }
   process.exitCode = code;
 }
 
-process.on('SIGINT', () => stop());
-process.on('SIGTERM', () => stop());
+process.on('SIGINT', () => { void stop(); });
+process.on('SIGTERM', () => { void stop(); });
 
 try {
   await assertFreePort(3001, '127.0.0.1');
   await assertFreePort(5173, 'localhost');
   await run(docker, ['compose', 'up', '-d', '--wait', 'db']);
+  databaseStarted = true;
   await run(npm, ['run', 'db:migrate']);
   await run(npm, ['run', 'db:seed']);
 
@@ -75,17 +85,17 @@ try {
     services.push(child);
     child.once('error', error => {
       console.error(`${name}: ${error.message}`);
-      stop(1);
+      void stop(1);
     });
     child.once('exit', (code, signal) => {
       if (!stopping) {
         console.error(`${name} завершился: ${signal ?? code}`);
-        stop(code || 1);
+        void stop(code || 1);
       }
     });
   }
   console.log('Интерфейс: http://localhost:5173');
 } catch (error) {
   console.error(error.message);
-  stop(1);
+  await stop(1);
 }
