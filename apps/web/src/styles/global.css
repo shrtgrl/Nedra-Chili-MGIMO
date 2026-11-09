@@ -3050,3 +3050,21 @@ a.stat:hover {
     white-space: normal;
   }
 }
+
+/* мобильная плитка «Средний балл» с кольцом */
+.stat--ring {
+  align-items: flex-start;
+  gap: 12px;
+}
+.stat--ring .link {
+  font-size: 13.5px;
+  color: var(--on-hl);
+}
+.stat--ring .link {
+  white-space: nowrap;
+  font-size: 13px;
+}
+/* декор (лес) не должен давать горизонтальную прокрутку; clip не ломает sticky */
+.app {
+  overflow-x: clip;
+}

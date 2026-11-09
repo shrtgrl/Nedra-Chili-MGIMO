@@ -91,10 +91,13 @@ export function StudentHome() {
           </div>
 
           <div className="stats stats--2 only-mobile">
-            <Link to="/student/grades" className="stat stat--hl">
+            <div className="stat stat--hl stat--ring">
               <span className="stat__label">Средний балл</span>
-              <span className="stat__value display">{avg}</span>
-            </Link>
+              <Ring value={avg} size={84} stroke={9} />
+              <Link to="/student/grades" className="link">
+                Вся успеваемость <Icon name="arrowRight" size={14} />
+              </Link>
+            </div>
             <Link to="/student/notifications" className="stat">
               <span className="stat__label">Дедлайн</span>
               <b className="stat__text">{DEADLINES[0].title}</b>
@@ -106,7 +109,7 @@ export function StudentHome() {
         </div>
 
         <div className="stack">
-          <section className="card card--hl status-card">
+          <section className="card card--hl status-card only-desktop">
             <Ring value={avg} size={108} />
             <div>
               <h2 className="card__title">Как у меня дела</h2>
