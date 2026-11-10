@@ -4272,3 +4272,244 @@ html.lock-scroll body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ═════════ Поле с выпадающим списком ═════════ */
+.combo {
+  position: relative;
+}
+.combo__input {
+  padding-right: 46px;
+}
+.input--invalid {
+  border-color: var(--danger-ink);
+}
+.combo__toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 46px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+}
+.combo__toggle svg {
+  transition: transform 0.2s ease;
+}
+.combo.is-open .combo__toggle svg {
+  transform: rotate(180deg);
+}
+.combo__list {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 232px;
+  overflow: auto;
+  padding: 6px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 40px rgba(14, 18, 26, 0.22);
+  animation: combo-in 0.14s ease;
+}
+.combo__opt {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-align: left;
+  font-size: 14.5px;
+}
+.combo__opt span {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.combo__opt.is-active {
+  background: var(--hl-soft);
+  color: var(--on-hl);
+}
+.combo__opt.is-active span {
+  color: inherit;
+  opacity: 0.7;
+}
+.combo__empty {
+  padding: 12px;
+  font-size: 13.5px;
+  color: var(--ink-3);
+}
+@keyframes combo-in {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+
+/* ═════════ Галочка ═════════ */
+.check {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.check input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.check__box {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 2px solid var(--input-line);
+  background: var(--input-bg);
+  color: transparent;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+.check input:checked + .check__box {
+  background: var(--strong);
+  border-color: var(--strong);
+  color: var(--on-strong);
+}
+.check input:active + .check__box {
+  transform: scale(0.92);
+}
+.check input:focus-visible + .check__box {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.check small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.repeat-box {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--surface-2);
+}
+.repeat-box__until {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.3s ease, opacity 0.25s ease, margin-top 0.3s ease;
+}
+.repeat-box__until > div {
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.repeat-box__until[data-open='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 14px;
+}
+
+/* ═════════ Загрузка CSV ═════════ */
+.dialog--wide {
+  width: min(860px, 100%);
+}
+.csv-help {
+  line-height: 1.6;
+}
+.dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 26px 18px;
+  border-radius: 20px;
+  border: 2px dashed var(--input-line);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+.dropzone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.dropzone.is-drag {
+  border-color: var(--ink);
+  background: var(--hl-soft);
+  color: var(--on-hl);
+}
+.csv-summary {
+  font-size: 14.5px;
+}
+.csv-bad {
+  color: var(--danger-ink);
+}
+.csv-table-wrap {
+  max-height: 260px;
+  overflow: auto;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+}
+.csv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.csv-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  text-align: left;
+  padding: 9px 12px;
+  font-weight: 700;
+}
+.csv-table td {
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+}
+.csv-table tr.is-bad td {
+  background: var(--danger-bg);
+  color: var(--danger-ink);
+}
+.csv-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  font-size: 15px;
+}
+@media (hover: hover) {
+  .combo__toggle:hover {
+    color: var(--ink);
+  }
+  .combo__opt:not(.is-active):hover {
+    background: var(--surface-2);
+  }
+  .check:hover .check__box {
+    border-color: var(--ink-3);
+  }
+  .dropzone:hover {
+    border-color: var(--ink-3);
+    background: var(--surface-2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .combo__list { animation: none; }
+  .repeat-box__until { transition: none; }
+}
