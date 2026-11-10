@@ -21,7 +21,7 @@ npm run build          # обычная сборка в dist/
 npm run build:single   # весь сайт одним файлом: dist-single/index.html
 ```
 
-Тестовые аккаунты: `student@mukpid.example` / `teacher@mukpid.example`, пароль `demo123`.
+Тестовые аккаунты: `student@edu.mukpid.ru` / `teacher@mukpid.ru`; пароли задаются через переменные окружения при заполнении базы.
 
 ## Оформление
 

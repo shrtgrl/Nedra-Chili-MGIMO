@@ -13,7 +13,7 @@ if (!password || password.length < 12) {
 const connection = connectDatabase();
 try {
   const [teacher] = await connection.db.select({ id: users.id, role: users.role })
-    .from(users).where(eq(users.email, 'teacher@mukpid.example')).limit(1);
+    .from(users).where(eq(users.email, 'teacher@mukpid.ru')).limit(1);
   if (!teacher || teacher.role !== 'teacher') {
     throw new Error('Demo teacher account must exist with the teacher role; run db:seed first');
   }

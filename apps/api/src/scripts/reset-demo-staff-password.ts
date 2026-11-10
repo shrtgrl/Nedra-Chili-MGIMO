@@ -13,7 +13,7 @@ if (!password || password.length < 12) {
 const connection = connectDatabase();
 try {
   const [staff] = await connection.db.select({ id: users.id, role: users.role })
-    .from(users).where(eq(users.email, 'staff@mukpid.example')).limit(1);
+    .from(users).where(eq(users.email, 'staff@staff.mukpid.ru')).limit(1);
   if (!staff || staff.role !== 'staff') {
     throw new Error('Demo staff account must exist with the staff role; run db:seed first');
   }

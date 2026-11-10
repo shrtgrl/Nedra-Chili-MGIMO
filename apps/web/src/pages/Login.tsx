@@ -10,8 +10,8 @@ import { Garland, Snowflake, Tree, TreeSilhouette, useNewYear } from '../compone
 import type { Role } from '../types'
 
 const DEMO: Record<Role, string> = {
-  student: 'student@mukpid.example',
-  teacher: 'teacher@mukpid.example',
+  student: 'student@edu.mukpid.ru',
+  teacher: 'teacher@mukpid.ru',
 }
 
 export function LoginPage() {
@@ -178,7 +178,7 @@ export function LoginPage() {
           <div className="login__demo">
             <b>Тестовые аккаунты</b>
             <span>
-              student@mukpid.example · teacher@mukpid.example — пароли задаются при заполнении базы
+              student@edu.mukpid.ru · teacher@mukpid.ru — пароли задаются при заполнении базы
             </span>
           </div>
           <p className="login__note">Концепт для конкурса «Вайб-кодинг». Не является официальным сервисом вуза. Все данные вымышлены.</p>

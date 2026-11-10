@@ -6,12 +6,12 @@ import { groups, users } from '../schema.js';
 const passwords = [process.env.SEED_STUDENT_1_PASSWORD, process.env.SEED_STUDENT_2_PASSWORD, process.env.SEED_TEACHER_PASSWORD, process.env.SEED_STAFF_PASSWORD];
 if (process.env.NODE_ENV === 'production') throw new Error('Demo seed is disabled in production');
 const fixtures = [
-  { email: 'student@mukpid.example', fullName: 'Мирослав Тестов Демонстрационный', group: 'ДЕМО-МО-101', faculty: 'Учебный факультет международных отношений', program: 'Международные отношения', year: 1 },
-  { email: 'student2@mukpid.example', fullName: 'Алина Примерова Демонстрационная', group: 'ДЕМО-ЭК-202', faculty: 'Учебный факультет экономики', program: 'Экономика', year: 2 },
+  { email: 'student@edu.mukpid.ru', fullName: 'Мирослав Тестов Демонстрационный', group: 'ДЕМО-МО-101', faculty: 'Учебный факультет международных отношений', program: 'Международные отношения', year: 1 },
+  { email: 'student2@edu.mukpid.ru', fullName: 'Алина Примерова Демонстрационная', group: 'ДЕМО-ЭК-202', faculty: 'Учебный факультет экономики', program: 'Экономика', year: 2 },
 ];
 const connection = connectDatabase();
 try {
-  const emails = [...fixtures.map(f => f.email), 'teacher@mukpid.example', 'staff@mukpid.example'];
+  const emails = [...fixtures.map(f => f.email), 'teacher@mukpid.ru', 'staff@staff.mukpid.ru'];
   const hashes: (string | null)[] = [];
   for (const [i, email] of emails.entries()) {
     const [existing] = await connection.db.select({ id: users.id }).from(users).where(eq(users.email, email));
@@ -27,10 +27,10 @@ try {
       if (hashes[i]) await tx.insert(users).values({ email: fixture.email, role: 'student', faculty: fixture.faculty, fullName: fixture.fullName, groupId: group.id, passwordHash: hashes[i]! })
         .onConflictDoNothing({ target: users.email });
     }
-    if (hashes[2]) await tx.insert(users).values({ email: 'teacher@mukpid.example', role: 'teacher', fullName: 'Орлов Андрей Викторович (демо)', faculty: 'Факультет цифровой экономики', department: 'Кафедра прикладных систем', passwordHash: hashes[2]! }).onConflictDoNothing({ target: users.email });
-    if (hashes[3]) await tx.insert(users).values({ email: 'staff@mukpid.example', role: 'staff', fullName: 'Тестова Вера Демонстрационная', faculty: 'Учебный офис', passwordHash: hashes[3]! }).onConflictDoNothing({ target: users.email });
+    if (hashes[2]) await tx.insert(users).values({ email: 'teacher@mukpid.ru', role: 'teacher', fullName: 'Орлов Андрей Викторович (демо)', faculty: 'Факультет цифровой экономики', department: 'Кафедра прикладных систем', passwordHash: hashes[2]! }).onConflictDoNothing({ target: users.email });
+    if (hashes[3]) await tx.insert(users).values({ email: 'staff@staff.mukpid.ru', role: 'staff', fullName: 'Тестова Вера Демонстрационная', faculty: 'Учебный офис', passwordHash: hashes[3]! }).onConflictDoNothing({ target: users.email });
   });
-  console.log('Demo users ready: student@mukpid.example, student2@mukpid.example, teacher@mukpid.example, staff@mukpid.example. Existing users and passwords preserved.');
+  console.log('Demo users ready: student@edu.mukpid.ru, student2@edu.mukpid.ru, teacher@mukpid.ru, staff@staff.mukpid.ru. Existing users and passwords preserved.');
 } finally {
   await connection.close();
 }

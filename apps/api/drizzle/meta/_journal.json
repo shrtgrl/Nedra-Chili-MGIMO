@@ -29,6 +29,20 @@
       "when": 1794293547516,
       "tag": "0003_certain_stature",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794298404002,
+      "tag": "0004_demo_email_domains",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794300000000,
+      "tag": "0005_demo_email_ru",
+      "breakpoints": true
     }
   ]
 }

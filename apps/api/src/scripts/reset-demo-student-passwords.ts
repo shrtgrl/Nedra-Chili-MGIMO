@@ -6,8 +6,8 @@ import { sessions, users } from '../schema.js';
 if (process.env.NODE_ENV === 'production') throw new Error('Demo password reset is disabled in production');
 
 const accounts = [
-  { email: 'student@mukpid.example', password: process.env.SEED_STUDENT_1_PASSWORD },
-  { email: 'student2@mukpid.example', password: process.env.SEED_STUDENT_2_PASSWORD },
+  { email: 'student@edu.mukpid.ru', password: process.env.SEED_STUDENT_1_PASSWORD },
+  { email: 'student2@edu.mukpid.ru', password: process.env.SEED_STUDENT_2_PASSWORD },
 ];
 for (const account of accounts) {
   if (!account.password || account.password.length < 12) {

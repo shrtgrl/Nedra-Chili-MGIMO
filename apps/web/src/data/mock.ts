@@ -17,7 +17,7 @@ export const USERS: User[] = [
   {
     id: 'u-student',
     role: 'student',
-    email: 'student@mukpid.example',
+    email: 'student@edu.mukpid.ru',
     firstName: 'Мария',
     lastName: 'Иванова',
     initials: 'ИМ',
@@ -28,7 +28,7 @@ export const USERS: User[] = [
   {
     id: 'u-teacher',
     role: 'teacher',
-    email: 'teacher@mukpid.example',
+    email: 'teacher@mukpid.ru',
     firstName: 'Андрей',
     lastName: 'Орлов',
     patronymic: 'Викторович',
