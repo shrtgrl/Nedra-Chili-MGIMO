@@ -15,6 +15,20 @@
       "when": 1794162838646,
       "tag": "0001_lowly_longshot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794292216890,
+      "tag": "0002_dizzy_harry_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794293547516,
+      "tag": "0003_certain_stature",
+      "breakpoints": true
     }
   ]
 }

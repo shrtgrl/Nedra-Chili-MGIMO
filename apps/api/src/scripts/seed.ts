@@ -3,7 +3,7 @@ import { connectDatabase } from '../db.js';
 import { eq } from 'drizzle-orm';
 import { groups, users } from '../schema.js';
 
-const passwords = [process.env.SEED_STUDENT_1_PASSWORD, process.env.SEED_STUDENT_2_PASSWORD, process.env.SEED_TEACHER_PASSWORD];
+const passwords = [process.env.SEED_STUDENT_1_PASSWORD, process.env.SEED_STUDENT_2_PASSWORD, process.env.SEED_TEACHER_PASSWORD, process.env.SEED_STAFF_PASSWORD];
 if (process.env.NODE_ENV === 'production') throw new Error('Demo seed is disabled in production');
 const fixtures = [
   { email: 'student@mukpid.example', fullName: 'Мирослав Тестов Демонстрационный', group: 'ДЕМО-МО-101', faculty: 'Учебный факультет международных отношений', program: 'Международные отношения', year: 1 },
@@ -11,7 +11,7 @@ const fixtures = [
 ];
 const connection = connectDatabase();
 try {
-  const emails = [...fixtures.map(f => f.email), 'teacher@mukpid.example'];
+  const emails = [...fixtures.map(f => f.email), 'teacher@mukpid.example', 'staff@mukpid.example'];
   const hashes: (string | null)[] = [];
   for (const [i, email] of emails.entries()) {
     const [existing] = await connection.db.select({ id: users.id }).from(users).where(eq(users.email, email));
@@ -28,8 +28,9 @@ try {
         .onConflictDoNothing({ target: users.email });
     }
     if (hashes[2]) await tx.insert(users).values({ email: 'teacher@mukpid.example', role: 'teacher', fullName: 'Орлов Андрей Викторович (демо)', faculty: 'Факультет цифровой экономики', department: 'Кафедра прикладных систем', passwordHash: hashes[2]! }).onConflictDoNothing({ target: users.email });
+    if (hashes[3]) await tx.insert(users).values({ email: 'staff@mukpid.example', role: 'staff', fullName: 'Тестова Вера Демонстрационная', faculty: 'Учебный офис', passwordHash: hashes[3]! }).onConflictDoNothing({ target: users.email });
   });
-  console.log('Demo users ready: student@mukpid.example, student2@mukpid.example, teacher@mukpid.example. Existing users and passwords preserved.');
+  console.log('Demo users ready: student@mukpid.example, student2@mukpid.example, teacher@mukpid.example, staff@mukpid.example. Existing users and passwords preserved.');
 } finally {
   await connection.close();
 }

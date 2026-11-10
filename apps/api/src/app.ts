@@ -1,11 +1,12 @@
 import { SignJWT, jwtVerify } from 'jose';
-import Fastify from 'fastify';
+import Fastify, { type FastifyRequest, type FastifyReply } from 'fastify';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
 import { hash, verify, argon2id } from 'argon2';
 import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, gt } from 'drizzle-orm';
 import { connectDatabase } from './db.js';
+import { requestRoutes } from './request-routes.js';
 import { groups, sessions, users } from './schema.js';
 
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -56,6 +57,16 @@ export function buildApp(options: { logger?: boolean; origin?: string; secureCoo
       status === 429 ? 'Слишком много попыток. Попробуйте позже' : status === 500 ? 'Внутренняя ошибка сервера' : 'Проверьте данные запроса'));
   });
   app.register(async function routes(app) {
+  const authorize = (role: string) => async (req: FastifyRequest, reply: FastifyReply) => {
+    const payload = await claims(req.cookies[name]);
+    const [user] = payload ? await db.select({ id: users.id, role: users.role }).from(sessions)
+      .innerJoin(users, eq(users.id, sessions.userId))
+      .where(and(eq(sessions.tokenHash, digest(payload.jti!)), eq(sessions.userId, payload.sub!), gt(sessions.expiresAt, new Date()))).limit(1) : [];
+    if (!user) { reply.code(401).send(error('UNAUTHORIZED', 'Войдите в аккаунт')); return null; }
+    if (user.role !== role) { reply.code(403).send(error('FORBIDDEN', 'Нет доступа к разделу')); return null; }
+    return user.id;
+  };
+  requestRoutes(app, db, authorize('student'), authorize('staff'));
   app.get('/health', async () => ({ status: 'ok' }));
   app.post<{ Body: { email: string; password: string } }>('/api/auth/login', {
     config: { rateLimit: { max: 10, timeWindow: '1 minute' } },

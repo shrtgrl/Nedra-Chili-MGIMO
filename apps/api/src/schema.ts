@@ -20,7 +20,7 @@ export const users = pgTable('users', {
   fullName: text('full_name').notNull(),
   groupId: uuid('group_id').references(() => groups.id),
   createdAt: createdAt(),
-}, t => [index('users_group_idx').on(t.groupId), check('user_role_valid', sql`${t.role} in ('student', 'teacher')`), check('student_requires_group', sql`${t.role} <> 'student' or ${t.groupId} is not null`), check('email_normalized', sql`${t.email} = lower(trim(${t.email}))`)]);
+}, t => [index('users_group_idx').on(t.groupId), check('user_role_valid', sql`${t.role} in ('student', 'teacher', 'staff')`), check('student_requires_group', sql`${t.role} <> 'student' or ${t.groupId} is not null`), check('email_normalized', sql`${t.email} = lower(trim(${t.email}))`)]);
 
 export const sessions = pgTable('sessions', {
   tokenHash: text('token_hash').primaryKey(),
@@ -58,11 +58,16 @@ export const requests = pgTable('requests', {
   id: uuid('id').primaryKey().defaultRandom(),
   studentId: uuid('student_id').notNull().references(() => users.id),
   type: text('type').notNull(),
+  processedBy: uuid('processed_by').references(() => users.id),
+  readyAt: timestamp('ready_at', { withTimezone: true }),
+  documentBase64: text('document_base64'),
+  purpose: text('purpose').notNull().default(''),
+  delivery: text('delivery').notNull().default('office'),
   comment: text('comment').notNull().default(''),
   status: text('status').notNull().default('submitted'),
   createdAt: createdAt(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-}, t => [check('request_status_valid', sql`${t.status} in ('submitted', 'in_progress', 'ready', 'rejected')`), index('requests_student_idx').on(t.studentId)]);
+}, t => [check('request_status_valid', sql`${t.status} in ('submitted', 'in_progress', 'ready', 'rejected', 'issued', 'cancelled')`), index('requests_student_idx').on(t.studentId)]);
 
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
