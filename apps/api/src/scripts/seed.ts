@@ -1,7 +1,26 @@
 import { hash, argon2id } from 'argon2';
 import { connectDatabase } from '../db.js';
 import { eq } from 'drizzle-orm';
-import { groups, users } from '../schema.js';
+
+// День недели (0 = пн), начало, конец, предмет, вид, преподаватель, аудитория. Все данные вымышлены.
+const weekly: [number, string, string, string, string, string, string][] = [
+  [0, '09:00', '10:30', 'Макроэкономика', 'lecture', 'Орлов А. В.', 'ауд. 214'],
+  [0, '10:45', '12:15', 'Английский язык', 'practice', 'Белова Е. Н.', 'ауд. 108'],
+  [0, '13:00', '14:30', 'Основы вайб-кодинга', 'seminar', 'Смирнов Д. А.', 'ауд. 305'],
+  [1, '09:00', '10:30', 'Теория вероятностей', 'lecture', 'Громова Т. И.', 'ауд. 201'],
+  [1, '10:45', '12:15', 'История России', 'seminar', 'Крылов П. С.', 'ауд. 117'],
+  [2, '09:00', '10:30', 'Макроэкономика', 'seminar', 'Орлов А. В.', 'ауд. 214'],
+  [2, '10:45', '12:15', 'Проектирование интерфейсов', 'lecture', 'Смирнов Д. А.', 'ауд. 305'],
+  [3, '10:45', '12:15', 'Теория вероятностей', 'practice', 'Громова Т. И.', 'ауд. 203'],
+  [4, '09:00', '10:30', 'Основы вайб-кодинга', 'lecture', 'Смирнов Д. А.', 'ауд. 305'],
+  [4, '10:45', '12:15', 'История России', 'lecture', 'Крылов П. С.', 'ауд. 117'],
+];
+const FIRST_MONDAY = Date.UTC(2026, 10, 2); // 2 ноября 2026; время занятий — по Москве (UTC+3)
+const at = (week: number, day: number, hhmm: string) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  return new Date(FIRST_MONDAY + ((week * 7 + day) * 24 + h! - 3) * 3_600_000 + m! * 60_000);
+};
+import { groups, lessons, subjects, users } from '../schema.js';
 
 const passwords = [process.env.SEED_STUDENT_1_PASSWORD, process.env.SEED_STUDENT_2_PASSWORD, process.env.SEED_TEACHER_PASSWORD, process.env.SEED_STAFF_PASSWORD];
 if (process.env.NODE_ENV === 'production') throw new Error('Demo seed is disabled in production');
@@ -24,6 +43,17 @@ try {
       const groupData = { name: fixture.group, faculty: fixture.faculty, program: fixture.program, year: fixture.year };
       const [group] = await tx.insert(groups).values(groupData)
         .onConflictDoUpdate({ target: groups.name, set: groupData }).returning({ id: groups.id });
+      const [hasLessons] = await tx.select({ id: lessons.id }).from(lessons).where(eq(lessons.groupId, group.id)).limit(1);
+      if (!hasLessons) {
+        const subjectIds = new Map<string, string>();
+        for (const row of weekly) {
+          if (subjectIds.has(row[3])) continue;
+          const [found] = await tx.select({ id: subjects.id }).from(subjects).where(eq(subjects.name, row[3])).limit(1);
+          subjectIds.set(row[3], found?.id ?? (await tx.insert(subjects).values({ name: row[3] }).returning({ id: subjects.id }))[0]!.id);
+        }
+        await tx.insert(lessons).values(Array.from({ length: 8 }, (_, week) => weekly.map(([day, from, to, subject, kind, teacherName, room]) =>
+          ({ groupId: group.id, subjectId: subjectIds.get(subject)!, kind, teacherName, room, startsAt: at(week, day, from), endsAt: at(week, day, to) }))).flat());
+      }
       if (hashes[i]) await tx.insert(users).values({ email: fixture.email, role: 'student', faculty: fixture.faculty, fullName: fixture.fullName, groupId: group.id, passwordHash: hashes[i]! })
         .onConflictDoNothing({ target: users.email });
     }

@@ -48,9 +48,16 @@ export function ProfilePage() {
   const toast = useToast()
   const navigate = useNavigate()
   const isStudent = user.role === 'student'
+  const isStaff = user.role === 'staff'
   const [appearanceOpen, setAppearanceOpen] = useState(false)
 
-  const rows: [string, string][] = isStudent
+  const rows: [string, string][] = isStaff
+    ? [
+        ['Подразделение', user.department],
+        ['Почта', user.email],
+        ['Роль', 'Сотрудник деканата'],
+      ]
+    : isStudent
     ? [
         ['Подразделение', user.department],
         ['Группа', user.group ?? '—'],
@@ -72,9 +79,9 @@ export function ProfilePage() {
         actions={
           <IconButton
             icon={isStudent ? 'bell' : 'inbox'}
-            label={isStudent ? 'Уведомления' : 'Обращения'}
-            to={isStudent ? '/student/notifications' : '/teacher/inquiries'}
-            dot={isStudent ? unreadCount > 0 : newInquiries > 0}
+            label={isStudent ? 'Уведомления' : isStaff ? 'Задачи' : 'Обращения'}
+            to={isStudent ? '/student/notifications' : isStaff ? '/staff' : '/teacher/inquiries'}
+            dot={isStudent ? unreadCount > 0 : isStaff ? false : newInquiries > 0}
           />
         }
       />
@@ -144,7 +151,7 @@ export function ProfilePage() {
             </div>
           </section>
 
-          <section className="card prefs">
+          {!isStaff && <section className="card prefs">
             <h2 className="card__title card__title--lg">Уведомления на почту</h2>
             {isStudent ? (
               <>
@@ -159,7 +166,7 @@ export function ProfilePage() {
                 <Toggle label="Новости деканата" checked={prefs.news} onChange={(v) => setPref('news', v)} />
               </>
             )}
-          </section>
+          </section>}
 
           <Button
             variant="danger"
@@ -175,7 +182,7 @@ export function ProfilePage() {
           >
             Выйти из кабинета
           </Button>
-          <button
+          {!isStaff && <button
             type="button"
             className="link-btn small muted center"
             onClick={() => {
@@ -184,7 +191,7 @@ export function ProfilePage() {
             }}
           >
             Сбросить демо-данные
-          </button>
+          </button>}
         </div>
       </div>
       <Disclaimer />

@@ -1,0 +1,2 @@
+ALTER TABLE "lessons" ADD COLUMN "kind" text DEFAULT 'lecture' NOT NULL;--> statement-breakpoint
+ALTER TABLE "lessons" ADD CONSTRAINT "lesson_kind_valid" CHECK ("lessons"."kind" in ('lecture', 'seminar', 'practice'));

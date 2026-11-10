@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { Role, User } from '../types'
+import type { User } from '../types'
 import { ApiError, authApi, type ApiProfile } from '../lib/api'
 
 interface Auth {
   user: User | null
   loading: boolean
-  login: (email: string, password: string, role: Role) => Promise<string | null>
+  login: (email: string, password: string) => Promise<string | null>
   logout: () => Promise<string | null>
 }
 
@@ -36,7 +36,9 @@ function toUser(profile: ApiProfile): User {
     initials: `${lastName[0] ?? ''}${firstName[0] ?? ''}`,
     group,
     department: profile.role === 'teacher' ? profile.department ?? profile.faculty ?? '' : profile.faculty ?? '',
-    title: profile.role === 'student' ? `Студент · группа ${group ?? '—'}` : `Преподаватель · ${profile.department ?? 'кафедра не указана'}`,
+    title: profile.role === 'student' ? `Студент · группа ${group ?? '—'}`
+      : profile.role === 'staff' ? 'Сотрудник деканата'
+      : `Преподаватель · ${profile.department ?? 'кафедра не указана'}`,
   }
 }
 
@@ -52,16 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { active = false }
   }, [])
 
-  const login: Auth['login'] = async (email, password, role) => {
+  // Роль определяет сервер по аккаунту: пользователь её не выбирает.
+  const login: Auth['login'] = async (email, password) => {
     try {
       await authApi.login(email.trim(), password)
       const profile = await authApi.me()
-      if (profile.role !== role) {
-        await authApi.logout()
-        return role === 'student'
-          ? 'Это аккаунт преподавателя — переключитесь на вкладку «Преподаватель»'
-          : 'Это аккаунт студента — переключитесь на вкладку «Студент»'
-      }
       setUser(toUser(profile))
       return null
     } catch (error) {

@@ -1,23 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
 import logo from '../assets/logo-full.webp'
 import logoGold from '../assets/logo-gold.webp'
 import { useAuth } from '../context/auth'
 import { useSettings } from '../context/settings'
-import { Button, Segmented, ThemeIcon } from '../components/ui'
+import { Button, ThemeIcon } from '../components/ui'
 import { Icon } from '../components/Icon'
 import { Garland, Snowflake, Tree, TreeSilhouette, useNewYear } from '../components/newyear'
-import type { Role } from '../types'
-
-const DEMO: Record<Role, string> = {
-  student: 'student@edu.mukpid.ru',
-  teacher: 'teacher@mukpid.ru',
-}
 
 export function LoginPage() {
   const { login } = useAuth()
   const { theme, toggleTheme } = useSettings()
-  const navigate = useNavigate()
   const ny = useNewYear()
 
   // страница входа статична: прокрутку документа выключаем, пока она открыта
@@ -25,28 +17,21 @@ export function LoginPage() {
     document.documentElement.classList.add('lock-scroll')
     return () => document.documentElement.classList.remove('lock-scroll')
   }, [])
-  const [role, setRole] = useState<Role>('student')
-  const [email, setEmail] = useState(DEMO.student)
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [forgot, setForgot] = useState(false)
   const [showPwd, setShowPwd] = useState(false)
 
-  const switchRole = (r: Role) => {
-    setRole(r)
-    if (Object.values(DEMO).includes(email)) setEmail(DEMO[r])
-    setError(null)
-  }
-
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     setBusy(true)
     setError(null)
-    const err = await login(email, password, role)
+    // после успешного входа маршрутизатор сам отправит в раздел по роли (студент / преподаватель / сотрудник)
+    const err = await login(email, password)
     setBusy(false)
     if (err) setError(err)
-    else navigate(role === 'student' ? '/student' : '/teacher', { replace: true })
   }
 
   return (
@@ -79,7 +64,7 @@ export function LoginPage() {
           ) : (
             <>
               <h2 className="display login__headline">Вся учёба — в одном окне</h2>
-              <p className="login__lead">Расписание, баллы, справки и обращения к преподавателям. Для студентов и преподавателей.</p>
+              <p className="login__lead">Расписание, баллы, справки и обращения к преподавателям. Для студентов, преподавателей и сотрудников деканата.</p>
             </>
           )}
         </div>
@@ -108,20 +93,9 @@ export function LoginPage() {
           <h1 className="display login__title">Вход</h1>
           <p className="muted">Используйте учебную почту и пароль от личного кабинета.</p>
 
-          <Segmented
-            label="Роль"
-            className="login__roles"
-            value={role}
-            onChange={switchRole}
-            options={[
-              { value: 'student', label: 'Студент' },
-              { value: 'teacher', label: 'Преподаватель' },
-            ]}
-          />
-
           <label className="field">
             <span className="field__label">Логин</span>
-            <input className="input" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input className="input" type="email" autoComplete="username" placeholder="name@edu.mukpid.ru" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </label>
 
           <div className="field">
@@ -178,7 +152,7 @@ export function LoginPage() {
           <div className="login__demo">
             <b>Тестовые аккаунты</b>
             <span>
-              student@edu.mukpid.ru · teacher@mukpid.ru — пароли задаются при заполнении базы
+              student@edu.mukpid.ru · teacher@mukpid.ru · staff@staff.mukpid.ru — пароли задаются при заполнении базы
             </span>
           </div>
           <p className="login__note">Концепт для конкурса «Вайб-кодинг». Не является официальным сервисом вуза. Все данные вымышлены.</p>

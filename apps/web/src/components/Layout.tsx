@@ -5,6 +5,7 @@ import { Icon, type IconName } from './Icon'
 import { Avatar, Brand, IconButton, NewYearButton, ThemeButton } from './ui'
 import { useUser } from '../context/auth'
 import { useData } from '../context/data'
+import { useStaffOptional } from '../context/staff'
 import { useNow } from '../context/clock'
 import { DEADLINES } from '../data/mock'
 import { Forest, Garland, Snowflake, useNewYear } from './newyear'
@@ -20,6 +21,13 @@ interface NavItem {
 function useNav(): NavItem[] {
   const user = useUser()
   const { requests, unreadCount, newInquiries } = useData()
+  const staff = useStaffOptional()
+  if (user.role === 'staff') {
+    return [
+      { to: '/staff', label: 'Задачи', icon: 'inbox', badge: staff?.newCount, end: true },
+      { to: '/staff/schedule', label: 'Расписание групп', icon: 'calendar' },
+    ]
+  }
   if (user.role === 'student') {
     return [
       { to: '/student', label: 'Главная', icon: 'home', end: true },
@@ -61,6 +69,7 @@ function SidebarCard() {
       </Link>
     )
   }
+  if (user.role === 'staff') return null
   const s = sheets[0]
   return (
     <Link to="/teacher/gradebook" className="side-card">
@@ -76,7 +85,7 @@ function SidebarCard() {
 function Sidebar() {
   const user = useUser()
   const nav = useNav()
-  const profile = user.role === 'student' ? '/student/profile' : '/teacher/profile'
+  const profile = `/${user.role}/profile`
   const { pathname } = useLocation()
   const { box, ind } = useIndicator<HTMLElement>(pathname)
   const ny = useNewYear()
@@ -89,7 +98,7 @@ function Sidebar() {
           <Snowflake size={44} className="sidebar__flake sidebar__flake--2" />
         </>
       )}
-      <Link to={user.role === 'student' ? '/student' : '/teacher'} className="sidebar__brand">
+      <Link to={`/${user.role}`} className="sidebar__brand">
         <Brand />
       </Link>
       <nav ref={box} className="sidebar__nav">
@@ -114,7 +123,7 @@ function Sidebar() {
             <span className="side-user__name">
               {user.lastName} {user.firstName}
             </span>
-            <span className="side-user__meta">{user.role === 'student' ? `${user.group} · Студент` : 'Преподаватель'}</span>
+            <span className="side-user__meta">{user.role === 'student' ? `${user.group} · Студент` : user.role === 'staff' ? 'Сотрудник деканата' : 'Преподаватель'}</span>
           </span>
         </NavLink>
       </div>
@@ -125,12 +134,14 @@ function Sidebar() {
 function MobileBar() {
   const user = useUser()
   const { unreadCount, newInquiries } = useData()
+  const staff = useStaffOptional()
   const isStudent = user.role === 'student'
+  const isStaff = user.role === 'staff'
   const { pathname } = useLocation()
   const isHome = pathname === '/student' || pathname === '/teacher'
   return (
     <header className="mobile-bar">
-      <Link to={isStudent ? '/student' : '/teacher'} aria-label="На главную">
+      <Link to={`/${user.role}`} aria-label="На главную">
         <Brand compact />
       </Link>
       <div className="mobile-bar__actions">
@@ -138,11 +149,11 @@ function MobileBar() {
         {isHome && <NewYearButton />}
         <IconButton
           icon={isStudent ? 'bell' : 'inbox'}
-          label={isStudent ? 'Уведомления' : 'Обращения'}
-          to={isStudent ? '/student/notifications' : '/teacher/inquiries'}
-          dot={isStudent ? unreadCount > 0 : newInquiries > 0}
+          label={isStudent ? 'Уведомления' : isStaff ? 'Задачи' : 'Обращения'}
+          to={isStudent ? '/student/notifications' : isStaff ? '/staff' : '/teacher/inquiries'}
+          dot={isStudent ? unreadCount > 0 : isStaff ? !!staff?.newCount : newInquiries > 0}
         />
-        <Link to={isStudent ? '/student/profile' : '/teacher/profile'} aria-label="Профиль">
+        <Link to={`/${user.role}/profile`} aria-label="Профиль">
           <Avatar initials={user.initials} size={44} />
         </Link>
       </div>

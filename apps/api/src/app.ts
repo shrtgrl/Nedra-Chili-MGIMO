@@ -7,6 +7,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, gt } from 'drizzle-orm';
 import { connectDatabase } from './db.js';
 import { requestRoutes } from './request-routes.js';
+import { scheduleRoutes } from './schedule-routes.js';
 import { groups, sessions, users } from './schema.js';
 
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -67,6 +68,7 @@ export function buildApp(options: { logger?: boolean; origin?: string; secureCoo
     return user.id;
   };
   requestRoutes(app, db, authorize('student'), authorize('staff'));
+  scheduleRoutes(app, db, authorize('staff'));
   app.get('/health', async () => ({ status: 'ok' }));
   app.post<{ Body: { email: string; password: string } }>('/api/auth/login', {
     config: { rateLimit: { max: 10, timeWindow: '1 minute' } },

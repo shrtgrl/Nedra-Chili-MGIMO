@@ -5,6 +5,7 @@ import { DataProvider } from './context/data'
 import { SettingsProvider } from './context/settings'
 import { ClockProvider } from './context/clock'
 import { ToastProvider } from './context/toast'
+import { StaffProvider } from './context/staff'
 import type { Role } from './types'
 import { AppLayout } from './components/Layout'
 import { Snow, useNewYear } from './components/newyear'
@@ -18,6 +19,8 @@ import { NotificationsPage } from './pages/student/Notifications'
 import { TeacherHome } from './pages/teacher/Home'
 import { GradebookPage } from './pages/teacher/Gradebook'
 import { InquiriesPage } from './pages/teacher/Inquiries'
+import { StaffTasksPage } from './pages/staff/Tasks'
+import { StaffSchedulePage } from './pages/staff/Schedule'
 
 function NewYearBackdrop() {
   return useNewYear() ? <Snow /> : null
@@ -32,7 +35,7 @@ function AuthenticatedApp() {
 function RequireRole({ role, children }: { role: Role; children: ReactElement }) {
   const { user } = useAuth()
   if (!user) return <Navigate to="/login" replace />
-  if (user.role !== role) return <Navigate to={user.role === 'student' ? '/student' : '/teacher'} replace />
+  if (user.role !== role) return <Navigate to={`/${user.role}`} replace />
   return children
 }
 
@@ -89,6 +92,20 @@ function AppRoutes() {
                   <Route path="schedule" element={<SchedulePage />} />
                   <Route path="gradebook" element={<GradebookPage />} />
                   <Route path="inquiries" element={<InquiriesPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                </Route>
+                <Route
+                  path="/staff"
+                  element={
+                    <RequireRole role="staff">
+                      <StaffProvider>
+                        <AppLayout />
+                      </StaffProvider>
+                    </RequireRole>
+                  }
+                >
+                  <Route index element={<StaffTasksPage />} />
+                  <Route path="schedule" element={<StaffSchedulePage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
                 <Route path="*" element={<Home />} />

@@ -43,6 +43,13 @@
       "when": 1794300000000,
       "tag": "0005_demo_email_ru",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794338611772,
+      "tag": "0006_calm_virginia_dare",
+      "breakpoints": true
     }
   ]
 }

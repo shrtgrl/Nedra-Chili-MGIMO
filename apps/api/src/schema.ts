@@ -40,10 +40,11 @@ export const lessons = pgTable('lessons', {
   subjectId: uuid('subject_id').notNull().references(() => subjects.id),
   teacherName: text('teacher_name').notNull(),
   room: text('room').notNull(),
+  kind: text('kind').notNull().default('lecture'),
   startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
   endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
   changeNote: text('change_note'),
-}, t => [check('lesson_time_order', sql`${t.endsAt} > ${t.startsAt}`), index('lessons_group_time_idx').on(t.groupId, t.startsAt)]);
+}, t => [check('lesson_time_order', sql`${t.endsAt} > ${t.startsAt}`), check('lesson_kind_valid', sql`${t.kind} in ('lecture', 'seminar', 'practice')`), index('lessons_group_time_idx').on(t.groupId, t.startsAt)]);
 
 export const grades = pgTable('grades', {
   id: uuid('id').primaryKey().defaultRandom(),

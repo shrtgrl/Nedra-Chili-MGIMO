@@ -1,4 +1,4 @@
-export type Role = 'student' | 'teacher'
+export type Role = 'student' | 'teacher' | 'staff'
 export type Theme = 'light' | 'dark'
 export type Variant = 'fog' | 'graphite' | 'newyear'
 
