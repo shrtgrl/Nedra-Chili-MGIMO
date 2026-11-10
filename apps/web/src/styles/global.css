@@ -3769,3 +3769,122 @@ html.lock-scroll body {
     display: none;
   }
 }
+
+/* ═════════ Состояния наведения (единообразно для всех тем) ═════════ */
+@media (hover: hover) {
+  /* поля ввода */
+  .input:hover:not(:focus),
+  .search__input:hover:not(:focus) {
+    border-color: color-mix(in srgb, var(--ink) 28%, var(--input-line, var(--line)));
+  }
+  .score-input:hover:not(:focus) {
+    background: color-mix(in srgb, var(--ink) 6%, var(--surface-2));
+  }
+
+  /* текстовые ссылки и ссылки-кнопки */
+  .link,
+  .link-btn {
+    transition: color 0.2s ease, text-decoration-color 0.2s ease, opacity 0.2s ease;
+  }
+  .link svg {
+    transition: transform 0.3s var(--ease-spring, ease);
+  }
+  .link:hover svg {
+    transform: translateX(3px);
+  }
+  .link:hover,
+  .link-btn:hover {
+    text-decoration-thickness: 2px;
+    opacity: 0.75;
+  }
+
+  /* логотип в сайдбаре */
+  .sidebar__brand .brand__emblem {
+    transition: transform 0.4s var(--ease-spring, ease);
+  }
+  .sidebar__brand:hover .brand__emblem {
+    transform: rotate(-6deg) scale(1.06);
+  }
+
+  /* кнопка темы на странице входа */
+  .login__theme {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+  .login__theme:hover {
+    background: var(--surface-2);
+    border-color: color-mix(in srgb, var(--ink) 18%, var(--line));
+  }
+
+  /* невыбранные пункты сегментов, чипов, вкладок, дней */
+  .seg__btn:not(.is-active):hover {
+    color: var(--ink);
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+  .chip:not(.is-active):hover {
+    border-color: color-mix(in srgb, var(--ink) 30%, var(--line));
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+  }
+  .day-picker__btn:not(.is-active):hover {
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+    color: var(--ink);
+  }
+  .sheet-tab:not(.is-active):hover {
+    border-color: var(--line);
+    background: color-mix(in srgb, var(--ink) 3%, var(--surface));
+  }
+  .theme-opt:not(.is-active):hover {
+    border-color: color-mix(in srgb, var(--ink) 35%, var(--line));
+  }
+  .type-card:not(.is-active):hover,
+  .inbox__item:not(.is-active):hover {
+    background: color-mix(in srgb, var(--ink) 5%, var(--surface-2));
+  }
+
+  /* карточки-ссылки */
+  .mini-req {
+    transition: background-color 0.2s ease, transform 0.2s var(--ease-spring, ease);
+  }
+  .mini-req:hover {
+    background: color-mix(in srgb, var(--ink) 6%, var(--surface-2));
+    transform: translateY(-1px);
+  }
+  .side-card:hover {
+    background: color-mix(in srgb, var(--on-accent) 8%, var(--accent-2));
+  }
+
+  /* тумблеры */
+  .toggle-row:hover .toggle:not(.is-on) {
+    border-color: color-mix(in srgb, var(--ink) 30%, var(--line));
+  }
+  .toggle-row:hover .toggle.is-on {
+    filter: brightness(1.05);
+  }
+  .toggle-row:hover .toggle__knob {
+    transform: scale(1.06);
+  }
+  .toggle-row:hover .toggle.is-on .toggle__knob {
+    transform: translateX(24px) scale(1.06);
+  }
+
+  /* календарь недель */
+  .wp__today {
+    transition: transform 0.2s var(--ease-spring, ease), filter 0.2s ease;
+  }
+  .wp__today:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+  }
+
+  /* нижнее меню на телефоне (планшет с мышью) */
+  .bottom-nav__item:not(.is-active):hover {
+    background: color-mix(in srgb, var(--on-accent) 10%, transparent);
+  }
+
+  /* аватар в мобильной панели */
+  .mobile-bar__actions > a .avatar {
+    transition: transform 0.25s var(--ease-spring, ease);
+  }
+  .mobile-bar__actions > a:hover .avatar {
+    transform: scale(1.06);
+  }
+}
