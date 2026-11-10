@@ -69,6 +69,19 @@ export function StudentHome() {
             <NextLessonHero lessons={STUDENT_LESSONS} who="teacher" compact />
           </div>
 
+          <section className="card card--hl status-card only-desktop">
+            <Ring value={avg} size={108} />
+            <div>
+              <h2 className="card__title">Как у меня дела</h2>
+              <p className="small">
+                Хороший темп. Подтяните «{weakest.name}» — <b>{weakest.score}</b> баллов, это самый низкий результат.
+              </p>
+              <Link to="/student/grades" className="link">
+                Вся успеваемость <Icon name="arrowRight" size={14} />
+              </Link>
+            </div>
+          </section>
+
           <div className="stats stats--2 only-desktop">
             <Link to="/student/schedule" className="stat stat--row">
               <span className="stat__icon">
@@ -113,19 +126,6 @@ export function StudentHome() {
         </div>
 
         <div className="stack">
-          <section className="card card--hl status-card only-desktop">
-            <Ring value={avg} size={108} />
-            <div>
-              <h2 className="card__title">Как у меня дела</h2>
-              <p className="small">
-                Хороший темп. Подтяните «{weakest.name}» — <b>{weakest.score}</b> баллов, это самый низкий результат.
-              </p>
-              <Link to="/student/grades" className="link">
-                Вся успеваемость <Icon name="arrowRight" size={14} />
-              </Link>
-            </div>
-          </section>
-
           <section className="card">
             <h2 className="card__title">Ближайшие дедлайны</h2>
             <ul className="list">
@@ -142,6 +142,18 @@ export function StudentHome() {
                   </li>
                 )
               })}
+            </ul>
+          </section>
+
+          <section className="card">
+            <h2 className="card__title">Объявления деканата</h2>
+            <ul className="announcements">
+              {ANNOUNCEMENTS.map((a) => (
+                <li key={a.id}>
+                  <b>{a.title}</b>
+                  <span className="small muted">{a.text}</span>
+                </li>
+              ))}
             </ul>
           </section>
 
@@ -164,18 +176,6 @@ export function StudentHome() {
                 </Link>
               ))}
             </div>
-          </section>
-
-          <section className="card">
-            <h2 className="card__title">Объявления деканата</h2>
-            <ul className="announcements">
-              {ANNOUNCEMENTS.map((a) => (
-                <li key={a.id}>
-                  <b>{a.title}</b>
-                  <span className="small muted">{a.text}</span>
-                </li>
-              ))}
-            </ul>
           </section>
         </div>
       </div>

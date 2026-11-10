@@ -56,8 +56,11 @@ export function NextLessonHero({ lessons, who, scheduleLink, compact }: { lesson
           `Следующее занятие · через ${humanDuration(until)}`
         )}
       </div>
-      <div className="hero__time display">{l.start}</div>
-      <div className="hero__title">{l.subject}</div>
+      <div className="hero__subject display">{l.subject}</div>
+      <div className="hero__when">
+        <span className="hero__time display">{l.start}</span>
+        <span className="hero__end">– {l.end}</span>
+      </div>
       <div className="hero__meta">
         {l.kind} · {who === 'group' ? `группа ${l.group} · ${l.room}` : `${l.room} · ${l.teacher}`}
       </div>
