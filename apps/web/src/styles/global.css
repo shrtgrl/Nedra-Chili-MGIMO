@@ -4513,3 +4513,24 @@ html.lock-scroll body {
   .combo__list { animation: none; }
   .repeat-box__until { transition: none; }
 }
+
+/* ═════════ Названия предметов: целые слова, ровные строки ═════════ */
+.fit-text {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  text-wrap: balance;
+}
+.hero__subject.fit-text {
+  /* размер задаёт FitText по ширине блока; число — запасной вариант до первого замера */
+  font-size: 40px;
+  line-height: 1.06;
+  max-width: 100%;
+}
+.lesson__title.fit-text {
+  font-size: 16px;
+  line-height: 1.22;
+}

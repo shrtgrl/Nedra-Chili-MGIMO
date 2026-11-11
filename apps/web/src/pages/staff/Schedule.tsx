@@ -10,6 +10,7 @@ import { Combo, type ComboOption } from '../../components/Combo'
 import { CsvImportDialog } from './CsvImport'
 import { WeekPicker } from '../../components/WeekPicker'
 import { Icon } from '../../components/Icon'
+import { FitText } from '../../components/FitText'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 const hhmm = (iso: string) => { const d = new Date(iso); return `${pad(d.getHours())}:${pad(d.getMinutes())}` }
@@ -414,7 +415,7 @@ export function StaffSchedulePage() {
 
           {error && <p className="form-error" role="alert"><Icon name="alert" size={16} /> {error} <button type="button" className="link-btn" onClick={() => void load()}>Повторить</button></p>}
 
-          <div className={`week week--staff ${loading ? 'is-loading' : ''}`} aria-busy={loading}>
+          <div className={`week week--staff ${loading ? 'is-loading' : ''}`} aria-busy={loading} data-fit-group>
             {days.map((date) => {
               const list = byDay(date)
               const isToday = ymd(date) === ymd(today)
@@ -428,7 +429,7 @@ export function StaffSchedulePage() {
                   {list.map((l) => (
                     <article key={l.id} className={`lesson lesson--edit ${l.changeNote ? 'lesson--moved' : ''}`}>
                       <div className="lesson__time">{hhmm(l.startsAt)} – {hhmm(l.endsAt)}</div>
-                      <div className="lesson__title">{l.subject}</div>
+                      <FitText className="lesson__title" max={17} min={12} lines={2} grouped>{l.subject}</FitText>
                       <div className="lesson__meta">{KIND_LABEL[l.kind as ApiLessonKind]} · {l.room}</div>
                       <div className="lesson__meta">{l.teacherName}</div>
                       {l.changeNote && <span className="lesson__moved">{l.changeNote}</span>}

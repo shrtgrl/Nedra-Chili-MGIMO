@@ -8,6 +8,7 @@ import { Badge, ButtonLink, Segmented } from './ui'
 import { useIndicator } from '../lib/useIndicator'
 import { Garland, Ornaments, Snowflake, useNewYear } from './newyear'
 import { Icon } from './Icon'
+import { FitText } from './FitText'
 import { WeekPicker } from './WeekPicker'
 
 const kindTone = (k: Lesson['kind']) => (k === 'Лекция' ? 'accent' : 'neutral')
@@ -56,7 +57,7 @@ export function NextLessonHero({ lessons, who, scheduleLink, compact }: { lesson
           `Следующее занятие · через ${humanDuration(until)}`
         )}
       </div>
-      <div className="hero__subject display">{l.subject}</div>
+      <FitText className="hero__subject display" max={58} min={24} lines={2}>{l.subject}</FitText>
       <div className="hero__when">
         <span className="hero__time display">{l.start}</span>
         <span className="hero__end">– {l.end}</span>
@@ -164,7 +165,7 @@ function LessonCard({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group';
       <div className="lesson__time">
         {l.start} – {l.end}
       </div>
-      <div className={`lesson__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</div>
+      <FitText className={`lesson__title ${l.status === 'cancelled' ? 'strike' : ''}`} max={17} min={12} lines={2} grouped>{l.subject}</FitText>
       <div className="lesson__meta">
         {l.kind} · {l.room}
       </div>
@@ -246,7 +247,7 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
         </div>
       )}
 
-      <div className={`week ${mode === 'day' ? 'week--day' : ''}`}>
+      <div className={`week ${mode === 'day' ? 'week--day' : ''}`} data-fit-group>
         {visibleDays.map((i) => {
           const date = addDays(monday, i)
           const isToday = week === 0 && i === today
