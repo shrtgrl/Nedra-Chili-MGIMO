@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Badge, Button } from '../../components/ui'
 import { Icon } from '../../components/Icon'
 import { useMaterials } from '../../context/materials'
@@ -18,6 +18,8 @@ export function SubjectMaterials({ subjects }: { subjects: string[] }) {
   const { forMe, isRead, markRead } = useMaterials()
   const [query, setQuery] = useState('')
   const [closed, setClosed] = useState<string[]>([])
+  const [finding, setFinding] = useState(false)
+  const findRef = useRef<HTMLInputElement>(null)
   const q = query.trim().toLowerCase()
 
   useEffect(() => {
@@ -50,14 +52,37 @@ export function SubjectMaterials({ subjects }: { subjects: string[] }) {
     <section className="card" id="materials">
       <div className="card__head">
         <h2 className="card__title card__title--lg">Материалы</h2>
-        {forMe.length > 0 && <Badge>{forMe.length}</Badge>}
-      </div>
-      {forMe.length > 0 && (
-        <div className="mat-search">
-          <Icon name="search" size={17} className="mat-search__icon" />
-          <input className="input mat-search__input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Поиск по материалам" aria-label="Поиск по материалам" />
+        <div className="mat-tools">
+          {forMe.length > 0 && (
+            <div className={`mat-find ${finding || q ? 'is-open' : ''}`}>
+              <button
+                type="button"
+                className="mat-find__btn"
+                aria-label={finding || q ? 'Закрыть поиск' : 'Искать по материалам'}
+                aria-expanded={finding || q ? true : false}
+                onClick={() => {
+                  if (finding || q) { setQuery(''); setFinding(false) } else { setFinding(true); setTimeout(() => findRef.current?.focus(), 60) }
+                }}
+              >
+                <Icon name={finding || q ? 'x' : 'search'} size={17} />
+              </button>
+              <input
+                ref={findRef}
+                className="mat-find__input"
+                type="search"
+                value={query}
+                tabIndex={finding || q ? 0 : -1}
+                onChange={(e) => setQuery(e.target.value)}
+                onBlur={() => { if (!query.trim()) setFinding(false) }}
+                onKeyDown={(e) => { if (e.key === 'Escape') { setQuery(''); setFinding(false); e.currentTarget.blur() } }}
+                placeholder="Поиск по материалам"
+                aria-label="Поиск по материалам"
+              />
+            </div>
+          )}
+          {forMe.length > 0 && <Badge>{forMe.length}</Badge>}
         </div>
-      )}
+      </div>
       {forMe.length > 0 && names.length === 0 ? (
         <p className="mat-empty">По запросу «{query.trim()}» ничего не нашлось.</p>
       ) : names.length === 0 ? (
@@ -79,7 +104,9 @@ export function SubjectMaterials({ subjects }: { subjects: string[] }) {
                       {fresh > 0 && ` · ${fresh} ${pluralize(fresh, 'новый', 'новых', 'новых')}`}
                     </span>
                   </span>
-                  <Icon name="chevronDown" size={20} className="mat-group__chevron" />
+                  <span className="mat-group__chev" aria-hidden="true">
+                    <Icon name="chevronDown" size={18} />
+                  </span>
                 </button>
                 <div id={panel} className="mat-group__panel" inert={!open} aria-hidden={!open}>
                 <ul className="mat-list">
