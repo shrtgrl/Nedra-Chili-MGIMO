@@ -5,7 +5,7 @@ export function DocumentActions({ row, reload }: {
     row: ApiStaffRequest;
     reload: () => Promise<void>;
 }) {
-    const [verified, setVerified] = useState(false), [reason, setReason] = useState(''), [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
+    const [rejecting, setRejecting] = useState(false), [verified, setVerified] = useState(false), [reason, setReason] = useState(''), [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
     const run = async (fn: () => Promise<unknown>) => { setBusy(true); setError(null); try {
         await fn();
         await reload();
@@ -33,7 +33,10 @@ export function DocumentActions({ row, reload }: {
       {row.draftId && row.previewedAt && <Button disabled={busy || !verified} onClick={() => void run(() => staffApi.setStatus(row.id, 'ready', { draftId: row.draftId! }))}>Справка готова — уведомить студента</Button>}</div>
       <p className="small muted">{!row.draftId ? 'Сначала сформируйте PDF.' : !row.previewedAt ? 'Скачайте PDF и проверьте его — после этого появится кнопка «Справка готова».' : 'PDF проверен. Можно уведомлять студента.'}</p>
     </>}
-    <label className="field">Причина отказа<textarea className="input textarea" maxLength={1000} value={reason} onChange={e => setReason(e.target.value)} placeholder="Что студенту нужно исправить"/></label>
-    <Button variant="danger" disabled={busy || !reason.trim()} onClick={() => void run(() => staffApi.setStatus(row.id, 'rejected', { reason: reason.trim() }))}>Отклонить с причиной</Button>
+    {!rejecting ? <div><Button variant="ghost" onClick={() => setRejecting(true)}>Отклонить заявку…</Button></div> : <>
+      <label className="field">Причина отказа<textarea className="input textarea" maxLength={1000} value={reason} onChange={e => setReason(e.target.value)} placeholder="Что студенту нужно исправить" autoFocus/></label>
+      <div className="req__actions"><Button variant="danger" disabled={busy || !reason.trim()} onClick={() => void run(() => staffApi.setStatus(row.id, 'rejected', { reason: reason.trim() }))}>Отклонить с причиной</Button>
+      <Button variant="ghost" disabled={busy} onClick={() => { setRejecting(false); setReason('') }}>Не отклонять</Button></div>
+    </>}
   </div>;
 }

@@ -5193,6 +5193,8 @@ tbody tr:last-child .tt__cell.is-today {
   .tt-lesson:hover {
     transform: none;
   }
+}
+
 /* All server-backed sections remain reachable on narrow screens. */
 @media (max-width: 760px) {
   .bottom-nav { overflow-x: auto; justify-content: flex-start; }
@@ -5200,3 +5202,83 @@ tbody tr:last-child .tt__cell.is-today {
 }
 
 .staff-chips--status { margin-top: -6px; }
+
+/* Главная сотрудника: панель фильтров, кликабельные сводки, прокручиваемая очередь */
+.staff-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  flex-wrap: nowrap;
+  margin-bottom: 20px;
+}
+@media (max-width: 900px) {
+  .staff-bar {
+    flex-wrap: wrap;
+  }
+  .staff-type,
+  .staff-type__select {
+    width: 100%;
+  }
+}
+.staff-bar .staff-chips {
+  margin-bottom: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.staff-bar .chip {
+  flex: 0 0 auto;
+}
+.staff-type__select {
+  width: 210px;
+  height: 44px;
+  padding-block: 0;
+}
+button.stat--btn {
+  align-items: flex-start;
+  text-align: start;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+button.stat--btn:hover {
+  transform: translateY(-2px);
+}
+button.stat--btn[aria-pressed='true'] {
+  border-color: var(--ink);
+}
+@media (min-width: 1101px) {
+  .grid-queue {
+    align-items: start;
+  }
+  .queue--scroll {
+    max-height: calc(100dvh - 200px);
+    overflow-y: auto;
+    padding: 4px 6px 4px 4px;
+    scrollbar-gutter: stable;
+  }
+  .grid-queue .request-detail {
+    position: sticky;
+    top: 20px;
+  }
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.stat--hl .stat__value {
+  color: #181e2a;
+}

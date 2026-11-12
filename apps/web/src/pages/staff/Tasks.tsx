@@ -12,8 +12,8 @@ import { Avatar, Badge, Button, Disclaimer, PageHeader, Stages, ThemeButton, typ
 import { Icon } from '../../components/Icon'
 
 type Filter = 'all' | ApiStaffRequest['type']
-type StatusFilter = 'all' | ApiStaffRequest['status']
-const STATUS_FILTERS: [StatusFilter, string][] = [['all', 'Любой статус'], ['submitted', 'Новые'], ['in_progress', 'В работе'], ['ready', 'Готовы'], ['issued', 'Выданы'], ['rejected', 'Отклонены'], ['cancelled', 'Отменены']]
+type StatusFilter = 'active' | 'all' | 'overdue' | 'done' | ApiStaffRequest['status']
+const STATUS_FILTERS: [StatusFilter, string][] = [['active', 'Активные'], ['submitted', 'Новые'], ['in_progress', 'В работе'], ['overdue', 'Просрочены'], ['ready', 'Готовы'], ['issued', 'Выданы'], ['rejected', 'Отклонены'], ['all', 'Все']]
 const TONE: Record<ApiStaffRequest['status'], Tone> = { submitted: 'warn', in_progress: 'accent', ready: 'ok', issued: 'neutral', rejected: 'danger', cancelled: 'neutral' }
 
 const dayMonth = (iso: string | Date) => new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
@@ -32,11 +32,10 @@ export function StaffTasksPage() {
   const toast = useToast()
   const [params, setParams] = useSearchParams()
   const [filter, setFilter] = useState<Filter>('all')
-  const [status, setStatus] = useState<StatusFilter>('all')
+  const [status, setStatus] = useState<StatusFilter>('active')
   const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const detailRef = useRef<HTMLElement>(null)
-  const chips = useIndicator<HTMLDivElement>(filter)
   const statusChips = useIndicator<HTMLDivElement>(status)
 
   const queue = useMemo(() => sortQueue([...requests]), [requests])
@@ -50,11 +49,13 @@ export function StaffTasksPage() {
     }
   }, [requests, now])
 
+  const matchStatus = (r: ApiStaffRequest, st: StatusFilter) =>
+    st === 'all' ? true : st === 'active' ? r.status === 'submitted' || r.status === 'in_progress' : st === 'overdue' ? isOverdue(r, now) : st === 'done' ? r.status === 'ready' || r.status === 'issued' : r.status === st
   const q = query.trim().toLowerCase()
-  const shown = queue.filter((r) => (filter === 'all' || r.type === filter) && (status === 'all' || r.status === status) && (!q || `${r.fullName} ${r.groupName ?? ''} ${shortNumber(r)} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)))
+  const shown = queue.filter((r) => (filter === 'all' || r.type === filter) && matchStatus(r, status) && (!q || `${r.fullName} ${r.groupName ?? ''} ${shortNumber(r)} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)))
   const selected = queue.find((r) => r.id === params.get('id')) ?? shown[0]
-  const count = (f: Filter) => queue.filter((r) => (f === 'all' || r.type === f) && (status === 'all' || r.status === status)).length
-  const countStatus = (st: StatusFilter) => queue.filter((r) => (filter === 'all' || r.type === filter) && (st === 'all' || r.status === st)).length
+  const count = (f: Filter) => queue.filter((r) => (f === 'all' || r.type === f) && matchStatus(r, status)).length
+  const countStatus = (st: StatusFilter) => queue.filter((r) => (filter === 'all' || r.type === filter) && matchStatus(r, st)).length
 
   // на узком экране карточка заявки открывается под списком — прокручиваем к ней
   const pick = (id: string) => {
@@ -87,28 +88,28 @@ export function StaffTasksPage() {
       />
 
       <div className="stats stats--4">
-        <div className="stat stat--hl"><span className="stat__label">Новые</span><b className="stat__value display">{stats.fresh}</b><span className="stat__hint-text">ждут, пока их возьмут</span></div>
-        <div className="stat"><span className="stat__label">В работе</span><b className="stat__value display">{stats.work}</b><span className="stat__hint-text">у вас на руках</span></div>
-        <div className={`stat ${stats.late ? 'stat--danger' : ''}`}><span className="stat__label">Более 3 дней</span><b className="stat__value display">{stats.late}</b><span className="stat__hint-text">{stats.late ? `ориентир — ${3} дня` : 'всё в срок'}</span></div>
-        <div className="stat"><span className="stat__label">Готово за неделю</span><b className="stat__value display">{stats.done}</b><span className="stat__hint-text">за последние 7 дней</span></div>
+        <button type="button" className="stat stat--hl stat--btn" aria-pressed={status === 'submitted'} onClick={() => setStatus('submitted')}><span className="stat__label">Новые</span><b className="stat__value display">{stats.fresh}</b><span className="stat__hint-text">ждут, пока их возьмут</span></button>
+        <button type="button" className="stat stat--btn" aria-pressed={status === 'in_progress'} onClick={() => setStatus('in_progress')}><span className="stat__label">В работе</span><b className="stat__value display">{stats.work}</b><span className="stat__hint-text">у вас на руках</span></button>
+        <button type="button" className={`stat stat--btn ${stats.late ? 'stat--danger' : ''}`} aria-pressed={status === 'overdue'} onClick={() => setStatus('overdue')}><span className="stat__label">Более 3 дней</span><b className="stat__value display">{stats.late}</b><span className="stat__hint-text">{stats.late ? 'нажмите, чтобы показать' : 'всё в срок'}</span></button>
+        <button type="button" className="stat stat--btn" aria-pressed={status === 'done'} onClick={() => setStatus('done')}><span className="stat__label">Готово за неделю</span><b className="stat__value display">{stats.done}</b><span className="stat__hint-text">за последние 7 дней</span></button>
       </div>
 
-      <div ref={chips.box} className="chips staff-chips" role="radiogroup" aria-label="Тип заявки">
-        <span ref={chips.ind} className="chips__ind" aria-hidden="true" />
-        {([['all', 'Все'], ...(Object.keys(TYPE_SHORT) as ApiStaffRequest['type'][]).map((t) => [t, TYPE_SHORT[t]])] as [Filter, string][]).map(([f, label]) => (
-          <button key={f} type="button" role="radio" aria-checked={filter === f} className={`chip ${filter === f ? 'is-active' : ''}`} onClick={() => setFilter(f)}>
-            {label} <span className="chip__count">{count(f)}</span>
-          </button>
-        ))}
-      </div>
-
-      <div ref={statusChips.box} className="chips staff-chips staff-chips--status" role="radiogroup" aria-label="Статус заявки">
-        <span ref={statusChips.ind} className="chips__ind" aria-hidden="true" />
-        {STATUS_FILTERS.filter(([st]) => st === 'all' || st === status || countStatus(st) > 0).map(([st, label]) => (
-          <button key={st} type="button" role="radio" aria-checked={status === st} className={`chip ${status === st ? 'is-active' : ''}`} onClick={() => setStatus(st)}>
-            {label} <span className="chip__count">{countStatus(st)}</span>
-          </button>
-        ))}
+      <div className="staff-bar">
+        <div ref={statusChips.box} className="chips staff-chips" role="radiogroup" aria-label="Статус заявки">
+          <span ref={statusChips.ind} className="chips__ind" aria-hidden="true" />
+          {STATUS_FILTERS.filter(([st]) => st === 'all' || st === 'active' || st === status || (st !== 'overdue' && countStatus(st) > 0)).map(([st, label]) => (
+            <button key={st} type="button" role="radio" aria-checked={status === st} className={`chip ${status === st ? 'is-active' : ''}`} onClick={() => setStatus(st)}>
+              {label} <span className="chip__count">{countStatus(st)}</span>
+            </button>
+          ))}
+        </div>
+        <label className="staff-type">
+          <span className="sr-only">Тип заявки</span>
+          <select className="input staff-type__select" value={filter} onChange={(e) => setFilter(e.target.value as Filter)}>
+            <option value="all">Все типы · {count('all')}</option>
+            {(Object.keys(TYPE_SHORT) as ApiStaffRequest['type'][]).map((t) => <option key={t} value={t}>{TYPE_LABEL[t]} · {count(t)}</option>)}
+          </select>
+        </label>
       </div>
 
       {error && (
@@ -120,12 +121,12 @@ export function StaffTasksPage() {
       <div className="grid-inbox grid-queue">
         <section className="card" aria-label="Очередь заявок">
           <div className="card__head">
-            <h2 className="card__title card__title--lg">Очередь</h2>
+            <h2 className="card__title card__title--lg">Очередь <span className="small muted">· {shown.length}</span></h2>
             <span className="small muted">сначала срочные</span>
           </div>
           {loading && <p className="muted">Загружаем заявки…</p>}
-          {!loading && shown.length === 0 && <p className="muted queue-empty">{queue.length ? 'Ничего не найдено — измените фильтры или запрос.' : 'Заявок пока нет.'}</p>}
-          <ul className="inbox queue" role="listbox" aria-label="Заявки">
+          {!loading && shown.length === 0 && <p className="muted queue-empty">{queue.length ? 'Здесь пусто. Выберите другой статус или тип, либо очистите поиск.' : 'Заявок пока нет.'}</p>}
+          <ul className="inbox queue queue--scroll" role="listbox" aria-label="Заявки">
             {shown.map((r) => {
               const late = isOverdue(r, now)
               return (
