@@ -5044,13 +5044,37 @@ html.lock-scroll body {
   vertical-align: middle;
 }
 .tt__cell {
+  --tint: transparent;
   vertical-align: top;
-  padding: 8px 5px;
+  padding: 0;
+  background: var(--tint);
   border-bottom: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  transition: box-shadow 0.2s ease;
 }
-.tt__cell.is-today,
-.tt__day.is-today {
+.tt__cell.is-today.is-free {
   background: color-mix(in srgb, var(--hl) 9%, transparent);
+}
+.tt__day.is-today {
+  background: transparent;
+}
+.tt__cell--lec {
+  --tint: color-mix(in srgb, var(--accent) 38%, var(--surface));
+}
+.tt__cell--sem {
+  --tint: color-mix(in srgb, var(--hl) 55%, var(--surface));
+}
+.tt__cell--pra {
+  --tint: var(--surface-2);
+}
+.tt__cell--moved {
+  --tint: var(--warn-bg);
+}
+.tt__cell--cancelled {
+  --tint: transparent;
+}
+.tt__cell:not(.is-free):hover {
+  box-shadow: inset 0 0 0 2px var(--ink-3);
 }
 .tt__empty {
   padding: 28px 0;
@@ -5058,28 +5082,12 @@ html.lock-scroll body {
 }
 
 .tt-lesson {
-  --tint: var(--surface-2);
   display: grid;
   gap: 2px;
-  padding: 11px 12px;
-  border-radius: 14px;
-  background: var(--tint);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 12px 14px 14px;
 }
 .tt-lesson + .tt-lesson {
-  margin-top: 6px;
-}
-.tt-lesson--lec {
-  --tint: color-mix(in srgb, var(--accent) 38%, var(--surface));
-}
-.tt-lesson--sem {
-  --tint: color-mix(in srgb, var(--hl) 55%, var(--surface));
-}
-.tt-lesson--pra {
-  --tint: var(--surface-2);
-}
-.tt-lesson:hover {
-  box-shadow: 0 0 0 1.5px var(--ink-3);
+  border-top: 1px dashed var(--ink-3);
 }
 .tt-lesson__title {
   font-size: 15px;
@@ -5117,16 +5125,9 @@ html.lock-scroll body {
   background: var(--strong);
   color: var(--on-strong);
 }
-.tt-lesson--cancelled {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--line);
-}
 .tt-lesson--cancelled .tt-lesson__title,
 .tt-lesson--cancelled .tt-lesson__meta {
   color: var(--ink-3);
-}
-.tt-lesson--moved {
-  background: var(--warn-bg);
 }
 .tt-lesson__progress {
   display: block;
@@ -5172,29 +5173,26 @@ html.lock-scroll body {
   background: color-mix(in srgb, var(--hl) 55%, var(--surface));
 }
 
-/* в тёмной теме оттенки пар приглушены, чтобы серый текст читался */
-[data-theme='dark'] .tt-lesson--lec,
+/* в тёмной теме оттенки приглушены, чтобы серый текст читался */
+[data-theme='dark'] .tt__cell--lec,
 [data-theme='dark'] .tt-key__item--lec::before {
   --tint: color-mix(in srgb, var(--accent) 20%, var(--surface));
+  background: var(--tint);
 }
-[data-theme='dark'] .tt-lesson--sem,
+[data-theme='dark'] .tt__cell--sem,
 [data-theme='dark'] .tt-key__item--sem::before {
   --tint: color-mix(in srgb, var(--hl) 17%, var(--surface));
-}
-[data-theme='dark'] .tt-lesson--lec,
-[data-theme='dark'] .tt-lesson--sem {
   background: var(--tint);
 }
-[data-theme='dark'] .tt-key__item--lec::before,
-[data-theme='dark'] .tt-key__item--sem::before {
+[data-theme='dark'] .tt__cell--pra {
   background: var(--tint);
 }
-[data-theme='dark'] .tt-lesson--moved {
+[data-theme='dark'] .tt__cell--moved {
   background: var(--warn-bg);
+}
+[data-theme='dark'] .tt__cell--cancelled {
+  background: transparent;
 }
 [data-theme='dark'] .tt-lesson__meta {
   color: color-mix(in srgb, var(--ink) 62%, transparent);
-}
-[data-theme='dark'] .tt-lesson--cancelled {
-  background: transparent;
 }

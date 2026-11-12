@@ -193,7 +193,7 @@ const kindClass = (k: Lesson['kind']) => (k === 'Лекция' ? 'lec' : k === '
 function GridCell({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; progress?: number }) {
   const live = progress != null
   return (
-    <article className={`tt-lesson tt-lesson--${kindClass(l.kind)} ${l.status ? `tt-lesson--${l.status}` : ''} ${live ? 'is-live' : ''}`} aria-current={live ? 'time' : undefined}>
+    <article className={`tt-lesson ${l.status ? `tt-lesson--${l.status}` : ''} ${live ? 'is-live' : ''}`} aria-current={live ? 'time' : undefined}>
       <div className={`tt-lesson__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</div>
       <div className="tt-lesson__meta">
         {l.kind} · {l.room}
@@ -258,7 +258,7 @@ function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][];
                   const here = byDay[i].filter((l) => l.start === start)
                   const isToday = week === 0 && i === today
                   return (
-                    <td key={i} className={`tt__cell ${isToday ? 'is-today' : ''} ${here.length ? '' : 'is-free'}`}>
+                    <td key={i} className={`tt__cell ${isToday ? 'is-today' : ''} ${here.length ? `tt__cell--${here[0].status ?? kindClass(here[0].kind)}` : 'is-free'}`}>
                       {here.map((l) => (
                         <GridCell key={l.id} l={l} who={who} progress={isToday ? liveProgress(l, now) : undefined} />
                       ))}
