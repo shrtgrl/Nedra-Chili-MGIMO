@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useIndicator } from '../lib/useIndicator'
 import { Icon, type IconName } from './Icon'
 import { Avatar, Brand, IconButton, NewYearButton, ThemeButton } from './ui'
@@ -144,20 +144,69 @@ function MobileBar() {
   )
 }
 
+/* Нижнее меню на телефоне: 4 главных раздела, остальное — под «Ещё».
+   У активного пункта рядом с иконкой появляется подпись. */
 function BottomNav() {
+  const user = useUser()
   const nav = useNav()
   const { pathname } = useLocation()
-  const { box, ind } = useIndicator<HTMLElement>(pathname)
+  const [open, setOpen] = useState(false)
+  const primary = nav.length > 5 || user.role === 'teacher' ? nav.slice(0, 4) : nav
+  const extra: NavItem[] = [...nav.slice(primary.length), { to: `/${user.role}/profile`, label: 'Профиль', icon: 'user' }]
+  const hasMore = primary.length < nav.length || user.role !== 'staff'
+  const extraActive = extra.find((n) => pathname === n.to || pathname.startsWith(n.to + '/'))
+  const extraBadge = extra.some((n) => (n.badge ?? 0) > 0)
+
+  useEffect(() => setOpen(false), [pathname])
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
   return (
-    <nav ref={box} className="bottom-nav" aria-label="Навигация">
-      <span ref={ind} className="nav-ind" aria-hidden="true" />
-      {nav.map((n) => (
-        <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `bottom-nav__item ${isActive ? 'is-active' : ''}`} aria-label={n.label}>
-          <Icon name={n.icon} size={22} />
-          <span className="bottom-nav__label">{n.label}</span>
-        </NavLink>
-      ))}
-    </nav>
+    <>
+      {open && <button type="button" className="more-backdrop" aria-label="Закрыть меню" onClick={() => setOpen(false)} />}
+      {open && (
+        <div className="more-sheet" id="more-sheet" role="menu" aria-label="Ещё разделы">
+          {extra.map((n) => (
+            <NavLink key={n.to} to={n.to} role="menuitem" className={({ isActive }) => `more-sheet__item ${isActive ? 'is-active' : ''}`}>
+              <Icon name={n.icon} size={20} />
+              <span>{n.label}</span>
+              {!!n.badge && <span className="more-sheet__badge">{n.badge}</span>}
+            </NavLink>
+          ))}
+        </div>
+      )}
+      <nav className="bottom-nav" aria-label="Навигация">
+        {primary.map((n) => (
+          <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `bottom-nav__item ${isActive ? 'is-active' : ''}`} aria-label={n.label}>
+            <span className="bottom-nav__icon">
+              <Icon name={n.icon} size={22} />
+              {!!n.badge && <i className="bottom-nav__dot" aria-hidden="true" />}
+            </span>
+            <span className="bottom-nav__label">{n.label}</span>
+          </NavLink>
+        ))}
+        {hasMore && (
+          <button
+            type="button"
+            className={`bottom-nav__item ${extraActive && !open ? 'is-active' : ''} ${open ? 'is-open' : ''}`}
+            aria-label="Ещё"
+            aria-expanded={open}
+            aria-controls="more-sheet"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span className="bottom-nav__icon">
+              <Icon name={open ? 'x' : extraActive ? extraActive.icon : 'more'} size={22} />
+              {extraBadge && !open && <i className="bottom-nav__dot" aria-hidden="true" />}
+            </span>
+            <span className="bottom-nav__label">{extraActive ? extraActive.label : 'Ещё'}</span>
+          </button>
+        )}
+      </nav>
+    </>
   )
 }
 
