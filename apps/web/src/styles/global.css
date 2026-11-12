@@ -5285,3 +5285,42 @@ button.stat--btn[aria-pressed='true'] {
 .stat--hl .stat__value {
   color: #181e2a;
 }
+
+/* Мобильные правки: вход, очередь сотрудника, нижняя навигация, выбор дня */
+.day-picker {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+@media (max-width: 900px) {
+  /* на телефоне страница входа прокручивается, а не обрезает форму */
+  .login {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    grid-template-rows: auto auto;
+  }
+  .login__form-wrap,
+  .login__form-wrap--ny {
+    align-content: start;
+    padding-bottom: 24px;
+  }
+}
+@media (max-width: 760px) {
+  .bottom-nav__item {
+    flex: 1 1 0;
+    min-width: 48px;
+  }
+}
+@media (max-width: 600px) {
+  .grid-queue .card__head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .staff-type,
+  .staff-type__select {
+    width: 100%;
+    max-width: none;
+  }
+}
