@@ -188,13 +188,14 @@ function LessonCard({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group';
 }
 
 /* ── Недельная сетка: строки — пары, столбцы — дни ──────── */
-const KIND_SHORT: Record<Lesson['kind'], string> = { Лекция: 'Лк', Семинар: 'Сем', Практика: 'Пр' }
+const KIND_SHORT: Record<Lesson['kind'], string> = { Лекция: 'Лк', Семинар: 'С', Практика: 'Пр' }
+const KIND_CLASS: Record<Lesson['kind'], string> = { Лекция: 'lec', Семинар: 'sem', Практика: 'pra' }
 
 function GridCell({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; progress?: number }) {
   const live = progress != null
   return (
     <article className={`tt-lesson ${l.status ? `tt-lesson--${l.status}` : ''} ${live ? 'is-live' : ''}`} aria-current={live ? 'time' : undefined}>
-      <span className="tt-badge" title={l.kind} aria-label={l.kind}>{KIND_SHORT[l.kind]}</span>
+      <span className={`tt-badge tt-k--${KIND_CLASS[l.kind]}`} title={l.kind} aria-label={l.kind}>{KIND_SHORT[l.kind]}</span>
       <div className={`tt-lesson__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</div>
       <div className="tt-lesson__meta">{l.room}</div>
       <div className="tt-lesson__meta">{subline(l, who)}</div>
@@ -274,9 +275,9 @@ function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][];
         </tbody>
       </table>
       <ul className="tt-key" aria-label="Обозначения">
-        <li><b>Лк</b> лекция</li>
-        <li><b>Сем</b> семинар</li>
-        <li><b>Пр</b> практика</li>
+        <li><b className="tt-k--lec">Лк</b> лекция</li>
+        <li><b className="tt-k--sem">С</b> семинар</li>
+        <li><b className="tt-k--pra">Пр</b> практика</li>
       </ul>
     </div>
   )
