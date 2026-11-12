@@ -87,7 +87,7 @@ export function RequestsPage() {
           </>
         }
       />
-      <div className="grid-half">
+      <div className="grid-half grid-half--req">
         <form className="card" onSubmit={submit} noValidate>
           <h2 className="card__title card__title--lg">{target === 'dean' ? 'Новая заявка' : 'Обращение к преподавателю'}</h2>
           <Segmented
