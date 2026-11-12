@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import type { Lesson } from '../types'
 import { moscowCivil, useSchedule } from '../lib/useSchedule'
 import { nextLesson, nowMinutes, todayIndex, todayLessons } from '../lib/lessons'
@@ -308,6 +308,7 @@ export function WeekSchedule({ who }: { who: 'teacher' | 'group' }) {
               <button key={d} role="tab" aria-selected={day === i} type="button" className={`day-picker__btn ${day === i ? 'is-active' : ''} ${week === 0 && i === today ? 'is-today' : ''}`} onClick={() => setDay(i)}>
                 <span>{d}</span>
                 <b>{date.getDate()}</b>
+                <i className={`day-picker__dot ${byDay[i].length ? '' : 'is-empty'}`} aria-hidden="true" />
               </button>
             )
           })}
@@ -320,35 +321,45 @@ export function WeekSchedule({ who }: { who: 'teacher' | 'group' }) {
       {mode === 'week' ? (
         <WeekGrid byDay={byDay} weekdays={weekdays} shortDays={shortDays} monday={monday} today={today} week={week} who={who} now={now} />
       ) : (
-      <div className="tt-dayview">
+      <div className="dv">
         {visibleDays.map((i) => {
           const isToday = week === 0 && i === today
           const m = nowMinutes(now)
+          const list = byDay[i]
           return (
             <section key={i} aria-label={weekdays[i]}>
-              {byDay[i].length === 0 ? (
-                <p className="tt__empty">Занятий нет</p>
+              {list.length === 0 ? (
+                <p className="dv__end dv__end--empty">Занятий нет</p>
               ) : (
-                <ol className="tt-dayview__list">
-                  {byDay[i].map((l) => {
-                    const rowNow = isToday && m >= toMinutes(l.start) && m < toMinutes(l.end)
+                <ol className="dv__list">
+                  {list.map((l, idx) => {
+                    const live = isToday && m >= toMinutes(l.start) && m < toMinutes(l.end)
+                    const gap = idx > 0 ? toMinutes(l.start) - toMinutes(list[idx - 1].end) : 0
                     return (
-                      <li key={l.id} className={`tt-dayview__row ${isToday ? 'is-today' : ''}`}>
-                        <div className={`tt__time ${rowNow ? 'is-now' : ''}`}>
-                          <b>{l.start}</b>
-                          <span>{l.end}</span>
-                        </div>
-                        <GridCell l={l} who={who} progress={isToday ? liveProgress(l, now) : undefined} />
-                      </li>
+                      <Fragment key={l.id}>
+                        {gap > 0 && <li className="dv__gap" aria-hidden="true">перерыв {humanDuration(gap)}</li>}
+                        <li className="dv__row">
+                          <div className={`dv__time ${live ? 'is-now' : ''}`}>
+                            <b>{l.start}</b>
+                            <span>{l.end}</span>
+                          </div>
+                          <article className={`dv__card dv--${KIND_CLASS[l.kind]} ${l.status ? `dv__card--${l.status}` : ''}`} aria-current={live ? 'time' : undefined}>
+                            <div className="dv__top">
+                              <h3 className={`dv__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</h3>
+                              <span className="dv__kind">{l.kind}</span>
+                            </div>
+                            <p className="dv__meta">{l.room} · {subline(l, who)}</p>
+                            {l.status === 'cancelled' && <p className="dv__note dv__note--danger">Отменено</p>}
+                            {l.status === 'moved' && <p className="dv__note dv__note--warn">Перенос: было {l.movedFrom}</p>}
+                            {live && <p className="dv__live">Сейчас · до конца {humanDuration(toMinutes(l.end) - m)}</p>}
+                          </article>
+                        </li>
+                      </Fragment>
                     )
                   })}
+                  <li className="dv__end" aria-hidden="true">дальше занятий нет</li>
                 </ol>
               )}
-              <ul className="tt-key" aria-label="Обозначения">
-                <li><b className="tt-k--lec">ЛК</b> лекция</li>
-                <li><b className="tt-k--sem">С</b> семинар</li>
-                <li><b className="tt-k--pra">ПР</b> практика</li>
-              </ul>
             </section>
           )
         })}

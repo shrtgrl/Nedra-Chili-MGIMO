@@ -5646,3 +5646,228 @@ button.stat--btn[aria-pressed='true'] {
   .bottom-nav .bottom-nav__label { transition: opacity 0.15s ease, background-color 0.15s ease; }
   .bottom-nav__item:active { transform: none; }
 }
+
+/* ═════════ Расписание на день ═════════ */
+.day-picker__btn {
+  position: relative;
+  gap: 2px;
+}
+.day-picker__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+.day-picker__dot.is-empty {
+  visibility: hidden;
+}
+.day-picker__btn.is-active .day-picker__dot {
+  opacity: 1;
+}
+.dv__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+.dv__row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.dv__time {
+  padding-top: 14px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+.dv__time b {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+}
+.dv__time span {
+  font-size: 15px;
+  color: var(--ink-3);
+}
+.dv__card {
+  --kind: var(--accent);
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 16px 16px 16px 20px;
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: inset 4px 0 0 var(--kind);
+}
+.dv--sem { --kind: var(--hl); }
+.dv--pra { --kind: var(--ink); }
+.dv__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.dv__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+.dv__kind {
+  flex: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--kind) 28%, transparent);
+  color: var(--ink);
+}
+.dv__meta {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+.dv__live {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+[data-theme='dark'] .dv__live {
+  color: var(--hl);
+}
+.dv__note {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.dv__note--danger,
+.dv__card--cancelled .dv__title { color: var(--danger-ink); }
+.dv__note--warn { color: var(--warn-ink); }
+.dv__gap,
+.dv__end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 76px;
+  padding: 10px 0;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.dv__gap::after,
+.dv__end::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed var(--line);
+}
+.dv__list > .dv__row + .dv__row {
+  margin-top: 12px;
+}
+.dv__end--empty {
+  margin-left: 0;
+  padding: 24px 0;
+  font-size: 15px;
+}
+.dv__end--empty::after {
+  display: none;
+}
+
+/* ═════════ Новая заявка ═════════ */
+.field__opt {
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.type-card {
+  position: relative;
+}
+.type-card__check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--strong);
+  color: var(--on-strong);
+}
+.type-select {
+  display: none;
+}
+.radio-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.radio-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background: var(--surface-2);
+  color: var(--ink);
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.radio-card b {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+.radio-card small {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.radio-card__dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--ink-3);
+}
+.radio-card.is-active {
+  border-color: var(--strong);
+}
+.radio-card.is-active .radio-card__dot {
+  border: 6px solid var(--strong);
+  background: var(--surface);
+}
+@media (max-width: 600px) {
+  .type-grid {
+    display: none;
+  }
+  .type-select {
+    display: block;
+  }
+  .dv__row {
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 10px;
+  }
+  .dv__gap,
+  .dv__end {
+    margin-left: 64px;
+  }
+  .dv__time b { font-size: 16px; }
+  .dv__time span { font-size: 14px; }
+}
+.type-card {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px 18px 18px;
+}

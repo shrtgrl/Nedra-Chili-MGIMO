@@ -7,10 +7,11 @@ import { useToast } from '../../context/toast'
 import { DEAN_REQUEST_TYPES, REQUEST_STAGES, REQUEST_TYPES } from '../../data/mock'
 import type { Delivery, RequestType } from '../../types'
 import { Badge, Button, Disclaimer, IconButton, PageHeader, Segmented, Stages, ThemeButton } from '../../components/ui'
-import { Icon } from '../../components/Icon'
+import { Icon, type IconName } from '../../components/Icon'
 import { Link } from 'react-router-dom'
 
 type Filter = 'all' | 'work' | 'ready'
+const TYPE_ICON: Record<RequestType, IconName> = { study: 'doc', order: 'clipboard', leave: 'pause', retake: 'refresh' }
 type Target = 'dean' | 'teacher'
 
 export function RequestsPage() {
@@ -102,15 +103,22 @@ export function RequestsPage() {
           />
           <div key={target} className="form-swap">
           {target === 'dean' && (
-          <div className="type-grid" role="radiogroup" aria-label="Тип заявки">
-            {DEAN_REQUEST_TYPES.map((t) => (
-              <button key={t} type="button" role="radio" aria-checked={type === t} className={`type-card ${type === t ? 'is-active' : ''}`} onClick={() => setType(t)}>
-                <span className="type-card__icon">
-                  <Icon name="file" size={18} />
-                </span>
-                {REQUEST_TYPES[t]}
-              </button>
-            ))}
+          <div className="field">
+            <span className="field__label" id="req-type-label">Что нужно</span>
+            <div className="type-grid" role="radiogroup" aria-labelledby="req-type-label">
+              {DEAN_REQUEST_TYPES.map((t) => (
+                <button key={t} type="button" role="radio" aria-checked={type === t} className={`type-card ${type === t ? 'is-active' : ''}`} onClick={() => setType(t)}>
+                  <span className="type-card__icon">
+                    <Icon name={TYPE_ICON[t]} size={20} />
+                  </span>
+                  {type === t && <span className="type-card__check" aria-hidden="true"><Icon name="check" size={14} /></span>}
+                  {REQUEST_TYPES[t]}
+                </button>
+              ))}
+            </div>
+            <select className="input type-select" aria-labelledby="req-type-label" value={type} onChange={(e) => setType(e.target.value as RequestType)}>
+              {DEAN_REQUEST_TYPES.map((t) => <option key={t} value={t}>{REQUEST_TYPES[t]}</option>)}
+            </select>
           </div>
           )}
 
@@ -140,30 +148,27 @@ export function RequestsPage() {
           </label>
 
           <label className="field">
-            <span className="field__label">{target === 'teacher' ? 'Сообщение' : 'Комментарий'}</span>
+            <span className="field__label">{target === 'teacher' ? 'Сообщение' : <>Комментарий <span className="field__opt">— необязательно</span></>}</span>
             <textarea className={`input textarea ${commentError ? 'is-invalid' : ''}`} placeholder={target === 'teacher' ? 'Опишите вопрос или просьбу' : 'Дополнительные сведения'} rows={4} maxLength={target === 'teacher' ? 5000 : 2000} value={comment} onChange={(e) => { setComment(e.target.value); setCommentError('') }} />
             {commentError && <span className="field__error">{commentError}</span>}
           </label>
 
           {target === 'dean' && (
           <div className="field">
-            <span className="field__label">Способ получения</span>
-            <Segmented
-              soft
-              className="seg--wide"
-              label="Способ получения"
-              value={delivery}
-              onChange={setDelivery}
-              options={[
-                { value: 'pdf', label: 'Электронно (PDF)' },
-                { value: 'office', label: 'В деканате' },
-              ]}
-            />
+            <span className="field__label" id="req-delivery-label">Как получить</span>
+            <div className="radio-cards" role="radiogroup" aria-labelledby="req-delivery-label">
+              {([['pdf', 'PDF', 'в личном кабинете'], ['office', 'Бумажная', 'в деканате']] as [Delivery, string, string][]).map(([v, title, hint]) => (
+                <button key={v} type="button" role="radio" aria-checked={delivery === v} className={`radio-card ${delivery === v ? 'is-active' : ''}`} onClick={() => setDelivery(v)}>
+                  <span className="radio-card__dot" aria-hidden="true" />
+                  <span><b>{title}</b><small>{hint}</small></span>
+                </button>
+              ))}
+            </div>
           </div>
           )}
           </div>
 
-          <Button disabled={busy} type="submit" variant="primary" size="lg" block icon="check">
+          <Button disabled={busy} type="submit" variant="primary" size="lg" block>
             {target === 'teacher' ? 'Отправить обращение' : 'Отправить заявку'}
           </Button>
         </form>
