@@ -7,7 +7,7 @@ if (process.env.NODE_ENV === 'production') {
   const webRoot = resolve(import.meta.dirname, '../../web/dist');
   app.register(fastifyStatic, { root: webRoot });
   app.setNotFoundHandler((request, reply) => {
-    if ((request.method === 'GET' || request.method === 'HEAD') && !request.url.startsWith('/api/')) {
+    if ((request.method === 'GET' || request.method === 'HEAD') && request.url !== '/api' && !request.url.startsWith('/api/')) {
       return reply.sendFile('index.html');
     }
     return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Не найдено' } });
