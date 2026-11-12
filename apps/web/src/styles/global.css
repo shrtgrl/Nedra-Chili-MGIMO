@@ -5010,15 +5010,12 @@ html.lock-scroll body {
 .tt__day.is-today .tt__dow {
   color: var(--ink);
 }
-.tt__day.is-today .tt__num::after {
-  content: '';
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  margin: 0 0 14px 6px;
-  border-radius: 50%;
+.tt__day.is-today .tt__num {
+  padding: 5px 10px 4px;
+  margin-left: -10px;
+  border-radius: 14px;
   background: var(--strong);
-  vertical-align: top;
+  color: var(--on-strong);
 }
 .tt__time {
   padding: 16px 8px 0 0;
@@ -5048,21 +5045,12 @@ html.lock-scroll body {
 }
 .tt__cell {
   vertical-align: top;
-  padding: 10px 6px;
+  padding: 8px 5px;
   border-bottom: 1px solid var(--line);
-  border-left: 1px dashed var(--line);
 }
 .tt__cell.is-today,
 .tt__day.is-today {
-  background: color-mix(in srgb, var(--hl) 15%, transparent);
-}
-.tt__cell.is-free {
-  background-image: radial-gradient(circle, var(--line) 1px, transparent 1.5px);
-  background-size: 14px 14px;
-  background-position: center;
-}
-.tt__cell.is-today.is-free {
-  background-color: color-mix(in srgb, var(--hl) 15%, transparent);
+  background: color-mix(in srgb, var(--hl) 9%, transparent);
 }
 .tt__empty {
   padding: 28px 0;
@@ -5070,36 +5058,28 @@ html.lock-scroll body {
 }
 
 .tt-lesson {
-  position: relative;
+  --tint: var(--surface-2);
   display: grid;
   gap: 2px;
-  padding: 10px 10px 10px 14px;
-  border-radius: 12px;
-  transition: background-color 0.2s ease;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: var(--tint);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .tt-lesson + .tt-lesson {
   margin-top: 6px;
 }
-.tt-lesson::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 10px;
-  bottom: 10px;
-  width: 4px;
-  border-radius: 4px;
-  background: var(--ink);
+.tt-lesson--lec {
+  --tint: color-mix(in srgb, var(--accent) 38%, var(--surface));
 }
-.tt-lesson--sem::before {
-  background: repeating-linear-gradient(to bottom, var(--ink) 0 6px, transparent 6px 9px);
+.tt-lesson--sem {
+  --tint: color-mix(in srgb, var(--hl) 55%, var(--surface));
 }
-.tt-lesson--pra::before {
-  width: 4px;
-  background: var(--ink-3);
-  opacity: 0.55;
+.tt-lesson--pra {
+  --tint: var(--surface-2);
 }
 .tt-lesson:hover {
-  background: var(--surface-2);
+  box-shadow: 0 0 0 1.5px var(--ink-3);
 }
 .tt-lesson__title {
   font-size: 15px;
@@ -5137,14 +5117,15 @@ html.lock-scroll body {
   background: var(--strong);
   color: var(--on-strong);
 }
+.tt-lesson--cancelled {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
 .tt-lesson--cancelled .tt-lesson__title,
 .tt-lesson--cancelled .tt-lesson__meta {
   color: var(--ink-3);
 }
 .tt-lesson--moved {
-  background: color-mix(in srgb, var(--warn-bg) 55%, transparent);
-}
-.tt-lesson--moved:hover {
   background: var(--warn-bg);
 }
 .tt-lesson__progress {
@@ -5160,6 +5141,7 @@ html.lock-scroll body {
   height: 100%;
   background: var(--strong);
 }
+
 .tt-key {
   display: flex;
   gap: 18px;
@@ -5177,15 +5159,42 @@ html.lock-scroll body {
 }
 .tt-key__item::before {
   content: '';
-  width: 4px;
+  width: 16px;
   height: 16px;
-  border-radius: 4px;
-  background: var(--ink);
+  border-radius: 5px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.tt-key__item--lec::before {
+  background: color-mix(in srgb, var(--accent) 38%, var(--surface));
 }
 .tt-key__item--sem::before {
-  background: repeating-linear-gradient(to bottom, var(--ink) 0 5px, transparent 5px 8px);
+  background: color-mix(in srgb, var(--hl) 55%, var(--surface));
 }
-.tt-key__item--pra::before {
-  background: var(--ink-3);
-  opacity: 0.55;
+
+/* в тёмной теме оттенки пар приглушены, чтобы серый текст читался */
+[data-theme='dark'] .tt-lesson--lec,
+[data-theme='dark'] .tt-key__item--lec::before {
+  --tint: color-mix(in srgb, var(--accent) 20%, var(--surface));
+}
+[data-theme='dark'] .tt-lesson--sem,
+[data-theme='dark'] .tt-key__item--sem::before {
+  --tint: color-mix(in srgb, var(--hl) 17%, var(--surface));
+}
+[data-theme='dark'] .tt-lesson--lec,
+[data-theme='dark'] .tt-lesson--sem {
+  background: var(--tint);
+}
+[data-theme='dark'] .tt-key__item--lec::before,
+[data-theme='dark'] .tt-key__item--sem::before {
+  background: var(--tint);
+}
+[data-theme='dark'] .tt-lesson--moved {
+  background: var(--warn-bg);
+}
+[data-theme='dark'] .tt-lesson__meta {
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+}
+[data-theme='dark'] .tt-lesson--cancelled {
+  background: transparent;
 }
