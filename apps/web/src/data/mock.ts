@@ -92,7 +92,21 @@ export const REQUEST_TYPES = {
   order: 'Копия приказа',
   leave: 'Академический отпуск',
   retake: 'Пересдача экзамена',
+  inquiry: 'Обращение к преподавателю',
 } as const
+
+/** Заявки в деканат: тип «обращение к преподавателю» в этот список не входит. */
+export const DEAN_REQUEST_TYPES = ['study', 'order', 'leave', 'retake'] as const
+
+/** Преподаватели группы (демо): к ним студент может обратиться из раздела «Заявки». */
+export const STUDENT_TEACHERS: { name: string; subjects: string }[] = [
+  { name: 'Орлов А. В.', subjects: 'Макроэкономика' },
+  { name: 'Белова Е. Н.', subjects: 'Английский язык' },
+  { name: 'Смирнов Д. А.', subjects: 'Основы вайб-кодинга, Проектирование интерфейсов' },
+  { name: 'Громова Т. И.', subjects: 'Теория вероятностей' },
+  { name: 'Крылов П. С.', subjects: 'История России' },
+  { name: 'Дымов И. Р.', subjects: 'Физическая культура' },
+]
 
 export const REQUEST_STAGES = ['Принята', 'В работе', 'Готова', 'Выдана'] as const
 

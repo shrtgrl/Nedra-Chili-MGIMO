@@ -4331,12 +4331,12 @@ html.lock-scroll body {
   color: var(--ink-3);
 }
 .combo__opt.is-active {
-  background: var(--hl-soft);
-  color: var(--on-hl);
+  background: var(--surface-2);
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--strong);
 }
 .combo__opt.is-active span {
-  color: inherit;
-  opacity: 0.7;
+  color: var(--ink-2);
 }
 .combo__empty {
   padding: 12px;
@@ -4533,4 +4533,18 @@ html.lock-scroll body {
 .lesson__title.fit-text {
   font-size: 16px;
   line-height: 1.22;
+}
+
+/* ═════════ Форма заявки: переключатель «В деканат / Преподавателю» ═════════ */
+.form-swap {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  animation: form-swap-in 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@keyframes form-swap-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .form-swap { animation: none; }
 }

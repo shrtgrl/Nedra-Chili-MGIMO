@@ -47,7 +47,7 @@ export interface Discipline {
   score: number
 }
 
-export type RequestType = 'study' | 'order' | 'leave' | 'retake'
+export type RequestType = 'study' | 'order' | 'leave' | 'retake' | 'inquiry'
 export type RequestStage = 0 | 1 | 2 | 3 // Принята, В работе, Готова, Выдана
 export type Delivery = 'pdf' | 'office'
 
@@ -59,6 +59,8 @@ export interface StudentRequest {
   delivery: Delivery
   createdLabel: string
   stage: RequestStage
+  /** Если задан — это обращение к преподавателю (purpose — тема, comment — сообщение), а не заявка в деканат. */
+  teacher?: string
 }
 
 export type NoticeIcon = 'alert' | 'calendar' | 'doc' | 'bell'

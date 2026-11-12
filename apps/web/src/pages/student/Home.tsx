@@ -172,7 +172,7 @@ export function StudentHome() {
                     <b>{REQUEST_TYPES[r.type]}</b>
                     <Badge tone={r.stage >= 2 ? 'ok' : 'neutral'}>{REQUEST_STAGES[r.stage]}</Badge>
                   </div>
-                  <Stages stages={REQUEST_STAGES} current={r.stage} showLabels={false} />
+                  {!r.teacher && <Stages stages={REQUEST_STAGES} current={r.stage} showLabels={false} />}
                 </Link>
               ))}
             </div>

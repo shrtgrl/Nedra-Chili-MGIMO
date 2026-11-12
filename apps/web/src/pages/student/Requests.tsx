@@ -2,12 +2,14 @@ import { useState, type FormEvent } from 'react'
 import { useIndicator } from '../../lib/useIndicator'
 import { useData } from '../../context/data'
 import { useToast } from '../../context/toast'
-import { REQUEST_STAGES, REQUEST_TYPES } from '../../data/mock'
+import { DEAN_REQUEST_TYPES, REQUEST_STAGES, REQUEST_TYPES, STUDENT_TEACHERS } from '../../data/mock'
 import type { Delivery, RequestType } from '../../types'
 import { Badge, Button, Disclaimer, IconButton, PageHeader, Segmented, Stages, ThemeButton } from '../../components/ui'
 import { Icon } from '../../components/Icon'
+import { Combo } from '../../components/Combo'
 
 type Filter = 'all' | 'work' | 'ready'
+type Target = 'dean' | 'teacher'
 
 export function RequestsPage() {
   const { requests, addRequest, cancelRequest, unreadCount } = useData()
@@ -18,9 +20,33 @@ export function RequestsPage() {
   const [delivery, setDelivery] = useState<Delivery>('pdf')
   const [filter, setFilter] = useState<Filter>('all')
   const [error, setError] = useState('')
+  const [target, setTarget] = useState<Target>('dean')
+  const [teacher, setTeacher] = useState('')
+  const [teacherError, setTeacherError] = useState('')
+  const [commentError, setCommentError] = useState('')
+
+  const switchTarget = (t: Target) => {
+    setTarget(t)
+    setError('')
+    setTeacherError('')
+    setCommentError('')
+  }
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
+    if (target === 'teacher') {
+      const found = STUDENT_TEACHERS.find((t) => t.name.toLowerCase() === teacher.trim().toLowerCase())
+      if (!found) return setTeacherError('Выберите преподавателя из списка')
+      if (!purpose.trim()) return setError('Укажите тему обращения')
+      if (!comment.trim()) return setCommentError('Напишите сообщение преподавателю')
+      addRequest({ type: 'inquiry', teacher: found.name, purpose: purpose.trim(), comment: comment.trim(), delivery: 'pdf' })
+      setPurpose('')
+      setComment('')
+      setTeacher('')
+      setError('')
+      toast(`Обращение отправлено: ${found.name}`)
+      return
+    }
     if (!purpose.trim()) {
       setError('Укажите цель — например, «по месту требования»')
       return
@@ -49,9 +75,22 @@ export function RequestsPage() {
       />
       <div className="grid-half">
         <form className="card" onSubmit={submit} noValidate>
-          <h2 className="card__title card__title--lg">Новая заявка</h2>
+          <h2 className="card__title card__title--lg">{target === 'dean' ? 'Новая заявка' : 'Обращение к преподавателю'}</h2>
+          <Segmented
+            soft
+            className="seg--wide"
+            label="Кому"
+            value={target}
+            onChange={switchTarget}
+            options={[
+              { value: 'dean', label: 'В деканат' },
+              { value: 'teacher', label: 'Преподавателю' },
+            ]}
+          />
+          <div key={target} className="form-swap">
+          {target === 'dean' && (
           <div className="type-grid" role="radiogroup" aria-label="Тип заявки">
-            {(Object.keys(REQUEST_TYPES) as RequestType[]).map((t) => (
+            {DEAN_REQUEST_TYPES.map((t) => (
               <button key={t} type="button" role="radio" aria-checked={type === t} className={`type-card ${type === t ? 'is-active' : ''}`} onClick={() => setType(t)}>
                 <span className="type-card__icon">
                   <Icon name="file" size={18} />
@@ -60,12 +99,28 @@ export function RequestsPage() {
               </button>
             ))}
           </div>
+          )}
+
+          {target === 'teacher' && (
+            <div className="field">
+              <Combo
+                label="Преподаватель"
+                value={teacher}
+                onChange={(v) => { setTeacher(v); setTeacherError('') }}
+                options={STUDENT_TEACHERS.map((t) => ({ value: t.name, hint: t.subjects }))}
+                placeholder="Начните вводить фамилию"
+                emptyText="Такого преподавателя нет в вашем списке"
+                invalid={!!teacherError}
+              />
+              {teacherError && <span className="field__error">{teacherError}</span>}
+            </div>
+          )}
 
           <label className="field">
-            <span className="field__label">Цель</span>
+            <span className="field__label">{target === 'teacher' ? 'Тема' : 'Цель'}</span>
             <input
               className={`input ${error ? 'is-invalid' : ''}`}
-              placeholder={type === 'retake' ? 'Дисциплина, например «Теория вероятностей»' : 'Например, для предоставления по месту требования'}
+              placeholder={target === 'teacher' ? 'Например, вопрос по контрольной' : type === 'retake' ? 'Дисциплина, например «Теория вероятностей»' : 'Например, для предоставления по месту требования'}
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
               aria-invalid={!!error}
@@ -74,10 +129,12 @@ export function RequestsPage() {
           </label>
 
           <label className="field">
-            <span className="field__label">Комментарий</span>
-            <textarea className="input textarea" placeholder="Дополнительные сведения" rows={4} value={comment} onChange={(e) => setComment(e.target.value)} />
+            <span className="field__label">{target === 'teacher' ? 'Сообщение' : 'Комментарий'}</span>
+            <textarea className={`input textarea ${commentError ? 'is-invalid' : ''}`} placeholder={target === 'teacher' ? 'Опишите вопрос или просьбу' : 'Дополнительные сведения'} rows={4} value={comment} onChange={(e) => { setComment(e.target.value); setCommentError('') }} />
+            {commentError && <span className="field__error">{commentError}</span>}
           </label>
 
+          {target === 'dean' && (
           <div className="field">
             <span className="field__label">Способ получения</span>
             <Segmented
@@ -92,9 +149,11 @@ export function RequestsPage() {
               ]}
             />
           </div>
+          )}
+          </div>
 
           <Button type="submit" variant="primary" size="lg" block icon="check">
-            Отправить заявку
+            {target === 'teacher' ? 'Отправить обращение' : 'Отправить заявку'}
           </Button>
         </form>
 
@@ -123,15 +182,17 @@ export function RequestsPage() {
               <article key={r.id} className="req">
                 <div className="req__head">
                   <h3>{REQUEST_TYPES[r.type]}</h3>
-                  <Badge tone={r.stage >= 2 ? 'ok' : 'neutral'}>{REQUEST_STAGES[r.stage]}</Badge>
+                  <Badge tone={r.stage >= 2 ? 'ok' : 'neutral'}>{r.teacher ? 'Отправлено' : REQUEST_STAGES[r.stage]}</Badge>
                 </div>
                 <p className="small muted">
-                  {r.purpose} · подана {r.createdLabel} · {r.delivery === 'pdf' ? 'PDF' : 'в деканате'}
+                  {r.teacher
+                    ? `${r.teacher} · ${r.purpose} · отправлено ${r.createdLabel}`
+                    : `${r.purpose} · подана ${r.createdLabel} · ${r.delivery === 'pdf' ? 'PDF' : 'в деканате'}`}
                 </p>
-                <Stages stages={REQUEST_STAGES} current={r.stage} />
+                {!r.teacher && <Stages stages={REQUEST_STAGES} current={r.stage} />}
                 {r.comment && <blockquote className="req__comment">«{r.comment}»</blockquote>}
                 <div className="req__actions">
-                  {r.stage >= 2 && r.delivery === 'pdf' && (
+                  {!r.teacher && r.stage >= 2 && r.delivery === 'pdf' && (
                     <Button variant="primary" icon="download" onClick={() => toast('Демо: в настоящем сервисе здесь скачается PDF')}>
                       Скачать PDF
                     </Button>
@@ -140,10 +201,10 @@ export function RequestsPage() {
                     variant="danger"
                     onClick={() => {
                       cancelRequest(r.id)
-                      toast('Заявка отменена')
+                      toast(r.teacher ? 'Обращение отозвано' : 'Заявка отменена')
                     }}
                   >
-                    Отменить заявку
+                    {r.teacher ? 'Отозвать обращение' : 'Отменить заявку'}
                   </Button>
                 </div>
               </article>
