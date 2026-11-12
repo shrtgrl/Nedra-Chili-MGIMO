@@ -221,11 +221,6 @@
 
 /* ───────────── Новогодняя · светлая ─────────────
    Ель · клюква · золото · сливки · ночное небо */
-[data-variant='newyear'] {
-  /* в праздничных макетах заголовки набраны тем же гротеском, что и текст */
-  --font-display: 'Manrope', system-ui, sans-serif;
-}
-
 [data-variant='newyear'][data-theme='light'] {
   color-scheme: light;
   --stage: #ebe6da;

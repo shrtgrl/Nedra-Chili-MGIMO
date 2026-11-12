@@ -2942,12 +2942,6 @@ a.stat:hover {
   }
 }
 
-[data-variant='newyear'] .display {
-  letter-spacing: -0.025em;
-}
-[data-variant='newyear'] .page-head__title {
-  font-size: clamp(28px, 2.6vw, 40px);
-}
 .bulb__glass {
   opacity: 0.78;
 }
