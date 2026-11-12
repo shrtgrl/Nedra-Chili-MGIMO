@@ -42,17 +42,6 @@ export function TeacherHome() {
       <div className="grid-home grid-home--teacher">
         <div className="stack">
           <NextLessonHero lessons={lessons} who="group" />
-          <div className="quick-actions">
-            <ButtonLink to="/teacher/gradebook" variant="primary" icon="table">
-              Выставить оценки
-            </ButtonLink>
-            <ButtonLink to="/teacher/schedule" variant="surface" icon="calendar">
-              Расписание на неделю
-            </ButtonLink>
-            <ButtonLink to="/teacher/materials" variant="surface" icon="book">
-              Отправить материалы
-            </ButtonLink>
-          </div>
           <TodayTimeline lessons={lessons} who="group" />
         </div>
 
