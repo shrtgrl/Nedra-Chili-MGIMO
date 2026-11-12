@@ -83,7 +83,7 @@ export function StudentHome() {
                 {weakest ? <>Минимальный балл: «{weakest.name}» — <b>{weakest.score}</b>.</> : 'Оценок пока нет.'}
               </p>
               <Link to="/student/grades" className="link">
-                Вся успеваемость <Icon name="arrowRight" size={14} />
+                Все предметы <Icon name="arrowRight" size={14} />
               </Link>
             </div>
           </section>
@@ -118,7 +118,7 @@ export function StudentHome() {
               <span className="stat__label">Средний балл</span>
               <Ring value={avg} size={84} stroke={9} />
               <Link to="/student/grades" className="link">
-                Вся успеваемость <Icon name="arrowRight" size={14} />
+                Все предметы <Icon name="arrowRight" size={14} />
               </Link>
             </div>
             <Link to="/student/notifications" className="stat">

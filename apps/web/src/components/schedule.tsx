@@ -187,6 +187,105 @@ function LessonCard({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group';
   )
 }
 
+/* ── Недельная сетка: строки — пары, столбцы — дни ──────── */
+const KIND_SHORT: Record<Lesson['kind'], string> = { Лекция: 'ЛК', Семинар: 'С', Практика: 'ПР' }
+const KIND_CLASS: Record<Lesson['kind'], string> = { Лекция: 'lec', Семинар: 'sem', Практика: 'pra' }
+
+function GridCell({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; progress?: number }) {
+  const live = progress != null
+  return (
+    <article className={`tt-lesson ${l.status ? `tt-lesson--${l.status}` : ''} ${live ? 'is-live' : ''}`} aria-current={live ? 'time' : undefined}>
+      <span className={`tt-badge tt-k--${KIND_CLASS[l.kind]}`} title={l.kind} aria-label={l.kind}>{KIND_SHORT[l.kind]}</span>
+      <div className={`tt-lesson__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</div>
+      <div className="tt-lesson__meta">{l.room}</div>
+      <div className="tt-lesson__meta">{subline(l, who)}</div>
+      {l.status === 'cancelled' && <span className="tt-tag tt-tag--danger">Отменено</span>}
+      {l.status === 'moved' && <span className="tt-tag tt-tag--warn">Было {l.movedFrom}</span>}
+      {live && (
+        <>
+          <span className="tt-tag tt-tag--live">
+            <span className="now-dot" aria-hidden="true" />
+            Идёт сейчас
+          </span>
+          <span className="tt-lesson__progress" role="progressbar" aria-label="Прошло времени" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+            <span style={{ width: `${progress * 100}%` }} />
+          </span>
+        </>
+      )}
+    </article>
+  )
+}
+
+function WeekGrid({ byDay, weekdays, shortDays, monday, today, week, who, now }: { byDay: Lesson[][]; weekdays: string[]; shortDays: string[]; monday: Date; today: number; week: number; who: 'teacher' | 'group'; now: Date }) {
+  // воскресенье показываем только если в нём есть занятия
+  const cols = weekdays.map((_, i) => i).filter((i) => i < 6 || byDay[i].length > 0)
+  const slots = new Map<string, string>()
+  byDay.flat().forEach((l) => { if (!slots.has(l.start)) slots.set(l.start, l.end) })
+  const rows = [...slots.entries()].sort((a, b) => toMinutes(a[0]) - toMinutes(b[0]))
+  const m = nowMinutes(now)
+  return (
+    <div className="tt-wrap" data-fit-group>
+      <table className="tt">
+        <thead>
+          <tr>
+            <td className="tt__corner" />
+            {cols.map((i) => {
+              const name = weekdays[i]
+              const date = addDays(monday, i)
+              const isToday = week === 0 && i === today
+              return (
+                <th key={name} scope="col" className={`tt__day ${isToday ? 'is-today' : ''}`} aria-label={`${name}, ${date.getDate()} ${monthShort(date)}`}>
+                  <span className="tt__dow">{shortDays[i]}</span>
+                  <b className="tt__num">{date.getDate()}</b>
+                  <span className="tt__mon">{monthShort(date)}</span>
+                </th>
+              )
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 && (
+            <tr>
+              <td className="tt__empty" colSpan={cols.length + 1}>На этой неделе занятий нет</td>
+            </tr>
+          )}
+          {rows.map(([start, end]) => {
+            const rowNow = week === 0 && m >= toMinutes(start) && m < toMinutes(end)
+            return (
+              <tr key={start}>
+                <th scope="row" className={`tt__time ${rowNow ? 'is-now' : ''}`}>
+                  <b>{start}</b>
+                  <span>{end}</span>
+                </th>
+                {cols.map((i) => {
+                  const here = byDay[i].filter((l) => l.start === start)
+                  const isToday = week === 0 && i === today
+                  return (
+                    <td key={i} className={`tt__cell ${isToday ? 'is-today' : ''}`}>
+                      {here.length > 0 && (
+                        <div className="tt__stack">
+                          {here.map((l) => (
+                            <GridCell key={l.id} l={l} who={who} progress={isToday ? liveProgress(l, now) : undefined} />
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+      <ul className="tt-key" aria-label="Обозначения">
+        <li><b className="tt-k--lec">ЛК</b> лекция</li>
+        <li><b className="tt-k--sem">С</b> семинар</li>
+        <li><b className="tt-k--pra">ПР</b> практика</li>
+      </ul>
+    </div>
+  )
+}
+
 export function WeekSchedule({ who }: { who: 'teacher' | 'group' }) {
   const now = useNow()
   const today = todayIndex(now)
@@ -204,7 +303,7 @@ export function WeekSchedule({ who }: { who: 'teacher' | 'group' }) {
   const weekdays=[...WEEKDAYS,'Воскресенье']
   const shortDays=[...WEEKDAYS_SHORT,'Вс']
   const byDay = weekdays.map((_, i) => weekLessons.filter((l) => l.day === i).sort((a, b) => toMinutes(a.start) - toMinutes(b.start)))
-  const visibleDays = mode === 'week' ? weekdays.map((_, i) => i) : [day]
+  const visibleDays = [day]
 
   return (
     <>
@@ -253,6 +352,9 @@ export function WeekSchedule({ who }: { who: 'teacher' | 'group' }) {
       <p className="small muted">Время занятий — МСК</p>
       {loading && <p role="status">Загружаем расписание…</p>}
       {error && <p role="alert">{error} <button onClick={reload}>Повторить</button></p>}
+      {mode === 'week' ? (
+        <WeekGrid byDay={byDay} weekdays={weekdays} shortDays={shortDays} monday={monday} today={today} week={week} who={who} now={now} />
+      ) : (
       <div className={`week ${mode === 'day' ? 'week--day' : ''}`} data-fit-group>
         {visibleDays.map((i) => {
           const date = addDays(monday, i)
@@ -273,6 +375,7 @@ export function WeekSchedule({ who }: { who: 'teacher' | 'group' }) {
           )
         })}
       </div>
+      )}
     </>
   )
 }

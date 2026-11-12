@@ -12,7 +12,7 @@ interface Hit {
 
 const INDEX: Hit[] = [
   { label: 'Расписание', hint: 'Раздел', to: '/student/schedule' },
-  { label: 'Успеваемость', hint: 'Раздел', to: '/student/grades' },
+  { label: 'Предметы', hint: 'Раздел', to: '/student/grades' },
   { label: 'Заявки и справки', hint: 'Раздел', to: '/student/requests' },
   { label: 'Уведомления', hint: 'Раздел', to: '/student/notifications' },
   { label: 'Профиль и оформление', hint: 'Раздел', to: '/student/profile' },

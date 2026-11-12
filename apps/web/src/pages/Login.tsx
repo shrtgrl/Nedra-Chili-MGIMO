@@ -70,7 +70,7 @@ export function LoginPage() {
         </div>
         <ul className="login__pills" aria-label="Разделы">
           <li>Расписание</li>
-          <li>Успеваемость</li>
+          <li>Предметы</li>
           <li>Заявки и справки</li>
           <li>Обращения</li>
         </ul>

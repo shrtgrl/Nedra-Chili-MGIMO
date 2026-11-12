@@ -6,6 +6,7 @@ import { Avatar, Brand, IconButton, NewYearButton, ThemeButton } from './ui'
 import { useUser } from '../context/auth'
 import { useData } from '../context/data'
 import { useStaffOptional } from '../context/staff'
+import { useMaterials } from '../context/materials'
 import { Forest, Garland, Snowflake, useNewYear } from './newyear'
 
 interface NavItem {
@@ -20,6 +21,7 @@ function useNav(): NavItem[] {
   const user = useUser()
   const { requests, unreadCount, newInquiries } = useData()
   const staff = useStaffOptional()
+  const { unread: unreadMaterials } = useMaterials()
   if (user.role === 'staff') {
     return [
       { to: '/staff', label: 'Задачи', icon: 'inbox', badge: staff?.newCount, end: true },
@@ -30,10 +32,9 @@ function useNav(): NavItem[] {
     return [
       { to: '/student', label: 'Главная', icon: 'home', end: true },
       { to: '/student/schedule', label: 'Расписание', icon: 'calendar' },
-      { to: '/student/grades', label: 'Успеваемость', icon: 'chart' },
+      { to: '/student/grades', label: 'Предметы', icon: 'chart', badge: unreadMaterials },
       { to: '/student/requests', label: 'Заявки', icon: 'doc', badge: requests.filter((r) => ['submitted','in_progress'].includes(r.status)).length },
       { to: '/student/inquiries', label: 'Обращения', icon: 'inbox' },
-      { to: '/student/materials', label: 'Материалы', icon: 'file' },
       { to: '/student/notifications', label: 'Уведомления', icon: 'bell', badge: unreadCount },
     ]
   }
@@ -41,7 +42,7 @@ function useNav(): NavItem[] {
     { to: '/teacher', label: 'Главная', icon: 'home', end: true },
     { to: '/teacher/schedule', label: 'Расписание', icon: 'calendar' },
     { to: '/teacher/gradebook', label: 'Ведомость', icon: 'table' },
-    { to: '/teacher/materials', label: 'Материалы', icon: 'file' },
+    { to: '/teacher/materials', label: 'Материалы', icon: 'book' },
     { to: '/teacher/inquiries', label: 'Обращения', icon: 'inbox', badge: newInquiries },
   ]
 }
@@ -49,7 +50,7 @@ function useNav(): NavItem[] {
 function SidebarCard() {
   const user = useUser()
   const { sheets } = useData()
-  if (user.role === 'student') return <Link to="/student/materials" className="side-card"><div className="eyebrow">Учебные материалы</div><div className="side-card__title">Файлы ваших дисциплин</div></Link>
+  if (user.role === 'student') return <Link to="/student/grades" className="side-card"><div className="eyebrow">Учебные материалы</div><div className="side-card__title">Файлы ваших дисциплин</div></Link>
   if (user.role === 'staff') return null
   const s = sheets[0]
   if (!s) return null

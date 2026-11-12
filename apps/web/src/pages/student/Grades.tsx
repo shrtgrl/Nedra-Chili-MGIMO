@@ -2,16 +2,30 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useData } from '../../context/data'
 import { average, gradeLabel } from '../../lib/format'
+import { SubjectMaterials, openSubject } from './SubjectMaterials'
+import { useMaterials } from '../../context/materials'
 import { Badge, Button, Disclaimer, IconButton, PageHeader, Ring, ScoreBar, Segmented, ThemeButton } from '../../components/ui'
 
 export function GradesPage() {
   const { unreadCount, grades } = useData()
   const navigate = useNavigate()
+  const { forMe } = useMaterials()
   const [selectedTerm,setTerm]=useState('')
   const semesters=[...new Set(grades.map(g=>g.semester))].sort((a,b)=>b-a)
   const term=selectedTerm||String(semesters[0]??1)
   const all=grades.filter(g=>String(g.semester)===term)
   const list=all.filter((g):g is typeof g & {score:number}=>g.score!==null)
+  const subjectCell = (name: string) => {
+    const n = forMe.filter((m) => m.subject === name).length
+    return n > 0 ? (
+      <a className="subject-link" href="#materials" title="К материалам по предмету" onClick={(e) => { e.preventDefault(); openSubject(name) }}>
+        {name}
+        <span className="subject-link__n">{n}</span>
+      </a>
+    ) : (
+      name
+    )
+  }
   const avg = average(list.map((d) => d.score))
   const admitted = list.filter((d) => d.score >= 50).length
   const exams = all.filter((d) => d.form === 'Экзамен').length
@@ -22,7 +36,7 @@ export function GradesPage() {
     <>
       <PageHeader
         eyebrow={`Семестр ${term}`}
-        title="Успеваемость"
+        title="Предметы"
         actions={
           <>
             <ThemeButton />
@@ -31,6 +45,7 @@ export function GradesPage() {
         }
       />
       <div className="grid-side">
+        <div className="stack">
         <section className="card">
           <div className="card__head">
             <h2 className="card__title card__title--lg">Дисциплины</h2>
@@ -53,13 +68,15 @@ export function GradesPage() {
               </thead>
               <tbody>
                 {all.length===0 && <tr><td colSpan={5}>Дисциплин пока нет.</td></tr>}
-                {all.filter(g=>g.score===null).map(g=><tr key={g.id}><td>{g.name}</td><td>{g.form}</td><td colSpan={3}>Балл не выставлен</td></tr>)}
+                {all.filter(g=>g.score===null).map(g=><tr key={g.id}><td className="strong">{subjectCell(g.name)}</td><td>{g.form}</td><td colSpan={3}>Балл не выставлен</td></tr>)}
                 {list.map((d) => {
                   const g = gradeLabel(d.score, d.form)
                   const warn = d.id === weakest?.id
                   return (
                     <tr key={d.id}>
-                      <td className="strong">{d.name}</td>
+                      <td className="strong">
+                        {subjectCell(d.name)}
+                      </td>
                       <td className="muted">{d.form}</td>
                       <td className="grades-table__bar">
                         <ScoreBar value={d.score} warn={warn} />
@@ -75,6 +92,8 @@ export function GradesPage() {
             </table>
           </div>
         </section>
+        <SubjectMaterials subjects={[...new Set(grades.map((g) => g.name))]} />
+        </div>
 
         <div className="stack">
           <section className="card card--accent">
