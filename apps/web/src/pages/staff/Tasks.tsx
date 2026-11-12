@@ -103,13 +103,6 @@ export function StaffTasksPage() {
             </button>
           ))}
         </div>
-        <label className="staff-type">
-          <span className="sr-only">Тип заявки</span>
-          <select className="input staff-type__select" value={filter} onChange={(e) => setFilter(e.target.value as Filter)}>
-            <option value="all">Все типы · {count('all')}</option>
-            {(Object.keys(TYPE_SHORT) as ApiStaffRequest['type'][]).map((t) => <option key={t} value={t}>{TYPE_LABEL[t]} · {count(t)}</option>)}
-          </select>
-        </label>
       </div>
 
       {error && (
@@ -121,8 +114,18 @@ export function StaffTasksPage() {
       <div className="grid-inbox grid-queue">
         <section className="card" aria-label="Очередь заявок">
           <div className="card__head">
-            <h2 className="card__title card__title--lg">Очередь <span className="small muted">· {shown.length}</span></h2>
-            <span className="small muted">сначала срочные</span>
+            <div>
+              <h2 className="card__title card__title--lg">Очередь <span className="small muted">· {shown.length}</span></h2>
+              <span className="small muted">сначала срочные</span>
+            </div>
+            <label className="staff-type">
+              <span className="sr-only">Тип заявки</span>
+              <select className="input staff-type__select" value={filter} onChange={(e) => setFilter(e.target.value as Filter)}>
+                <option value="all">Все типы · {count('all')}</option>
+                {(Object.keys(TYPE_SHORT) as ApiStaffRequest['type'][]).map((t) => <option key={t} value={t}>{TYPE_LABEL[t]} · {count(t)}</option>)}
+              </select>
+            </label>
+
           </div>
           {loading && <p className="muted">Загружаем заявки…</p>}
           {!loading && shown.length === 0 && <p className="muted queue-empty">{queue.length ? 'Здесь пусто. Выберите другой статус или тип, либо очистите поиск.' : 'Заявок пока нет.'}</p>}

@@ -5217,9 +5217,18 @@ tbody tr:last-child .tt__cell.is-today {
     flex-wrap: wrap;
   }
   .staff-type,
-  .staff-type__select {
-    width: 100%;
-  }
+  .staff-type {
+  flex: 0 0 auto;
+}
+.staff-type__select {
+  width: auto;
+  max-width: 190px;
+  height: 38px;
+  padding: 0 34px 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
 }
 .staff-bar .staff-chips {
   margin-bottom: 0;
