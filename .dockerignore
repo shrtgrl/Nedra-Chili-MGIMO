@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+.neon
+.agents
+.codex
+**/node_modules
+**/dist
+**/dist-single
+**/*.log
