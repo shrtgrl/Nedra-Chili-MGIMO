@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Badge, Button } from '../../components/ui'
+import { Badge } from '../../components/ui'
 import { Icon } from '../../components/Icon'
 import { useMaterials } from '../../context/materials'
-import { fileSize, linkLabel, materialDate } from '../../lib/materials'
+import { fileSize, linkLabel } from '../../lib/materials'
 import { pluralize } from '../../lib/format'
 
 export const subjectAnchor = (name: string) => `subject-${name.toLowerCase().replace(/[^a-zа-яё0-9]+/gi, '-')}`
+
+const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
 
 /** Раскрыть раздел предмета и прокрутить к нему (вызывается из таблицы оценок). */
 export function openSubject(name: string) {
@@ -114,31 +116,37 @@ export function SubjectMaterials({ subjects }: { subjects: string[] }) {
                     const read = isRead(m.id)
                     return (
                       <li key={m.id} className={`mat-item ${read ? '' : 'is-new'}`}>
-                        <div className="mat-item__top">
-                          <b className="mat-item__title">{m.title}</b>
-                          {!read && <Badge tone="hl">Новое</Badge>}
-                        </div>
-                        <div className="mat-item__meta">{m.teacherName} · {materialDate(m)}</div>
-                        {m.description && <p className="mat-item__text">{m.description}</p>}
-                        {(m.links.length > 0 || m.files.length > 0) && (
-                          <div className="mat-item__files">
-                            {m.links.map((l) => (
-                              <a key={l.url} className="mat-chip" href={l.url} target="_blank" rel="noopener noreferrer" onClick={() => markRead(m.id)}>
-                                <Icon name="arrowRight" size={14} /> {linkLabel(l.url)}
-                              </a>
-                            ))}
-                            {m.files.map((f) => (
-                              <a key={f.name} className="mat-chip" href={f.dataUrl} download={f.name} onClick={() => markRead(m.id)}>
-                                <Icon name="download" size={14} /> {f.name} <span className="mat-chip__size">{fileSize(f.size)}</span>
-                              </a>
-                            ))}
+                        <time className="mat-date" dateTime={m.createdAt}>
+                          <b>{new Date(m.createdAt).getDate()}</b>
+                          <span>{MONTHS[new Date(m.createdAt).getMonth()]}</span>
+                        </time>
+                        <div className="mat-item__body">
+                          <div className="mat-item__top">
+                            <b className="mat-item__title">{m.title}</b>
+                            {!read && <Badge tone="hl">Новое</Badge>}
                           </div>
-                        )}
-                        {!read && (
-                          <Button size="sm" variant="surface" className="mat-read" type="button" icon="check" onClick={() => markRead(m.id)}>
-                            Отметить прочитанным
-                          </Button>
-                        )}
+                          <div className="mat-item__meta">{m.teacherName}</div>
+                          {m.description && <p className="mat-item__text">{m.description}</p>}
+                          {(m.links.length > 0 || m.files.length > 0 || !read) && (
+                            <div className="mat-item__files">
+                              {m.links.map((l) => (
+                                <a key={l.url} className="mat-chip" href={l.url} target="_blank" rel="noopener noreferrer" onClick={() => markRead(m.id)}>
+                                  <Icon name="arrowRight" size={14} /> {linkLabel(l.url)}
+                                </a>
+                              ))}
+                              {m.files.map((f) => (
+                                <a key={f.name} className="mat-chip" href={f.dataUrl} download={f.name} onClick={() => markRead(m.id)}>
+                                  <Icon name="download" size={14} /> {f.name} <span className="mat-chip__size">{fileSize(f.size)}</span>
+                                </a>
+                              ))}
+                              {!read && (
+                                <button type="button" className="mat-read" onClick={() => markRead(m.id)}>
+                                  <Icon name="check" size={14} /> Прочитано
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </li>
                     )
                   })}

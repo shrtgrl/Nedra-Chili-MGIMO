@@ -4684,14 +4684,15 @@ html.lock-scroll body {
   display: grid;
   gap: 28px;
 }
+.mat-groups {
+  gap: 0;
+}
 .mat-group {
   scroll-margin-top: 90px;
-  border-radius: 22px;
-  background: var(--surface-2);
-  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+  border-top: 1px solid var(--line);
 }
-.mat-group:has(.mat-group__head:hover) {
-  box-shadow: inset 0 0 0 1.5px var(--line);
+.mat-group:last-child {
+  border-bottom: 1px solid var(--line);
 }
 .mat-group__head {
   display: flex;
@@ -4699,39 +4700,43 @@ html.lock-scroll body {
   justify-content: space-between;
   gap: 16px;
   width: 100%;
-  padding: 18px 18px 18px 22px;
+  padding: 20px 4px;
   text-align: left;
-  border-radius: 22px;
+  transition: padding 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.mat-group__head:hover {
+  padding-inline: 12px;
 }
 .mat-group__head:focus-visible {
   outline: 2px solid var(--ink);
-  outline-offset: 2px;
+  outline-offset: -2px;
+  border-radius: 10px;
 }
 .mat-group__text {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 14px;
+  row-gap: 2px;
   min-width: 0;
 }
 .mat-group__title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .mat-group__count {
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--muted);
 }
 .mat-group__chev {
   flex: none;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
   transition: transform 0.4s cubic-bezier(0.34, 1.3, 0.5, 1), background-color 0.25s ease, color 0.25s ease;
 }
 .mat-group__head:hover .mat-group__chev {
@@ -4754,18 +4759,71 @@ html.lock-scroll body {
 .mat-group__panel > .mat-list {
   min-height: 0;
   overflow: hidden;
-  padding: 0 12px;
-  transition: padding 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  gap: 0;
+  padding: 0 4px;
 }
 .mat-group.is-open .mat-group__panel > .mat-list {
-  padding-bottom: 12px;
+  padding-bottom: 8px;
 }
-.mat-group .mat-item {
-  background: var(--surface);
-  border-color: transparent;
+.mat-list .mat-item {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px 0;
+  border: 0;
+  border-top: 1px dashed var(--line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
-.mat-group .mat-item.is-new {
-  box-shadow: inset 3px 0 0 var(--strong);
+.mat-list .mat-item:first-child {
+  border-top: 0;
+}
+.mat-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: start;
+  line-height: 1;
+  padding-top: 2px;
+  color: var(--ink-3);
+}
+.mat-date b {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  position: relative;
+}
+.mat-date span {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.mat-item.is-new .mat-date b::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--strong);
+}
+.mat-item__body {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+@media (max-width: 520px) {
+  .mat-list .mat-item {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .mat-date b {
+    font-size: 22px;
+  }
 }
 .mat-tools {
   display: flex;
@@ -4823,16 +4881,20 @@ html.lock-scroll body {
 .mat-find__input::-webkit-search-cancel-button {
   display: none;
 }
-.mat-read,
-.mat-item .mat-read {
-  justify-self: start;
+.mat-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
   border: 1.5px solid var(--strong);
+  font-size: 14px;
+  font-weight: 700;
   color: var(--ink);
-  background: transparent;
-  padding-inline: 16px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
-.card .mat-read:hover,
-.mat-item .mat-read:hover {
+.mat-read:hover {
   background: var(--strong);
   color: var(--on-strong);
 }
