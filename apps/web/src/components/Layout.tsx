@@ -6,6 +6,7 @@ import { Avatar, Brand, IconButton, NewYearButton, ThemeButton } from './ui'
 import { useUser } from '../context/auth'
 import { useData } from '../context/data'
 import { useStaffOptional } from '../context/staff'
+import { useMaterials } from '../context/materials'
 import { useNow } from '../context/clock'
 import { DEADLINES } from '../data/mock'
 import { Forest, Garland, Snowflake, useNewYear } from './newyear'
@@ -22,6 +23,7 @@ function useNav(): NavItem[] {
   const user = useUser()
   const { requests, unreadCount, newInquiries } = useData()
   const staff = useStaffOptional()
+  const { unread: unreadMaterials } = useMaterials()
   if (user.role === 'staff') {
     return [
       { to: '/staff', label: 'Задачи', icon: 'inbox', badge: staff?.newCount, end: true },
@@ -32,7 +34,7 @@ function useNav(): NavItem[] {
     return [
       { to: '/student', label: 'Главная', icon: 'home', end: true },
       { to: '/student/schedule', label: 'Расписание', icon: 'calendar' },
-      { to: '/student/grades', label: 'Успеваемость', icon: 'chart' },
+      { to: '/student/grades', label: 'Предметы', icon: 'chart', badge: unreadMaterials },
       { to: '/student/requests', label: 'Заявки', icon: 'doc', badge: requests.filter((r) => r.stage < 2).length },
       { to: '/student/notifications', label: 'Уведомления', icon: 'bell', badge: unreadCount },
     ]
@@ -41,6 +43,7 @@ function useNav(): NavItem[] {
     { to: '/teacher', label: 'Главная', icon: 'home', end: true },
     { to: '/teacher/schedule', label: 'Расписание', icon: 'calendar' },
     { to: '/teacher/gradebook', label: 'Ведомость', icon: 'table' },
+    { to: '/teacher/materials', label: 'Материалы', icon: 'send' },
     { to: '/teacher/inquiries', label: 'Обращения', icon: 'inbox', badge: newInquiries },
   ]
 }
@@ -162,7 +165,8 @@ function MobileBar() {
 }
 
 function BottomNav() {
-  const nav = useNav().slice(0, 4)
+  const user = useUser()
+  const nav = useNav().slice(0, user.role === 'teacher' ? 5 : 4)
   const { pathname } = useLocation()
   const { box, ind } = useIndicator<HTMLElement>(pathname)
   return (

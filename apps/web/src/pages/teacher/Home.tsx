@@ -47,6 +47,9 @@ export function TeacherHome() {
             <ButtonLink to="/teacher/schedule" variant="surface" icon="calendar">
               Расписание на неделю
             </ButtonLink>
+            <ButtonLink to="/teacher/materials" variant="surface" icon="send">
+              Отправить материалы
+            </ButtonLink>
           </div>
           <TodayTimeline lessons={TEACHER_LESSONS} who="group" />
         </div>

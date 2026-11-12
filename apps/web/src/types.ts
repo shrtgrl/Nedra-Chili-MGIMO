@@ -108,3 +108,27 @@ export interface GradeSheet {
   deadlineLabel: string
   students: SheetStudent[]
 }
+
+export interface MaterialLink {
+  url: string
+}
+export interface MaterialFile {
+  name: string
+  size: number
+  type: string
+  /** Содержимое файла (data URL). В демо хранится в браузере; в боевой версии это будет ссылка на файл на сервере. */
+  dataUrl: string
+}
+/** Учебный материал, который преподаватель рассылает группам. */
+export interface Material {
+  id: string
+  subject: string
+  title: string
+  description: string
+  groups: string[]
+  authorId: string
+  teacherName: string
+  createdAt: string // ISO
+  links: MaterialLink[]
+  files: MaterialFile[]
+}

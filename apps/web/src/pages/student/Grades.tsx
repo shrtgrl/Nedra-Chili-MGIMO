@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useData } from '../../context/data'
 import { DISCIPLINES_AUTUMN, DISCIPLINES_SPRING } from '../../data/mock'
 import { average, gradeLabel } from '../../lib/format'
+import { SubjectMaterials, subjectAnchor } from './SubjectMaterials'
+import { useMaterials } from '../../context/materials'
 import { Badge, Button, Disclaimer, IconButton, PageHeader, Ring, ScoreBar, Segmented, ThemeButton } from '../../components/ui'
 
 export function GradesPage() {
   const { unreadCount } = useData()
   const navigate = useNavigate()
+  const { forMe } = useMaterials()
   const [term, setTerm] = useState<'autumn' | 'spring'>('autumn')
   const list = term === 'autumn' ? DISCIPLINES_AUTUMN : DISCIPLINES_SPRING
   const avg = average(list.map((d) => d.score))
@@ -20,7 +23,7 @@ export function GradesPage() {
     <>
       <PageHeader
         eyebrow={term === 'autumn' ? 'Осенний семестр 2026' : 'Весенний семестр 2026'}
-        title="Успеваемость"
+        title="Предметы"
         actions={
           <>
             <ThemeButton />
@@ -58,7 +61,14 @@ export function GradesPage() {
                   const warn = d.id === weakest.id
                   return (
                     <tr key={d.id}>
-                      <td className="strong">{d.name}</td>
+                      <td className="strong">
+                        {d.name}
+                        {forMe.filter((m) => m.subject === d.name).length > 0 && (
+                          <a className="mat-count" href={`#/student/grades`} onClick={(e) => { e.preventDefault(); document.getElementById(subjectAnchor(d.name))?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}>
+                            Материалы: {forMe.filter((m) => m.subject === d.name).length}
+                          </a>
+                        )}
+                      </td>
                       <td className="muted">{d.form}</td>
                       <td className="grades-table__bar">
                         <ScoreBar value={d.score} warn={warn} />
@@ -119,6 +129,7 @@ export function GradesPage() {
           </section>
         </div>
       </div>
+      <SubjectMaterials subjects={DISCIPLINES_AUTUMN.concat(DISCIPLINES_SPRING).map((d) => d.name)} />
       <Disclaimer />
     </>
   )

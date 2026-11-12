@@ -5,6 +5,7 @@ import type {
   GradeSheet,
   Inquiry,
   Lesson,
+  Material,
   Notice,
   StudentRequest,
   User,
@@ -165,5 +166,34 @@ export const INITIAL_SHEETS: GradeSheet[] = [
   {
     id: 'sh3', subject: 'Экономика данных', group: 'ИМО-31', form: 'Зачёт', deadlineLabel: '27 ноября',
     students: names31.map((name, i) => ({ id: `31-${i}`, name, score: null })),
+  },
+]
+
+/** Группы, которым преподаватель может отправлять материалы (демо). Последние две — демо-группы сервера. */
+export const TEACHER_GROUPS: { name: string; hint: string }[] = [
+  { name: 'ИМО-21', hint: 'Международные отношения · 2 курс' },
+  { name: 'ИМО-22', hint: 'Международные отношения · 2 курс' },
+  { name: 'ИМО-31', hint: 'Международные отношения · 3 курс' },
+  { name: 'ДЕМО-МО-101', hint: 'Международные отношения · 1 курс' },
+  { name: 'ДЕМО-ЭК-202', hint: 'Экономика · 2 курс' },
+]
+
+export const TEACHER_SUBJECTS = ['Макроэкономика', 'Экономика данных', 'Теория вероятностей', 'Основы вайб-кодинга', 'Проектирование интерфейсов']
+
+export const INITIAL_MATERIALS: Material[] = [
+  {
+    id: 'm1', subject: 'Макроэкономика', title: 'Конспект лекции: ВВП и инфляция', groups: ['ДЕМО-МО-101', 'ИМО-21'], authorId: 'demo-orlov', teacherName: 'Орлов А. В.',
+    createdAt: '2026-11-09T18:20:00+03:00', description: 'Конспект первой части курса. К семинару в среду прочитайте разделы 1–3 и подготовьте по одному вопросу.',
+    links: [{ url: 'https://www.cbr.ru/' }], files: [],
+  },
+  {
+    id: 'm2', subject: 'Теория вероятностей', title: 'Задачи для подготовки к контрольной', groups: ['ДЕМО-МО-101'], authorId: 'demo-gromova', teacherName: 'Громова Т. И.',
+    createdAt: '2026-11-10T12:05:00+03:00', description: 'Контрольная — 14 ноября. Решите задачи 1–12 из списка, разбор — на практике в четверг.',
+    links: [], files: [],
+  },
+  {
+    id: 'm3', subject: 'Основы вайб-кодинга', title: 'Критерии оценки итогового проекта', groups: ['ДЕМО-МО-101', 'ДЕМО-ЭК-202'], authorId: 'demo-smirnov', teacherName: 'Смирнов Д. А.',
+    createdAt: '2026-11-05T10:40:00+03:00', description: 'Что проверяется при защите: идея, работающий прототип, качество интерфейса, презентация. Срок сдачи — 12 ноября, 23:59.',
+    links: [], files: [],
   },
 ]

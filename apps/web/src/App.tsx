@@ -6,6 +6,7 @@ import { SettingsProvider } from './context/settings'
 import { ClockProvider } from './context/clock'
 import { ToastProvider } from './context/toast'
 import { StaffProvider } from './context/staff'
+import { MaterialsProvider } from './context/materials'
 import type { Role } from './types'
 import { AppLayout } from './components/Layout'
 import { Snow, useNewYear } from './components/newyear'
@@ -19,6 +20,7 @@ import { NotificationsPage } from './pages/student/Notifications'
 import { TeacherHome } from './pages/teacher/Home'
 import { GradebookPage } from './pages/teacher/Gradebook'
 import { InquiriesPage } from './pages/teacher/Inquiries'
+import { TeacherMaterialsPage } from './pages/teacher/Materials'
 import { StaffTasksPage } from './pages/staff/Tasks'
 import { StaffSchedulePage } from './pages/staff/Schedule'
 
@@ -29,7 +31,7 @@ function NewYearBackdrop() {
 function AuthenticatedApp() {
   const { user, loading } = useAuth()
   if (loading) return <div className="login" role="status">Проверяем сессию…</div>
-  return <DataProvider key={user?.id ?? 'guest'}><AppRoutes /></DataProvider>
+  return <MaterialsProvider><DataProvider key={user?.id ?? 'guest'}><AppRoutes /></DataProvider></MaterialsProvider>
 }
 
 function RequireRole({ role, children }: { role: Role; children: ReactElement }) {
@@ -91,6 +93,7 @@ function AppRoutes() {
                   <Route index element={<TeacherHome />} />
                   <Route path="schedule" element={<SchedulePage />} />
                   <Route path="gradebook" element={<GradebookPage />} />
+                  <Route path="materials" element={<TeacherMaterialsPage />} />
                   <Route path="inquiries" element={<InquiriesPage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
