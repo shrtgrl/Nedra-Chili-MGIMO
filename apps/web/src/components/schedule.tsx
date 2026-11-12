@@ -188,7 +188,7 @@ function LessonCard({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group';
 }
 
 /* ── Недельная сетка: строки — пары, столбцы — дни ──────── */
-const KIND_SHORT: Record<Lesson['kind'], string> = { Лекция: 'Лк', Семинар: 'С', Практика: 'Пр' }
+const KIND_SHORT: Record<Lesson['kind'], string> = { Лекция: 'ЛК', Семинар: 'С', Практика: 'ПР' }
 const KIND_CLASS: Record<Lesson['kind'], string> = { Лекция: 'lec', Семинар: 'sem', Практика: 'pra' }
 
 function GridCell({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; progress?: number }) {
@@ -275,9 +275,9 @@ function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][];
         </tbody>
       </table>
       <ul className="tt-key" aria-label="Обозначения">
-        <li><b className="tt-k--lec">Лк</b> лекция</li>
+        <li><b className="tt-k--lec">ЛК</b> лекция</li>
         <li><b className="tt-k--sem">С</b> семинар</li>
-        <li><b className="tt-k--pra">Пр</b> практика</li>
+        <li><b className="tt-k--pra">ПР</b> практика</li>
       </ul>
     </div>
   )

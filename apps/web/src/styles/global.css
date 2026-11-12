@@ -5074,7 +5074,7 @@ tbody tr:last-child .tt__cell.is-today {
   display: grid;
   align-content: start;
   gap: 2px;
-  padding: 12px 14px 52px;
+  padding: 12px 14px 50px;
   border-radius: 18px;
   background: var(--surface-2);
   transition: transform 0.25s cubic-bezier(0.34, 1.3, 0.5, 1), box-shadow 0.25s ease;
@@ -5088,14 +5088,15 @@ tbody tr:last-child .tt__cell.is-today {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  min-width: 34px;
-  height: 34px;
-  padding: 0 8px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 5px;
   display: grid;
   place-items: center;
   border-radius: 999px;
   font-size: 15px;
   font-weight: 800;
+  letter-spacing: 0.02em;
 }
 .tt-k--lec {
   background: var(--accent);
@@ -5106,8 +5107,8 @@ tbody tr:last-child .tt__cell.is-today {
   color: var(--on-hl, #181e2a);
 }
 .tt-k--pra {
-  background: var(--ok-bg);
-  color: var(--ok-ink);
+  background: var(--ink);
+  color: var(--surface);
 }
 .tt-lesson__title {
   font-size: 15px;
@@ -5180,12 +5181,13 @@ tbody tr:last-child .tt__cell.is-today {
 .tt-key b {
   display: grid;
   place-items: center;
-  min-width: 30px;
-  height: 30px;
-  padding: 0 8px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 5px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 800;
+  letter-spacing: 0.02em;
 }
 @media (prefers-reduced-motion: reduce) {
   .tt-lesson:hover {
