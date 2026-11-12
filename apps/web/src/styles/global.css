@@ -4969,9 +4969,7 @@ html.lock-scroll body {
   width: 100%;
   min-width: 860px;
   border-collapse: separate;
-  border-spacing: 8px;
-  margin: -8px;
-  width: calc(100% + 16px);
+  border-spacing: 0;
   table-layout: fixed;
 }
 .tt__corner,
@@ -4983,6 +4981,7 @@ html.lock-scroll body {
   padding: 6px 10px 14px;
   text-align: left;
   font-weight: 600;
+  border-bottom: 2px solid var(--ink);
 }
 .tt__dow {
   display: block;
@@ -5019,6 +5018,7 @@ html.lock-scroll body {
   text-align: left;
   vertical-align: top;
   font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--line);
 }
 .tt__time b {
   display: block;
@@ -5040,40 +5040,29 @@ html.lock-scroll body {
   vertical-align: middle;
 }
 .tt__cell {
-  --tint: transparent;
+  height: 1px; /* чтобы блок внутри растягивался на всю высоту строки */
   vertical-align: top;
-  padding: 0;
-  background: var(--tint);
-  border-radius: 20px;
-  transition: box-shadow 0.2s ease;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  border-left: 1px dashed var(--line);
 }
-.tt__cell.is-free {
-  background: color-mix(in srgb, var(--surface-2) 50%, transparent);
-}
-.tt__cell.is-today.is-free {
-  background: color-mix(in srgb, var(--hl) 10%, transparent);
+.tt__cell.is-today,
+.tt__day.is-today {
+  background: color-mix(in srgb, var(--hl) 15%, transparent);
 }
 .tt__day.is-today {
-  background: transparent;
+  border-radius: 20px 20px 0 0;
+  border-bottom-color: var(--strong);
+  border-bottom-width: 4px;
 }
-.tt__cell--lec {
-  --tint: color-mix(in srgb, var(--accent) 38%, var(--surface));
+tbody tr:last-child .tt__cell.is-today {
+  border-radius: 0 0 20px 20px;
 }
-.tt__cell--sem {
-  --tint: color-mix(in srgb, var(--hl) 55%, var(--surface));
-}
-.tt__cell--pra {
-  --tint: var(--surface-2);
-}
-.tt__cell--moved {
-  --tint: var(--warn-bg);
-}
-.tt__cell--cancelled {
-  --tint: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--line);
-}
-.tt__cell:not(.is-free):hover {
-  box-shadow: inset 0 0 0 2px var(--ink-3);
+.tt__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
 }
 .tt__empty {
   padding: 28px 0;
@@ -5081,19 +5070,43 @@ html.lock-scroll body {
 }
 
 .tt-lesson {
+  position: relative;
+  flex: 1;
   display: grid;
+  align-content: start;
   gap: 2px;
-  padding: 12px 14px 14px;
+  padding: 12px 14px 42px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  transition: transform 0.25s cubic-bezier(0.34, 1.3, 0.5, 1), box-shadow 0.25s ease;
 }
-.tt-lesson + .tt-lesson {
-  border-top: 1px dashed var(--ink-3);
+.tt-lesson:hover {
+  transform: scale(1.04);
+  z-index: 1;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+}
+.tt-badge {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 .tt-lesson__title {
   font-size: 15px;
   font-weight: 700;
   line-height: 1.25;
   overflow-wrap: break-word;
-  hyphens: auto;
+  hyphens: manual;
 }
 .tt-lesson__meta {
   font-size: 13px;
@@ -5103,30 +5116,29 @@ html.lock-scroll body {
 .tt-tag {
   justify-self: start;
   margin-top: 6px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.3;
-}
-.tt-tag--danger {
-  background: var(--danger-bg);
-  color: var(--danger-ink);
-}
-.tt-tag--warn {
-  background: var(--warn-bg);
-  color: var(--warn-ink);
 }
 .tt-tag--live {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
   background: var(--strong);
   color: var(--on-strong);
+  font-size: 12px;
 }
 .tt-lesson--cancelled .tt-lesson__title,
-.tt-lesson--cancelled .tt-lesson__meta {
-  color: var(--ink-3);
+.tt-lesson--cancelled .tt-lesson__meta,
+.tt-tag--danger {
+  color: var(--danger-ink);
+}
+.tt-lesson--moved .tt-lesson__title,
+.tt-lesson--moved .tt-lesson__meta,
+.tt-tag--warn {
+  color: var(--warn-ink);
 }
 .tt-lesson__progress {
   display: block;
@@ -5147,57 +5159,30 @@ html.lock-scroll body {
   gap: 18px;
   flex-wrap: wrap;
   list-style: none;
-  margin: 14px 0 0 84px;
+  margin: 14px 0 0 76px;
   padding: 0;
   font-size: 13px;
   color: var(--ink-3);
 }
-.tt-key__item {
+.tt-key li {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.tt-key__item::before {
-  content: '';
-  width: 16px;
-  height: 16px;
-  border-radius: 5px;
+.tt-key b {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 999px;
   background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
 }
-.tt-key__item--lec::before {
-  background: color-mix(in srgb, var(--accent) 38%, var(--surface));
-}
-.tt-key__item--sem::before {
-  background: color-mix(in srgb, var(--hl) 55%, var(--surface));
-}
-
-/* в тёмной теме оттенки приглушены, чтобы серый текст читался */
-[data-theme='dark'] .tt__cell--lec,
-[data-theme='dark'] .tt-key__item--lec::before {
-  --tint: color-mix(in srgb, var(--accent) 20%, var(--surface));
-  background: var(--tint);
-}
-[data-theme='dark'] .tt__cell--sem,
-[data-theme='dark'] .tt-key__item--sem::before {
-  --tint: color-mix(in srgb, var(--hl) 17%, var(--surface));
-  background: var(--tint);
-}
-[data-theme='dark'] .tt__cell--pra {
-  background: var(--tint);
-}
-[data-theme='dark'] .tt__cell--moved {
-  background: var(--warn-bg);
-}
-[data-theme='dark'] .tt__cell--cancelled {
-  background: transparent;
-}
-[data-theme='dark'] .tt__cell.is-free {
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
-}
-[data-theme='dark'] .tt__cell.is-today.is-free {
-  background: color-mix(in srgb, var(--hl) 10%, transparent);
-}
-[data-theme='dark'] .tt-lesson__meta {
-  color: color-mix(in srgb, var(--ink) 62%, transparent);
+@media (prefers-reduced-motion: reduce) {
+  .tt-lesson:hover {
+    transform: none;
+  }
 }
