@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useData } from '../../context/data'
 import { DISCIPLINES_AUTUMN, DISCIPLINES_SPRING } from '../../data/mock'
 import { average, gradeLabel } from '../../lib/format'
-import { SubjectMaterials, subjectAnchor } from './SubjectMaterials'
+import { SubjectMaterials, openSubject } from './SubjectMaterials'
 import { useMaterials } from '../../context/materials'
 import { Badge, Button, Disclaimer, IconButton, PageHeader, Ring, ScoreBar, Segmented, ThemeButton } from '../../components/ui'
 
@@ -63,11 +63,13 @@ export function GradesPage() {
                   return (
                     <tr key={d.id}>
                       <td className="strong">
-                        {d.name}
-                        {forMe.filter((m) => m.subject === d.name).length > 0 && (
-                          <a className="mat-count" href={`#/student/grades`} onClick={(e) => { e.preventDefault(); document.getElementById(subjectAnchor(d.name))?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}>
-                            Материалы: {forMe.filter((m) => m.subject === d.name).length}
+                        {forMe.some((m) => m.subject === d.name) ? (
+                          <a className="subject-link" href="#materials" title="К материалам по предмету" onClick={(e) => { e.preventDefault(); openSubject(d.name) }}>
+                            {d.name}
+                            <span className="subject-link__n">{forMe.filter((m) => m.subject === d.name).length}</span>
                           </a>
+                        ) : (
+                          d.name
                         )}
                       </td>
                       <td className="muted">{d.form}</td>
