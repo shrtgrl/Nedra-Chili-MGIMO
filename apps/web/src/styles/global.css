@@ -4969,7 +4969,9 @@ html.lock-scroll body {
   width: 100%;
   min-width: 860px;
   border-collapse: separate;
-  border-spacing: 0;
+  border-spacing: 8px;
+  margin: -8px;
+  width: calc(100% + 16px);
   table-layout: fixed;
 }
 .tt__corner,
@@ -4981,7 +4983,6 @@ html.lock-scroll body {
   padding: 6px 10px 14px;
   text-align: left;
   font-weight: 600;
-  border-bottom: 2px solid var(--ink);
 }
 .tt__dow {
   display: block;
@@ -5003,10 +5004,6 @@ html.lock-scroll body {
   font-size: 13px;
   color: var(--ink-3);
 }
-.tt__day.is-today {
-  border-bottom-color: var(--strong);
-  border-bottom-width: 4px;
-}
 .tt__day.is-today .tt__dow {
   color: var(--ink);
 }
@@ -5022,7 +5019,6 @@ html.lock-scroll body {
   text-align: left;
   vertical-align: top;
   font-variant-numeric: tabular-nums;
-  border-bottom: 1px solid var(--line);
 }
 .tt__time b {
   display: block;
@@ -5048,12 +5044,14 @@ html.lock-scroll body {
   vertical-align: top;
   padding: 0;
   background: var(--tint);
-  border-bottom: 1px solid var(--line);
-  border-left: 1px solid var(--line);
+  border-radius: 20px;
   transition: box-shadow 0.2s ease;
 }
+.tt__cell.is-free {
+  background: color-mix(in srgb, var(--surface-2) 50%, transparent);
+}
 .tt__cell.is-today.is-free {
-  background: color-mix(in srgb, var(--hl) 9%, transparent);
+  background: color-mix(in srgb, var(--hl) 10%, transparent);
 }
 .tt__day.is-today {
   background: transparent;
@@ -5072,6 +5070,7 @@ html.lock-scroll body {
 }
 .tt__cell--cancelled {
   --tint: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--line);
 }
 .tt__cell:not(.is-free):hover {
   box-shadow: inset 0 0 0 2px var(--ink-3);
@@ -5148,7 +5147,7 @@ html.lock-scroll body {
   gap: 18px;
   flex-wrap: wrap;
   list-style: none;
-  margin: 14px 0 0 76px;
+  margin: 14px 0 0 84px;
   padding: 0;
   font-size: 13px;
   color: var(--ink-3);
@@ -5192,6 +5191,12 @@ html.lock-scroll body {
 }
 [data-theme='dark'] .tt__cell--cancelled {
   background: transparent;
+}
+[data-theme='dark'] .tt__cell.is-free {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+[data-theme='dark'] .tt__cell.is-today.is-free {
+  background: color-mix(in srgb, var(--hl) 10%, transparent);
 }
 [data-theme='dark'] .tt-lesson__meta {
   color: color-mix(in srgb, var(--ink) 62%, transparent);
