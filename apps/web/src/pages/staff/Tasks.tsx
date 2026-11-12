@@ -12,6 +12,8 @@ import { Avatar, Badge, Button, Disclaimer, PageHeader, Stages, ThemeButton, typ
 import { Icon } from '../../components/Icon'
 
 type Filter = 'all' | ApiStaffRequest['type']
+type StatusFilter = 'all' | ApiStaffRequest['status']
+const STATUS_FILTERS: [StatusFilter, string][] = [['all', 'Любой статус'], ['submitted', 'Новые'], ['in_progress', 'В работе'], ['ready', 'Готовы'], ['issued', 'Выданы'], ['rejected', 'Отклонены'], ['cancelled', 'Отменены']]
 const TONE: Record<ApiStaffRequest['status'], Tone> = { submitted: 'warn', in_progress: 'accent', ready: 'ok', issued: 'neutral', rejected: 'danger', cancelled: 'neutral' }
 
 const dayMonth = (iso: string | Date) => new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
@@ -30,10 +32,12 @@ export function StaffTasksPage() {
   const toast = useToast()
   const [params, setParams] = useSearchParams()
   const [filter, setFilter] = useState<Filter>('all')
+  const [status, setStatus] = useState<StatusFilter>('all')
   const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const detailRef = useRef<HTMLElement>(null)
   const chips = useIndicator<HTMLDivElement>(filter)
+  const statusChips = useIndicator<HTMLDivElement>(status)
 
   const queue = useMemo(() => sortQueue([...requests]), [requests])
   const stats = useMemo(() => {
@@ -47,9 +51,10 @@ export function StaffTasksPage() {
   }, [requests, now])
 
   const q = query.trim().toLowerCase()
-  const shown = queue.filter((r) => (filter === 'all' || r.type === filter) && (!q || `${r.fullName} ${r.groupName ?? ''} ${shortNumber(r)} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)))
+  const shown = queue.filter((r) => (filter === 'all' || r.type === filter) && (status === 'all' || r.status === status) && (!q || `${r.fullName} ${r.groupName ?? ''} ${shortNumber(r)} ${TYPE_LABEL[r.type]}`.toLowerCase().includes(q)))
   const selected = queue.find((r) => r.id === params.get('id')) ?? shown[0]
-  const count = (f: Filter) => queue.filter((r) => f === 'all' || r.type === f).length
+  const count = (f: Filter) => queue.filter((r) => (f === 'all' || r.type === f) && (status === 'all' || r.status === status)).length
+  const countStatus = (st: StatusFilter) => queue.filter((r) => (filter === 'all' || r.type === filter) && (st === 'all' || r.status === st)).length
 
   // на узком экране карточка заявки открывается под списком — прокручиваем к ней
   const pick = (id: string) => {
@@ -97,6 +102,15 @@ export function StaffTasksPage() {
         ))}
       </div>
 
+      <div ref={statusChips.box} className="chips staff-chips staff-chips--status" role="radiogroup" aria-label="Статус заявки">
+        <span ref={statusChips.ind} className="chips__ind" aria-hidden="true" />
+        {STATUS_FILTERS.filter(([st]) => st === 'all' || st === status || countStatus(st) > 0).map(([st, label]) => (
+          <button key={st} type="button" role="radio" aria-checked={status === st} className={`chip ${status === st ? 'is-active' : ''}`} onClick={() => setStatus(st)}>
+            {label} <span className="chip__count">{countStatus(st)}</span>
+          </button>
+        ))}
+      </div>
+
       {error && (
         <p className="form-error" role="alert">
           <Icon name="alert" size={16} /> {error} <button type="button" className="link-btn" onClick={() => void reload()}>Повторить</button>
@@ -110,7 +124,7 @@ export function StaffTasksPage() {
             <span className="small muted">сначала срочные</span>
           </div>
           {loading && <p className="muted">Загружаем заявки…</p>}
-          {!loading && shown.length === 0 && <p className="muted queue-empty">{queue.length ? 'Ничего не найдено — измените фильтр или запрос.' : 'Заявок пока нет.'}</p>}
+          {!loading && shown.length === 0 && <p className="muted queue-empty">{queue.length ? 'Ничего не найдено — измените фильтры или запрос.' : 'Заявок пока нет.'}</p>}
           <ul className="inbox queue" role="listbox" aria-label="Заявки">
             {shown.map((r) => {
               const late = isOverdue(r, now)
