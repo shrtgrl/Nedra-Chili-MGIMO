@@ -1,3 +1,7 @@
+import { DomainError } from './domain.js';
+import { academicRoutes } from './academic-routes.js';
+import { materialRoutes } from './material-routes.js';
+import { notificationRoutes } from './notification-routes.js';
 import { SignJWT, jwtVerify } from 'jose';
 import Fastify, { type FastifyRequest, type FastifyReply } from 'fastify';
 import cookie from '@fastify/cookie';
@@ -51,6 +55,7 @@ export function buildApp(options: { logger?: boolean; origin?: string; secureCoo
     }
   });
   app.setErrorHandler((err, req, reply) => {
+    if (err instanceof DomainError) return reply.code(err.statusCode).send(error(err.code, err.message));
     const candidate = err instanceof Error && 'statusCode' in err ? err.statusCode : undefined;
     const status = typeof candidate === 'number' && candidate >= 400 && candidate < 500 ? candidate : 500;
     if (status === 500) req.log.error({ code: 'INTERNAL_ERROR' }, 'Request failed');
@@ -64,11 +69,14 @@ export function buildApp(options: { logger?: boolean; origin?: string; secureCoo
       .innerJoin(users, eq(users.id, sessions.userId))
       .where(and(eq(sessions.tokenHash, digest(payload.jti!)), eq(sessions.userId, payload.sub!), gt(sessions.expiresAt, new Date()))).limit(1) : [];
     if (!user) { reply.code(401).send(error('UNAUTHORIZED', 'Войдите в аккаунт')); return null; }
-    if (user.role !== role) { reply.code(403).send(error('FORBIDDEN', 'Нет доступа к разделу')); return null; }
+    if (role !== '*' && user.role !== role) { reply.code(403).send(error('FORBIDDEN', 'Нет доступа к разделу')); return null; }
     return user.id;
   };
+  academicRoutes(app, db, authorize('*'));
+  materialRoutes(app, db, authorize('*'));
+  notificationRoutes(app, db, authorize('*'));
   requestRoutes(app, db, authorize('student'), authorize('staff'));
-  scheduleRoutes(app, db, authorize('staff'));
+  scheduleRoutes(app, db, authorize('staff'), authorize('*'));
   app.get('/health', async () => ({ status: 'ok' }));
   app.post<{ Body: { email: string; password: string } }>('/api/auth/login', {
     config: { rateLimit: { max: 10, timeWindow: '1 minute' } },

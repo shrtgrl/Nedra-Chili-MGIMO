@@ -4548,3 +4548,8 @@ html.lock-scroll body {
 @media (prefers-reduced-motion: reduce) {
   .form-swap { animation: none; }
 }
+/* All server-backed sections remain reachable on narrow screens. */
+@media (max-width: 760px) {
+  .bottom-nav { overflow-x: auto; justify-content: flex-start; }
+  .bottom-nav__item { flex: 0 0 auto; min-width: 76px; }
+}

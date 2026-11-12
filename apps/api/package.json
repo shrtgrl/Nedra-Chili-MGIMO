@@ -12,8 +12,10 @@
     "db:seed": "tsx --env-file=../../.env src/scripts/seed.ts",
     "db:reset-demo-passwords": "tsx --env-file=../../.env src/scripts/reset-demo-student-passwords.ts",
     "db:reset-demo-teacher-password": "tsx --env-file=../../.env src/scripts/reset-demo-teacher-password.ts",
-    "test": "node --env-file=../../.env --import tsx --test tests/*.test.ts",
-    "db:reset-demo-staff-password": "tsx --env-file=../../.env src/scripts/reset-demo-staff-password.ts"
+    "test": "npm run test:unit && npm run test:integration",
+    "db:reset-demo-staff-password": "tsx --env-file=../../.env src/scripts/reset-demo-staff-password.ts",
+    "test:unit": "node --import tsx --test tests/unit/*.test.ts",
+    "test:integration": "node --env-file-if-exists=../../.env ../../scripts/test-integration.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.5",

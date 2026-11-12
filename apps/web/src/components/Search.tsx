@@ -1,7 +1,8 @@
+import { useData } from '../context/data'
 import { useId, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Icon } from './Icon'
-import { DISCIPLINES_AUTUMN, REQUEST_TYPES, STUDENT_LESSONS } from '../data/mock'
+import { REQUEST_TYPES } from '../data/mock'
 
 interface Hit {
   label: string
@@ -15,12 +16,11 @@ const INDEX: Hit[] = [
   { label: 'Заявки и справки', hint: 'Раздел', to: '/student/requests' },
   { label: 'Уведомления', hint: 'Раздел', to: '/student/notifications' },
   { label: 'Профиль и оформление', hint: 'Раздел', to: '/student/profile' },
-  ...DISCIPLINES_AUTUMN.map((d) => ({ label: d.name, hint: `${d.score} баллов · ${d.form.toLowerCase()}`, to: '/student/grades' })),
   ...Object.values(REQUEST_TYPES).map((t) => ({ label: t, hint: 'Заявка', to: '/student/requests' })),
-  ...[...new Set(STUDENT_LESSONS.map((l) => l.teacher!))].map((t) => ({ label: t, hint: 'Преподаватель · расписание', to: '/student/schedule' })),
 ]
 
 export function Search() {
+  const {grades}=useData()
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
@@ -30,8 +30,8 @@ export function Search() {
   const hits = useMemo(() => {
     const s = q.trim().toLowerCase()
     if (!s) return []
-    return INDEX.filter((h) => h.label.toLowerCase().includes(s)).slice(0, 6)
-  }, [q])
+    return [...INDEX,...grades.map(g=>({label:g.name,hint:g.score===null?'Балл не выставлен':`${g.score} баллов`,to:'/student/grades'}))].filter((h) => h.label.toLowerCase().includes(s)).slice(0, 6)
+  }, [q,grades])
 
   const go = (h: Hit) => {
     setQ('')

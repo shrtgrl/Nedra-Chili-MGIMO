@@ -1,3 +1,4 @@
+import { moscowCivil, moscowTime, moscowYmd } from '../../lib/useSchedule'
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError, staffApi, type ApiGroup, type ApiLesson, type ApiLessonKind, type LessonInput } from '../../lib/api'
@@ -13,7 +14,7 @@ import { Icon } from '../../components/Icon'
 import { FitText } from '../../components/FitText'
 
 const pad = (n: number) => String(n).padStart(2, '0')
-const hhmm = (iso: string) => { const d = new Date(iso); return `${pad(d.getHours())}:${pad(d.getMinutes())}` }
+const hhmm = (iso: string) => moscowTime(new Date(iso))
 const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
 const mondayOf = (d: Date) => addDays(startOfDay(d), -((d.getDay() + 6) % 7))
@@ -88,6 +89,7 @@ interface Draft {
   subject: string
   kind: ApiLessonKind
   teacherName: string
+  teacherId: string
   room: string
   date: string
   from: string
@@ -97,7 +99,7 @@ interface Draft {
   until: string // …до этой даты включительно
   following: boolean // изменение: применить и ко всем следующим повторениям
 }
-interface Sources { subjects: string[]; teachers: string[]; rooms: string[] }
+interface Sources { subjects: string[]; teachers: {id:string;name:string}[]; rooms: string[] }
 type Progress = (done: number, total: number) => void
 
 const MAX_WEEKS = 40
@@ -148,7 +150,7 @@ function LessonDialog({ draft, sources, onClose, onSave }: { draft: Draft; sourc
   const count = d.repeat ? weeklyDates(d.date, d.until).length : 1
 
   const closeRef = useRef(onClose)
-  closeRef.current = onClose
+  closeRef.current = busy ? () => {} : onClose
   useEffect(() => { first.current?.focus() }, [])
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeRef.current() }
@@ -159,6 +161,7 @@ function LessonDialog({ draft, sources, onClose, onSave }: { draft: Draft; sourc
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (isNew && !d.groupId) return setError('Выберите группу из списка')
+    if (!d.teacherId) return setError('Выберите преподавателя из списка')
     if (!d.subject.trim() || !d.teacherName.trim() || !d.room.trim()) return setError('Заполните предмет, преподавателя и аудиторию')
     if (!d.date || !d.from || !d.to) return setError('Укажите дату и время занятия')
     if (d.to <= d.from) return setError('Окончание должно быть позже начала')
@@ -174,7 +177,7 @@ function LessonDialog({ draft, sources, onClose, onSave }: { draft: Draft; sourc
       <form className="dialog" role="dialog" aria-modal="true" aria-labelledby="lesson-dialog-title" onSubmit={submit} noValidate>
         <div className="dialog__head">
           <h2 id="lesson-dialog-title" className="card__title card__title--lg">{d.id ? 'Изменить занятие' : 'Новое занятие'}</h2>
-          <button type="button" className="icon-btn icon-btn--sm" aria-label="Закрыть" onClick={onClose}><Icon name="x" size={18} /></button>
+          <button type="button" className="icon-btn icon-btn--sm" aria-label="Закрыть" disabled={!!busy} onClick={onClose}><Icon name="x" size={18} /></button>
         </div>
         {isNew ? (
           <GroupField draft={draft} invalid={!d.groupId && !!error} onPick={(g) => setD((x) => ({ ...x, groupId: g.id, groupName: g.name }))} />
@@ -195,7 +198,7 @@ function LessonDialog({ draft, sources, onClose, onSave }: { draft: Draft; sourc
           <label className="field"><span className="field__label">Конец</span><input className="input" type="time" value={d.to} onChange={(e) => set('to', e.target.value)} /></label>
         </div>
         <div className="dialog__grid dialog__grid--2">
-          <Combo label="Преподаватель" value={d.teacherName} maxLength={120} placeholder="Орлов А. В." options={sources.teachers.map((v) => ({ value: v }))} onChange={(v) => set('teacherName', v)} />
+          <label className="field">Преподаватель<select className="input" value={d.teacherId} onChange={e=>setD(x=>({...x,teacherId:e.target.value,teacherName:sources.teachers.find(t=>t.id===e.target.value)?.name??''}))}><option value="">Выберите преподавателя</option>{sources.teachers.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
           <Combo label="Аудитория" value={d.room} maxLength={40} placeholder="ауд. 305" options={sources.rooms.map((v) => ({ value: v }))} onChange={(v) => set('room', v)} />
         </div>
         <label className="field">
@@ -241,7 +244,6 @@ function LessonDialog({ draft, sources, onClose, onSave }: { draft: Draft; sourc
 
 /* ───────────── Страница ───────────── */
 const DEFAULT_SUBJECTS = ['Макроэкономика', 'Английский язык', 'Теория вероятностей', 'История России', 'Основы вайб-кодинга', 'Проектирование интерфейсов', 'Физическая культура']
-const DEFAULT_TEACHERS = ['Орлов А. В.', 'Белова Е. Н.', 'Смирнов Д. А.', 'Громова Т. И.', 'Крылов П. С.', 'Дымов И. Р.']
 const DEFAULT_ROOMS = ['ауд. 108', 'ауд. 117', 'ауд. 201', 'ауд. 203', 'ауд. 210', 'ауд. 214', 'ауд. 305', 'спортзал']
 const uniq = (xs: string[]) => [...new Set(xs)]
 const sortedBy = (xs: string[]) => [...xs].sort((a, b) => a.localeCompare(b, 'ru'))
@@ -253,7 +255,7 @@ export function StaffSchedulePage() {
   const groupId = params.get('group')
   const [group, setGroup] = useState<ApiGroup | undefined>()
   const [lessons, setLessons] = useState<ApiLesson[]>([])
-  const [week, setWeek] = useState(() => mondayOf(new Date()))
+  const [week, setWeek] = useState(() => mondayOf(moscowCivil(new Date())))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dialog, setDialog] = useState<Draft | null>(null)
@@ -261,12 +263,14 @@ export function StaffSchedulePage() {
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [recent, setRecent] = useState<ApiGroup[]>([])
 
-  const today = startOfDay(now)
+  const [teachers,setTeachers]=useState<{id:string;name:string}[]>([])
+  useEffect(()=>{staffApi.teachers().then(setTeachers).catch(e=>setError(errText(e)))},[])
+  const today = startOfDay(moscowCivil(now))
   const load = useCallback(async () => {
     if (!groupId) return
     setLoading(true)
     try {
-      const res = await staffApi.lessons(groupId, week, addDays(week, 7))
+      const res = await staffApi.lessons(groupId, new Date(ymd(week)+'T00:00:00+03:00'), new Date(ymd(addDays(week,7))+'T00:00:00+03:00'))
       setGroup(res.group)
       setLessons(res.lessons)
       setError(null)
@@ -283,26 +287,26 @@ export function StaffSchedulePage() {
 
   const sources = useMemo<Sources>(() => ({
     subjects: sortedBy(uniq([...lessons.map((l) => l.subject), ...DEFAULT_SUBJECTS])),
-    teachers: sortedBy(uniq([...lessons.map((l) => l.teacherName), ...DEFAULT_TEACHERS])),
+    teachers,
     rooms: sortedBy(uniq([...lessons.map((l) => l.room), ...DEFAULT_ROOMS])),
-  }), [lessons])
+  }), [lessons,teachers])
   const days = useMemo(() => {
-    const hasSunday = lessons.some((l) => new Date(l.startsAt).getDay() === 0)
+    const hasSunday = lessons.some((l) => moscowCivil(new Date(l.startsAt)).getDay() === 0)
     return Array.from({ length: hasSunday ? 7 : 6 }, (_, i) => addDays(week, i))
   }, [lessons, week])
-  const byDay = (d: Date) => lessons.filter((l) => ymd(new Date(l.startsAt)) === ymd(d)).sort((a, b) => +new Date(a.startsAt) - +new Date(b.startsAt))
+  const byDay = (d: Date) => lessons.filter((l) => moscowYmd(new Date(l.startsAt)) === ymd(d)).sort((a, b) => +new Date(a.startsAt) - +new Date(b.startsAt))
 
   const toInput = (d: Draft, date = d.date): LessonInput => ({
-    subject: d.subject.trim(), kind: d.kind, teacherName: d.teacherName.trim(), room: d.room.trim(),
-    startsAt: new Date(`${date}T${d.from}`).toISOString(), endsAt: new Date(`${date}T${d.to}`).toISOString(),
+    subject: d.subject.trim(), kind: d.kind, teacherId:d.teacherId, teacherName: d.teacherName.trim(), room: d.room.trim(),
+    startsAt: new Date(`${date}T${d.from}:00+03:00`).toISOString(), endsAt: new Date(`${date}T${d.to}:00+03:00`).toISOString(),
     changeNote: d.changeNote.trim() || null,
   })
 
   /** Повторения занятия: те же предмет, вид, преподаватель, аудитория, день недели и время — от этого занятия и позже. */
   const findSeries = async (l: ApiLesson) => {
     const sameSlot = (x: ApiLesson) =>
-      x.subject === l.subject && x.kind === l.kind && x.teacherName === l.teacherName && x.room === l.room &&
-      new Date(x.startsAt).getDay() === new Date(l.startsAt).getDay() && hhmm(x.startsAt) === hhmm(l.startsAt) && hhmm(x.endsAt) === hhmm(l.endsAt)
+      !x.cancelled && x.subject === l.subject && x.kind === l.kind && x.teacherName === l.teacherName && x.room === l.room &&
+      moscowCivil(new Date(x.startsAt)).getDay() === moscowCivil(new Date(l.startsAt)).getDay() && hhmm(x.startsAt) === hhmm(l.startsAt) && hhmm(x.endsAt) === hhmm(l.endsAt)
     const found = new Map<string, ApiLesson>([[l.id, l]])
     let from = new Date(l.startsAt)
     for (let i = 0; i < 4; i++) { // окна по 60 дней, до ~8 месяцев вперёд
@@ -329,10 +333,10 @@ export function StaffSchedulePage() {
         const orig = lessons.find((l) => l.id === d.id)
         if (d.following && orig) {
           const series = await findSeries(orig)
-          const shift = Math.round((+new Date(`${d.date}T12:00`) - +new Date(`${ymd(new Date(orig.startsAt))}T12:00`)) / 86_400_000)
+          const shift = Math.round((+new Date(`${d.date}T12:00`) - +new Date(`${moscowYmd(new Date(orig.startsAt))}T12:00`)) / 86_400_000)
           for (const [i, l] of series.entries()) {
             progress(i + 1, series.length)
-            const date = ymd(addDays(new Date(l.startsAt), shift))
+            const date = ymd(addDays(moscowCivil(new Date(l.startsAt)), shift))
             try { await staffApi.updateLesson(l.id, toInput(d, date)); ok++ } catch (e) { if (e instanceof ApiError && e.status === 409) skipped++; else throw e }
           }
           toast(`Изменено: ${ok} ${pluralize(ok, 'занятие', 'занятия', 'занятий')}${skipped ? `, не изменено из-за пересечений: ${skipped}` : ''}`)
@@ -351,31 +355,32 @@ export function StaffSchedulePage() {
   }
 
   const remove = async (l: ApiLesson, following: boolean) => {
+    let done = 0
     try {
       const list = following ? await findSeries(l) : [l]
-      for (const x of list) await staffApi.deleteLesson(x.id)
+      for (const x of list) { await staffApi.deleteLesson(x.id); done++ }
       setConfirmId(null)
-      toast(list.length > 1 ? `Удалено занятий: ${list.length}` : 'Занятие удалено')
+      toast(list.length > 1 ? `Отменено занятий: ${list.length}` : 'Занятие отменено')
     } catch (e) {
-      toast(errText(e))
+      toast(`${done ? `Отменено до ошибки: ${done}. ` : ''}${errText(e)}`)
     } finally {
       await load()
     }
   }
 
   const blank = (date: Date): Draft => ({
-    groupId: group?.id ?? groupId ?? '', groupName: group?.name ?? '', subject: '', kind: 'lecture', teacherName: '', room: '', date: ymd(date), from: '09:00', to: '10:30',
+    groupId: group?.id ?? groupId ?? '', groupName: group?.name ?? '', subject: '', kind: 'lecture', teacherId:'', teacherName: '', room: '', date: ymd(date), from: '09:00', to: '10:30',
     changeNote: '', repeat: true, until: semesterEnd(ymd(date)), following: false,
   })
   const edit = (l: ApiLesson): Draft => ({
-    id: l.id, groupId: l.groupId, groupName: group?.name ?? '', subject: l.subject, kind: l.kind, teacherName: l.teacherName, room: l.room,
-    date: ymd(new Date(l.startsAt)), from: hhmm(l.startsAt), to: hhmm(l.endsAt), changeNote: l.changeNote ?? '', repeat: false, until: '', following: false,
+    id: l.id, groupId: l.groupId, groupName: group?.name ?? '', subject: l.subject, kind: l.kind, teacherId:l.teacherId??'', teacherName: l.teacherName, room: l.room,
+    date: moscowYmd(new Date(l.startsAt)), from: hhmm(l.startsAt), to: hhmm(l.endsAt), changeNote: l.changeNote ?? '', repeat: false, until: '', following: false,
   })
   const pickGroup = (g: ApiGroup) => { setGroup(g); setLessons([]); setParams({ group: g.id }, { replace: true }) }
 
   return (
     <>
-      <PageHeader eyebrow={eyebrowDate(now, false)} title="Расписание групп" actions={<ThemeButton />} />
+      <PageHeader eyebrow={`${eyebrowDate(now, false)} · время МСК`} title="Расписание групп" actions={<ThemeButton />} />
       <GroupSearch selected={group} onPick={pickGroup} />
 
       {!groupId && (
@@ -427,13 +432,13 @@ export function StaffSchedulePage() {
                   </header>
                   {list.length === 0 && <p className="week__empty">Занятий нет</p>}
                   {list.map((l) => (
-                    <article key={l.id} className={`lesson lesson--edit ${l.changeNote ? 'lesson--moved' : ''}`}>
+                    <article key={l.id} className={`lesson lesson--edit ${l.cancelled?'lesson--cancelled':''} ${l.changeNote ? 'lesson--moved' : ''}`}>
                       <div className="lesson__time">{hhmm(l.startsAt)} – {hhmm(l.endsAt)}</div>
                       <FitText className="lesson__title" max={17} min={12} lines={2} grouped>{l.subject}</FitText>
                       <div className="lesson__meta">{KIND_LABEL[l.kind as ApiLessonKind]} · {l.room}</div>
                       <div className="lesson__meta">{l.teacherName}</div>
                       {l.changeNote && <span className="lesson__moved">{l.changeNote}</span>}
-                      <div className="lesson__tools">
+                      {l.cancelled ? <Badge tone="danger">Отменено</Badge> : <div className="lesson__tools">
                         {confirmId === l.id ? (
                           <>
                             <button type="button" className="tool-btn tool-btn--danger" onClick={() => void remove(l, false)}>Только это</button>
@@ -443,10 +448,10 @@ export function StaffSchedulePage() {
                         ) : (
                           <>
                             <button type="button" className="tool-btn" onClick={() => setDialog(edit(l))}>Изменить</button>
-                            <button type="button" className="tool-btn tool-btn--danger" onClick={() => setConfirmId(l.id)}>Удалить</button>
+                            <button type="button" className="tool-btn tool-btn--danger" onClick={() => setConfirmId(l.id)}>Отменить занятие</button>
                           </>
                         )}
-                      </div>
+                      </div>}
                     </article>
                   ))}
                   <button type="button" className="week__add" onClick={() => setDialog(blank(date))}><Icon name="plus" size={15} /> Добавить</button>
@@ -460,6 +465,7 @@ export function StaffSchedulePage() {
       {csv && group && (
         <CsvImportDialog
           group={group}
+          teachers={teachers}
           onClose={() => setCsv(false)}
           onDone={(r) => { if (r.added) toast(`Из CSV добавлено: ${r.added} ${pluralize(r.added, 'занятие', 'занятия', 'занятий')}`); void load() }}
         />

@@ -1,3 +1,5 @@
+import { MaterialsPage } from './pages/shared/Materials'
+import { StudentInquiriesPage } from './pages/student/Inquiries'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import type { ReactElement } from 'react'
 import { AuthProvider, useAuth } from './context/auth'
@@ -77,6 +79,8 @@ function AppRoutes() {
                   <Route path="schedule" element={<SchedulePage />} />
                   <Route path="grades" element={<GradesPage />} />
                   <Route path="requests" element={<RequestsPage />} />
+                  <Route path="materials" element={<MaterialsPage />} />
+                  <Route path="inquiries" element={<StudentInquiriesPage />} />
                   <Route path="notifications" element={<NotificationsPage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
@@ -90,6 +94,7 @@ function AppRoutes() {
                 >
                   <Route index element={<TeacherHome />} />
                   <Route path="schedule" element={<SchedulePage />} />
+                  <Route path="materials" element={<MaterialsPage />} />
                   <Route path="gradebook" element={<GradebookPage />} />
                   <Route path="inquiries" element={<InquiriesPage />} />
                   <Route path="profile" element={<ProfilePage />} />

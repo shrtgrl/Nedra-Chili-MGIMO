@@ -1,96 +1,79 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { GradeSheet, Inquiry, InquiryStatus, Notice, NotifyPrefs, StudentRequest } from '../types'
-import { INITIAL_INQUIRIES, INITIAL_NOTICES, INITIAL_REQUESTS, INITIAL_SHEETS } from '../data/mock'
-import { load, save } from '../lib/storage'
-import { dayMonth } from '../lib/format'
-import { useAuth } from './auth'
-
-/*
-  Клиентское «хранилище» демо-данных. В реальном проекте здесь будут запросы к API
-  деканата; интерфейс контекста при этом можно оставить прежним.
-*/
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { GradeSheet, Inquiry, InquiryStatus, Notice, NotifyPrefs, StudentRequest } from '../types';
+import { dataApi, type ApiGrade, type ApiStaffRequest } from '../lib/api';
+import { useAuth } from './auth';
+const dateLabel = (value: string) => new Date(value).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) + ' МСК';
+const requestView = (r: ApiStaffRequest): StudentRequest => ({ ...r, stage: ({ submitted: 0, in_progress: 1, ready: 2, issued: 3, cancelled: 0, rejected: 0 } as const)[r.status], createdLabel: dateLabel(r.createdAt) });
 interface Data {
-  requests: StudentRequest[]
-  addRequest: (r: Omit<StudentRequest, 'id' | 'stage' | 'createdLabel'>) => void
-  cancelRequest: (id: string) => void
-
-  notices: Notice[]
-  unreadCount: number
-  markRead: (id: string) => void
-  markAllRead: () => void
-
-  prefs: NotifyPrefs
-  setPref: (k: keyof NotifyPrefs, v: boolean) => void
-
-  inquiries: Inquiry[]
-  newInquiries: number
-  setInquiryStatus: (id: string, s: InquiryStatus) => void
-  replyInquiry: (id: string, text: string) => void
-
-  sheets: GradeSheet[]
-  saveSheet: (sheet: GradeSheet) => void
-
-  resetDemo: () => void
+    requests: StudentRequest[];
+    notices: Notice[];
+    prefs: NotifyPrefs;
+    inquiries: Inquiry[];
+    sheets: GradeSheet[];
+    grades: ApiGrade[];
+    unreadCount: number;
+    newInquiries: number;
+    loading: boolean;
+    error: string | null;
+    reload: () => Promise<void>;
+    addRequest: (r: Pick<StudentRequest, 'type' | 'purpose' | 'comment' | 'delivery'>) => Promise<boolean>;
+    cancelRequest: (id: string) => Promise<boolean>;
+    markRead: (id: string) => Promise<boolean>;
+    markAllRead: () => Promise<boolean>;
+    setPref: (k: keyof NotifyPrefs, v: boolean) => Promise<boolean>;
+    setInquiryStatus: (id: string, status: InquiryStatus) => Promise<boolean>;
+    replyInquiry: (id: string, text: string) => Promise<boolean>;
+    saveSheet: (sheet: GradeSheet) => Promise<boolean>;
 }
-
-const Ctx = createContext<Data | null>(null)
-
-function usePersisted<T>(key: string, initial: T) {
-  const [v, setV] = useState<T>(() => load(key, initial))
-  useEffect(() => save(key, v), [key, v])
-  return [v, setV] as const
-}
-
-export function DataProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
-  const key = user?.id ?? 'guest'
-  const [requests, setRequests] = usePersisted(`${key}:requests`, INITIAL_REQUESTS)
-  const [notices, setNotices] = usePersisted(`${key}:notices`, INITIAL_NOTICES)
-  const [prefs, setPrefs] = usePersisted<NotifyPrefs>(`${key}:prefs`, { deadlines: true, schedule: true, news: false })
-  const [inquiries, setInquiries] = usePersisted(`${key}:inquiries`, INITIAL_INQUIRIES)
-  const [sheets, setSheets] = usePersisted(`${key}:sheets`, INITIAL_SHEETS)
-
-  const value = useMemo<Data>(() => {
-    return {
-      requests,
-      addRequest: (r) =>
-        setRequests((xs) => [{ ...r, id: `r${Date.now()}`, stage: 0, createdLabel: `${dayMonth(new Date())} ${new Date().getFullYear()}` }, ...xs]),
-      cancelRequest: (id) => setRequests((xs) => xs.filter((x) => x.id !== id)),
-
-      notices,
-      unreadCount: notices.filter((n) => n.unread).length,
-      markRead: (id) => setNotices((xs) => xs.map((n) => (n.id === id ? { ...n, unread: false } : n))),
-      markAllRead: () => setNotices((xs) => xs.map((n) => ({ ...n, unread: false }))),
-
-      prefs,
-      setPref: (k, v) => setPrefs((p) => ({ ...p, [k]: v })),
-
-      inquiries,
-      newInquiries: inquiries.filter((q) => q.status === 'new').length,
-      setInquiryStatus: (id, s) => setInquiries((xs) => xs.map((q) => (q.id === id ? { ...q, status: s } : q))),
-      replyInquiry: (id, text) =>
-        setInquiries((xs) =>
-          xs.map((q) => (q.id === id ? { ...q, replies: [...q.replies, text], status: q.status === 'new' ? 'progress' : q.status } : q)),
-        ),
-
-      sheets,
-      saveSheet: (sheet) => setSheets((xs) => xs.map((s) => (s.id === sheet.id ? sheet : s))),
-
-      resetDemo: () => {
-        setRequests(INITIAL_REQUESTS)
-        setNotices(INITIAL_NOTICES)
-        setPrefs({ deadlines: true, schedule: true, news: false })
-        setInquiries(INITIAL_INQUIRIES)
-        setSheets(INITIAL_SHEETS)
-      },
+const Ctx = createContext<Data | null>(null);
+export function DataProvider({ children }: {
+    children: ReactNode;
+}) {
+    const { user } = useAuth();
+    const [requests, setRequests] = useState<StudentRequest[]>([]), [notices, setNotices] = useState<Notice[]>([]), [prefs, setPrefs] = useState<NotifyPrefs>({ deadlines: true, schedule: true, news: false });
+    const [inquiries, setInquiries] = useState<Inquiry[]>([]), [sheets, setSheets] = useState<GradeSheet[]>([]), [grades, setGrades] = useState<ApiGrade[]>([]);
+    const [loading, setLoading] = useState(true), [error, setError] = useState<string | null>(null), sequence = useRef(0);
+    const reload = useCallback(async () => {
+        if (!user) {
+            setLoading(false);
+            return;
+        }
+        const seq = ++sequence.current;
+        try {
+            const [rs, ns, ps, qs, ss, gs] = await Promise.all([user.role === 'student' ? dataApi.requests() : Promise.resolve([]), dataApi.notices(), dataApi.prefs(), user.role !== 'staff' ? dataApi.inquiries() : Promise.resolve([]), user.role === 'teacher' ? dataApi.sheets() : Promise.resolve([]), user.role === 'student' ? dataApi.grades() : Promise.resolve([])]);
+            if (seq !== sequence.current)
+                return;
+            setRequests(rs.map(requestView));
+            setNotices(ns.map(n => ({ id: n.id, title: n.title, text: n.body, time: dateLabel(n.createdAt), unread: !n.readAt, icon: n.kind === 'change' ? 'calendar' : n.kind === 'request' ? 'doc' : 'bell' })));
+            setPrefs(ps);
+            setInquiries(qs.map(q => ({ ...q, group: q.group ?? '—', initials: q.student.split(' ').slice(0, 2).map(n => n[0]).join(''), message: q.text, replies: q.replies.map(r => `${dateLabel(r.createdAt)} — ${r.text}`) })));
+            setSheets(ss.map(s => ({ ...s, deadlineLabel: s.deadline ? dateLabel(s.deadline) : 'срок не задан' })));
+            setGrades(gs);
+            setError(null);
+        }
+        catch (e) {
+            if (seq === sequence.current)
+                setError(e instanceof Error ? e.message : 'Не удалось загрузить данные');
+        }
+        finally {
+            if (seq === sequence.current)
+                setLoading(false);
+        }
+    }, [user]);
+    useEffect(() => { void reload(); const refresh = () => { if (document.visibilityState === 'visible')
+        void reload(); }; const timer = window.setInterval(refresh, 60000); window.addEventListener('focus', refresh); return () => { ++sequence.current; clearInterval(timer); window.removeEventListener('focus', refresh); }; }, [reload]);
+    const mutate = async (action: () => Promise<unknown>) => { ++sequence.current; try {
+        await action();
+        await reload();
+        return true;
     }
-  }, [requests, notices, prefs, inquiries, sheets, setRequests, setNotices, setPrefs, setInquiries, setSheets])
-
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
+    catch (e) {
+        setError(e instanceof Error ? e.message : 'Не удалось сохранить');
+        return false;
+    } };
+    return <Ctx.Provider value={{ requests, notices, prefs, inquiries, sheets, grades, loading, error, reload, unreadCount: notices.filter(n => n.unread).length, newInquiries: inquiries.filter(q => q.status === 'new').length,
+            addRequest: r => mutate(() => dataApi.addRequest(r)), cancelRequest: id => mutate(() => dataApi.cancelRequest(id)), markRead: id => mutate(() => dataApi.read(id)), markAllRead: () => mutate(() => dataApi.readAll()), setPref: (k, v) => mutate(() => dataApi.setPrefs({ [k]: v })),
+            setInquiryStatus: (id, status) => mutate(() => dataApi.inquiryStatus(id, status)), replyInquiry: (id, text) => mutate(() => dataApi.replyInquiry(id, text)), saveSheet: s => mutate(() => dataApi.saveSheet(s.id, s.version, s.students.map(st => ({ studentId: st.id, score: st.score })))) }}>{children}</Ctx.Provider>;
 }
-
-export function useData() {
-  const v = useContext(Ctx)
-  if (!v) throw new Error('useData вне DataProvider')
-  return v
-}
+export function useData() { const v = useContext(Ctx); if (!v)
+    throw new Error('useData вне DataProvider'); return v; }

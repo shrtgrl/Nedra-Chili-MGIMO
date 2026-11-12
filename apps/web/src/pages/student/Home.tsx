@@ -1,7 +1,9 @@
+import { useTodaySchedule } from '../../lib/useSchedule'
+import { STATUS_LABEL } from '../../lib/staff'
 import { Link } from 'react-router-dom'
 import { useUser } from '../../context/auth'
 import { useData } from '../../context/data'
-import { ANNOUNCEMENTS, DEADLINES, DISCIPLINES_AUTUMN, REQUEST_STAGES, REQUEST_TYPES, STUDENT_LESSONS } from '../../data/mock'
+import { REQUEST_STAGES, REQUEST_TYPES } from '../../data/mock'
 import { useNow } from '../../context/clock'
 import { average, daysLeftLabel, eyebrowDate } from '../../lib/format'
 import { NextLessonHero, TodayTimeline } from '../../components/schedule'
@@ -22,16 +24,19 @@ export function StudentHome() {
   const now = useNow()
   const user = useUser()
   const ny = useNewYear()
-  const { requests, unreadCount } = useData()
-  const avg = average(DISCIPLINES_AUTUMN.map((d) => d.score))
-  const weakest = [...DISCIPLINES_AUTUMN].sort((a, b) => a.score - b.score)[0]
-  const inWork = requests.filter((r) => r.stage < 2).length
-  const todayList = todayLessons(STUDENT_LESSONS, now).filter((l) => l.status !== 'cancelled')
+  const { requests, unreadCount, grades } = useData()
+  const {lessons,error:scheduleError}=useTodaySchedule(now)
+  const scored=grades.filter((d):d is typeof d & {score:number}=>d.score!==null)
+  const avg = average(scored.map((d) => d.score))
+  const weakest = [...scored].sort((a, b) => a.score - b.score)[0]
+  const inWork = requests.filter((r) => ['submitted','in_progress'].includes(r.status)).length
+  const todayList = todayLessons(lessons, now).filter((l) => l.status !== 'cancelled')
   const todayCount = todayList.length
   const lastEnd = todayList.at(-1)?.end
-  const working = requests.filter((r) => r.stage < 2)
+  const working = requests.filter((r) => ['submitted','in_progress'].includes(r.status))
   const workTitle = working.length ? working.map((r) => REQUEST_TYPES[r.type]).join(', ') : null
-  const upcomingDeadlines = DEADLINES.filter((d) => new Date(d.date).getTime() >= now.getTime())
+  const upcomingDeadlines: {title:string;date:string;dateLabel:string;id:string}[] = []
+  const announcements: {title:string;text:string;id:string}[]=[]
 
   return (
     <>
@@ -60,13 +65,14 @@ export function StudentHome() {
         }
       />
 
+      {scheduleError && <p role="alert">{scheduleError}</p>}
       <div className="grid-home">
         <div className="stack">
           <div className="only-desktop">
-            <NextLessonHero lessons={STUDENT_LESSONS} who="teacher" scheduleLink="/student/schedule" />
+            <NextLessonHero lessons={lessons} who="teacher" scheduleLink="/student/schedule" />
           </div>
           <div className="only-mobile">
-            <NextLessonHero lessons={STUDENT_LESSONS} who="teacher" compact />
+            <NextLessonHero lessons={lessons} who="teacher" compact />
           </div>
 
           <section className="card card--hl status-card only-desktop">
@@ -74,7 +80,7 @@ export function StudentHome() {
             <div>
               <h2 className="card__title">Как у меня дела</h2>
               <p className="small">
-                Хороший темп. Подтяните «{weakest.name}» — <b>{weakest.score}</b> баллов, это самый низкий результат.
+                {weakest ? <>Минимальный балл: «{weakest.name}» — <b>{weakest.score}</b>.</> : 'Оценок пока нет.'}
               </p>
               <Link to="/student/grades" className="link">
                 Вся успеваемость <Icon name="arrowRight" size={14} />
@@ -122,7 +128,7 @@ export function StudentHome() {
             </Link>
           </div>
 
-          <TodayTimeline lessons={STUDENT_LESSONS} who="teacher" />
+          <TodayTimeline lessons={lessons} who="teacher" />
         </div>
 
         <div className="stack">
@@ -148,7 +154,8 @@ export function StudentHome() {
           <section className="card">
             <h2 className="card__title">Объявления деканата</h2>
             <ul className="announcements">
-              {ANNOUNCEMENTS.map((a) => (
+              {!announcements.length && <li className="muted small">Объявлений пока нет.</li>}
+              {announcements.map((a) => (
                 <li key={a.id}>
                   <b>{a.title}</b>
                   <span className="small muted">{a.text}</span>
@@ -170,9 +177,9 @@ export function StudentHome() {
                 <Link to="/student/requests" key={r.id} className="mini-req">
                   <div className="mini-req__head">
                     <b>{REQUEST_TYPES[r.type]}</b>
-                    <Badge tone={r.stage >= 2 ? 'ok' : 'neutral'}>{REQUEST_STAGES[r.stage]}</Badge>
+                    <Badge tone={r.stage >= 2 ? 'ok' : 'neutral'}>{STATUS_LABEL[r.status]}</Badge>
                   </div>
-                  {!r.teacher && <Stages stages={REQUEST_STAGES} current={r.stage} showLabels={false} />}
+                  {!['cancelled','rejected'].includes(r.status) && <Stages stages={REQUEST_STAGES} current={r.stage} showLabels={false} />}
                 </Link>
               ))}
             </div>

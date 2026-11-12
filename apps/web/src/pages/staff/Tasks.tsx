@@ -1,3 +1,4 @@
+import { DocumentActions } from './DocumentActions'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useStaff } from '../../context/staff'
@@ -17,7 +18,7 @@ const dayMonth = (iso: string | Date) => new Date(iso).toLocaleDateString('ru-RU
 const initialsOf = (fullName: string) => fullName.replace(/\(.*?\)/g, '').trim().split(/\s+/).slice(0, 2).map((w) => w[0] ?? '').join('')
 
 function dueLabel(r: ApiStaffRequest, now: Date) {
-  if (!isActive(r)) return r.status === 'ready' ? 'ждёт выдачи' : `выдана ${dayMonth(r.updatedAt)}`
+  if (!isActive(r)) return r.status === 'ready' ? 'ждёт выдачи' : r.status==='issued'?`выдана ${dayMonth(r.updatedAt)}`:STATUS_LABEL[r.status]
   const late = overdueDays(r, now)
   if (late > 0) return `просрочено на ${late} ${pluralize(late, 'день', 'дня', 'дней')}`
   return late === 0 ? 'сегодня' : `до ${dayMonth(dueDate(r))}`
@@ -83,7 +84,7 @@ export function StaffTasksPage() {
       <div className="stats stats--4">
         <div className="stat stat--hl"><span className="stat__label">Новые</span><b className="stat__value display">{stats.fresh}</b><span className="stat__hint-text">ждут, пока их возьмут</span></div>
         <div className="stat"><span className="stat__label">В работе</span><b className="stat__value display">{stats.work}</b><span className="stat__hint-text">у вас на руках</span></div>
-        <div className={`stat ${stats.late ? 'stat--danger' : ''}`}><span className="stat__label">Просрочено</span><b className="stat__value display">{stats.late}</b><span className="stat__hint-text">{stats.late ? `срок — ${3} дня` : 'всё в срок'}</span></div>
+        <div className={`stat ${stats.late ? 'stat--danger' : ''}`}><span className="stat__label">Более 3 дней</span><b className="stat__value display">{stats.late}</b><span className="stat__hint-text">{stats.late ? `ориентир — ${3} дня` : 'всё в срок'}</span></div>
         <div className="stat"><span className="stat__label">Готово за неделю</span><b className="stat__value display">{stats.done}</b><span className="stat__hint-text">за последние 7 дней</span></div>
       </div>
 
@@ -144,7 +145,7 @@ export function StaffTasksPage() {
                 <div className="request-detail__chips">
                   <span className="pill">{selected.fullName.replace(/\(.*?\)/g, '').trim()} · студент</span>
                   <span className="pill">Поступила {dayMonth(selected.createdAt)}</span>
-                  <span className={`pill ${isOverdue(selected, now) ? 'pill--danger' : ''}`}>Срок: {dueLabel(selected, now)}</span>
+                  <span className={`pill ${isOverdue(selected, now) ? 'pill--danger' : ''}`}>Ориентир: {dueLabel(selected, now)}</span>
                 </div>
               </div>
               <div className="request-detail__body">
@@ -165,10 +166,10 @@ export function StaffTasksPage() {
                   {selected.status === 'submitted' && (
                     <>
                       <Button variant="strong" icon="check" disabled={busy} onClick={() => void move(selected, 'in_progress', 'Заявка взята в работу')}>Взять в работу</Button>
-                      <Button variant="surface" disabled={busy} onClick={() => void move(selected, 'ready', 'Заявка готова, студент уведомлён')}>Сразу готова</Button>
+                      {selected.type!=='study' && <Button variant="surface" disabled={busy} onClick={() => void move(selected, 'ready', 'Заявка готова, студент уведомлён')}>Сразу готова</Button>}
                     </>
                   )}
-                  {selected.status === 'in_progress' && (
+                  {selected.status === 'in_progress' && selected.type!=='study' && (
                     <Button variant="strong" icon="check" disabled={busy} onClick={() => void move(selected, 'ready', 'Заявка готова, студент уведомлён')}>Отметить готовой</Button>
                   )}
                   {selected.status === 'ready' && (
@@ -180,6 +181,7 @@ export function StaffTasksPage() {
                     </a>
                   )}
                 </div>
+                <DocumentActions key={selected.id} row={selected} reload={reload}/>
                 {(selected.status === 'rejected') && <p className="muted small">Заявка отклонена — действий не требуется.</p>}
               </div>
             </>

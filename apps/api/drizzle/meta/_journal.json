@@ -50,6 +50,13 @@
       "when": 1794338611772,
       "tag": "0006_calm_virginia_dare",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794428799414,
+      "tag": "0007_yummy_bug",
+      "breakpoints": true
     }
   ]
 }
