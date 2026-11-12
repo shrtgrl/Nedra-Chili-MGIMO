@@ -4745,9 +4745,6 @@ html.lock-scroll body {
 .mat-count:hover {
   color: var(--ink);
 }
-#materials {
-  margin-top: 24px;
-}
 .mat-pick.is-picked {
   background: var(--strong);
   border-color: var(--strong);

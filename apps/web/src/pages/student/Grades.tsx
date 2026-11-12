@@ -32,6 +32,7 @@ export function GradesPage() {
         }
       />
       <div className="grid-side">
+        <div className="stack">
         <section className="card">
           <div className="card__head">
             <h2 className="card__title card__title--lg">Дисциплины</h2>
@@ -84,6 +85,8 @@ export function GradesPage() {
             </table>
           </div>
         </section>
+        <SubjectMaterials subjects={DISCIPLINES_AUTUMN.concat(DISCIPLINES_SPRING).map((d) => d.name)} />
+        </div>
 
         <div className="stack">
           <section className="card card--accent">
@@ -129,7 +132,6 @@ export function GradesPage() {
           </section>
         </div>
       </div>
-      <SubjectMaterials subjects={DISCIPLINES_AUTUMN.concat(DISCIPLINES_SPRING).map((d) => d.name)} />
       <Disclaimer />
     </>
   )
