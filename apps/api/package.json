@@ -3,17 +3,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --env-file=../../.env src/server.ts",
+    "dev": "tsx watch --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local src/server.ts",
     "build": "tsc",
     "check": "tsc --noEmit",
-    "start": "node --env-file=../../.env dist/server.js",
-    "db:generate": "node --env-file=../../.env ../../node_modules/drizzle-kit/bin.cjs generate",
-    "db:migrate": "node --env-file=../../.env ../../node_modules/drizzle-kit/bin.cjs migrate",
-    "db:seed": "tsx --env-file=../../.env src/scripts/seed.ts",
-    "db:reset-demo-passwords": "tsx --env-file=../../.env src/scripts/reset-demo-student-passwords.ts",
-    "db:reset-demo-teacher-password": "tsx --env-file=../../.env src/scripts/reset-demo-teacher-password.ts",
-    "test": "node --env-file=../../.env --import tsx --test tests/*.test.ts",
-    "db:reset-demo-staff-password": "tsx --env-file=../../.env src/scripts/reset-demo-staff-password.ts"
+    "start": "node --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local dist/server.js",
+    "db:generate": "node --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local ../../node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "node --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local ../../node_modules/drizzle-kit/bin.cjs migrate",
+    "db:seed": "tsx --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local src/scripts/seed.ts",
+    "db:reset-demo-passwords": "tsx --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local src/scripts/reset-demo-student-passwords.ts",
+    "db:reset-demo-teacher-password": "tsx --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local src/scripts/reset-demo-teacher-password.ts",
+    "test": "npm run test:unit && npm run test:integration",
+    "db:reset-demo-staff-password": "tsx --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local src/scripts/reset-demo-staff-password.ts",
+    "test:unit": "node --import tsx --test tests/unit/*.test.ts",
+    "test:integration": "node --env-file-if-exists=../../.env --env-file-if-exists=../../.env.local ../../scripts/test-integration.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.5",
@@ -23,7 +25,8 @@
     "fastify": "^5.6.0",
     "jose": "^6.2.16",
     "pdfkit": "^0.20.2",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "@fastify/static": "^10.1.10"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

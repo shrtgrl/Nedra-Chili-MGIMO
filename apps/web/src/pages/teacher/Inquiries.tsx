@@ -18,12 +18,15 @@ export function InquiriesPage() {
   const selected = inquiries.find((q) => q.id === params.get('id')) ?? inquiries[0]
   const [reply, setReply] = useState('')
 
-  const send = () => {
-    if (!reply.trim()) return
-    replyInquiry(selected.id, reply.trim())
-    setReply('')
-    toast(`Ответ отправлен: ${selected.student}`)
+  const [busy,setBusy]=useState(false)
+  const send = async () => {
+    if (!reply.trim() || !selected || busy || selected.status==='closed') return
+    setBusy(true)
+    if(await replyInquiry(selected.id, reply.trim())) {setReply('');toast(`Ответ отправлен: ${selected.student}`)}
+    setBusy(false)
   }
+
+  if (!selected) return <><PageHeader eyebrow="Личный кабинет" title="Обращения студентов"/><p className="card">Обращений пока нет.</p></>
 
   return (
     <>
@@ -34,7 +37,7 @@ export function InquiriesPage() {
           <ul className="inbox" role="listbox" aria-label="Обращения">
             {inquiries.map((q) => (
               <li key={q.id} role="option" aria-selected={q.id === selected.id}>
-                <button type="button" className={`inbox__item ${q.id === selected.id ? 'is-active' : ''}`} onClick={() => setParams({ id: q.id })}>
+                <button type="button" className={`inbox__item ${q.id === selected.id ? 'is-active' : ''}`} disabled={busy} onClick={() => {setParams({ id: q.id });setReply('')}}>
                   <span className="inbox__head">
                     <b>{q.student}</b>
                     <Badge tone={STATUS[q.status].tone}>{STATUS[q.status].label}</Badge>
@@ -74,7 +77,7 @@ export function InquiriesPage() {
               soft
               label="Статус"
               value={selected.status === 'closed' ? 'closed' : 'progress'}
-              onChange={(v) => setInquiryStatus(selected.id, v)}
+              onChange={async(v) => {if(busy)return;setBusy(true);await setInquiryStatus(selected.id, v);setBusy(false)}}
               options={[
                 { value: 'progress', label: 'В работе' },
                 { value: 'closed', label: 'Закрыто' },
@@ -87,6 +90,8 @@ export function InquiriesPage() {
             <textarea
               className="input textarea"
               rows={4}
+              maxLength={5000}
+              disabled={busy || selected.status==='closed'}
               placeholder="Напишите ответ"
               value={reply}
               onChange={(e) => setReply(e.target.value)}
@@ -96,7 +101,7 @@ export function InquiriesPage() {
             />
           </label>
           <div className="thread__actions">
-            <Button variant="primary" icon="check" onClick={send} disabled={!reply.trim()}>
+            <Button variant="primary" icon="check" onClick={send} disabled={!reply.trim() || busy || selected.status==='closed'}>
               Отправить ответ
             </Button>
           </div>

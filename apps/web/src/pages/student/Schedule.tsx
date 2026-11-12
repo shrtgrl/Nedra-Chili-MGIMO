@@ -1,6 +1,5 @@
 import { useUser } from '../../context/auth'
 import { useData } from '../../context/data'
-import { STUDENT_LESSONS, TEACHER_LESSONS } from '../../data/mock'
 import { WeekSchedule } from '../../components/schedule'
 import { Disclaimer, IconButton, PageHeader, ThemeButton } from '../../components/ui'
 
@@ -12,7 +11,7 @@ export function SchedulePage() {
   return (
     <>
       <PageHeader
-        eyebrow={isStudent ? `Группа ${user.group} · осенний семестр` : 'Кафедра прикладных систем · осенний семестр'}
+        eyebrow={isStudent ? `Группа ${user.group} · МСК` : 'Личное расписание · МСК'}
         title="Расписание"
         actions={
           <>
@@ -26,7 +25,7 @@ export function SchedulePage() {
           </>
         }
       />
-      <WeekSchedule lessons={isStudent ? STUDENT_LESSONS : TEACHER_LESSONS} who={isStudent ? 'teacher' : 'group'} />
+      <WeekSchedule who={isStudent ? 'teacher' : 'group'} />
       <Disclaimer />
     </>
   )

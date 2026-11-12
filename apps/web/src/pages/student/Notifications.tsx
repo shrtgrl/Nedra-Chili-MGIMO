@@ -52,7 +52,7 @@ export function NotificationsPage() {
           <Toggle label="Дедлайны" checked={prefs.deadlines} onChange={(v) => setPref('deadlines', v)} />
           <Toggle label="Изменения в расписании" checked={prefs.schedule} onChange={(v) => setPref('schedule', v)} />
           <Toggle label="Новости деканата" checked={prefs.news} onChange={(v) => setPref('news', v)} />
-          <p className="small muted">Уведомления приходят на учебную почту и в этот раздел.</p>
+          <p className="small muted">Уведомления отображаются в этом разделе. Почтовая доставка пока не подключена.</p>
         </section>
       </div>
       <Disclaimer />

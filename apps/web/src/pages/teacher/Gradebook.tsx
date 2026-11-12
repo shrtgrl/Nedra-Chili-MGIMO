@@ -1,3 +1,4 @@
+import { useNow } from '../../context/clock'
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useData } from '../../context/data'
@@ -10,13 +11,15 @@ import { Icon } from '../../components/Icon'
 export function GradebookPage() {
   const { sheets } = useData()
   const [params] = useSearchParams()
-  const activeId = params.get('id') ?? sheets[0].id
+  const activeId = params.get('id') ?? sheets[0]?.id
   const source = sheets.find((s) => s.id === activeId) ?? sheets[0]
+  if (!source) return <><PageHeader eyebrow="Личный кабинет" title="Ведомость"/><p className="card">Нет назначенных ведомостей.</p></>
   // key сбрасывает черновик при переключении ведомости
   return <SheetEditor key={source.id} source={source} />
 }
 
 function SheetEditor({ source }: { source: GradeSheet }) {
+  const now = useNow()
   const { sheets, saveSheet, inquiries } = useData()
   const toast = useToast()
   const [, setParams] = useSearchParams()
@@ -45,31 +48,35 @@ function SheetEditor({ source }: { source: GradeSheet }) {
   const total = source.students.length
   const waiting = inquiries.filter((q) => q.status === 'new')
 
-  const save = () => {
+  const [busy,setBusy]=useState(false)
+  const [baseVersion,setBaseVersion]=useState(source.version)
+  const save = async () => {
     if (hasErrors) {
       toast('Исправьте баллы: допустимы целые числа от 0 до 100')
       return
     }
     const next: GradeSheet = { ...source, students: source.students.map((s) => ({ ...s, score: parsed[s.id] as number | null })) }
-    saveSheet(next)
-    toast('Ведомость сохранена')
+    setBusy(true)
+    if(await saveSheet({...next,version:baseVersion})) {setBaseVersion(baseVersion+1);toast('Ведомость сохранена')}
+    setBusy(false)
   }
 
   return (
     <>
       <PageHeader
-        eyebrow={`Открыта до ${source.deadlineLabel}`}
+        eyebrow={`Семестр ${source.semester} · ${source.deadline ? `До ${source.deadlineLabel}` : 'Срок не задан'}`}
         title="Ведомость"
         actions={
           <>
             <ThemeButton />
-            <Button variant="primary" icon="check" onClick={save} disabled={!dirty}>
+            <Button variant="primary" icon="check" onClick={save} disabled={!dirty || busy || !!(source.deadline && new Date(source.deadline)<now)}>
               Сохранить
             </Button>
           </>
         }
       />
 
+      {source.version!==baseVersion && <p role="alert">Данные ведомости изменились. <button className="link-btn" onClick={()=>{setDraft(Object.fromEntries(source.students.map(s=>[s.id,s.score===null?'':String(s.score)])));setBaseVersion(source.version)}}>Загрузить актуальные баллы (заменить черновик)</button></p>}
       <div className="sheet-tabs" role="tablist" aria-label="Ведомости">
         {sheets.map((s) => (
           <button key={s.id} type="button" role="tab" aria-selected={s.id === source.id} className={`sheet-tab ${s.id === source.id ? 'is-active' : ''}`} onClick={() => setParams({ id: s.id })}>
@@ -115,6 +122,7 @@ function SheetEditor({ source }: { source: GradeSheet }) {
                       <td>
                         <input
                           className={`input score-input ${v === 'bad' ? 'is-invalid' : ''}`}
+                          disabled={busy}
                           inputMode="numeric"
                           placeholder="0–100"
                           aria-label={`Баллы: ${st.name}`}
@@ -147,7 +155,7 @@ function SheetEditor({ source }: { source: GradeSheet }) {
               <b className="display">{filled}</b> из {total} {pluralize(total, 'студента', 'студентов', 'студентов')}
             </p>
             <div className="progress-line">
-              <span style={{ width: `${(filled / total) * 100}%` }} />
+              <span style={{ width: `${(total ? filled / total : 0) * 100}%` }} />
             </div>
             <p className="small on-accent-2">Шкала: менее 50 — «2», 50–69 — «3», 70–84 — «4», от 85 — «5».</p>
           </section>

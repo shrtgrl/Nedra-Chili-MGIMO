@@ -1,28 +1,41 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useData } from '../../context/data'
-import { DISCIPLINES_AUTUMN, DISCIPLINES_SPRING } from '../../data/mock'
 import { average, gradeLabel } from '../../lib/format'
 import { SubjectMaterials, openSubject } from './SubjectMaterials'
 import { useMaterials } from '../../context/materials'
 import { Badge, Button, Disclaimer, IconButton, PageHeader, Ring, ScoreBar, Segmented, ThemeButton } from '../../components/ui'
 
 export function GradesPage() {
-  const { unreadCount } = useData()
+  const { unreadCount, grades } = useData()
   const navigate = useNavigate()
   const { forMe } = useMaterials()
-  const [term, setTerm] = useState<'autumn' | 'spring'>('autumn')
-  const list = term === 'autumn' ? DISCIPLINES_AUTUMN : DISCIPLINES_SPRING
+  const [selectedTerm,setTerm]=useState('')
+  const semesters=[...new Set(grades.map(g=>g.semester))].sort((a,b)=>b-a)
+  const term=selectedTerm||String(semesters[0]??1)
+  const all=grades.filter(g=>String(g.semester)===term)
+  const list=all.filter((g):g is typeof g & {score:number}=>g.score!==null)
+  const subjectCell = (name: string) => {
+    const n = forMe.filter((m) => m.subject === name).length
+    return n > 0 ? (
+      <a className="subject-link" href="#materials" title="К материалам по предмету" onClick={(e) => { e.preventDefault(); openSubject(name) }}>
+        {name}
+        <span className="subject-link__n">{n}</span>
+      </a>
+    ) : (
+      name
+    )
+  }
   const avg = average(list.map((d) => d.score))
   const admitted = list.filter((d) => d.score >= 50).length
-  const exams = list.filter((d) => d.form === 'Экзамен').length
-  const credits = list.length - exams
+  const exams = all.filter((d) => d.form === 'Экзамен').length
+  const credits = all.length - exams
   const weakest = [...list].sort((a, b) => a.score - b.score)[0]
 
   return (
     <>
       <PageHeader
-        eyebrow={term === 'autumn' ? 'Осенний семестр 2026' : 'Весенний семестр 2026'}
+        eyebrow={`Семестр ${term}`}
         title="Предметы"
         actions={
           <>
@@ -40,10 +53,7 @@ export function GradesPage() {
               label="Семестр"
               value={term}
               onChange={setTerm}
-              options={[
-                { value: 'autumn', label: 'Осень' },
-                { value: 'spring', label: 'Весна' },
-              ]}
+              options={semesters.map(s=>({value:String(s),label:`Семестр ${s}`}))}
             />
           </div>
           <div className="table-wrap">
@@ -57,20 +67,15 @@ export function GradesPage() {
                 </tr>
               </thead>
               <tbody>
+                {all.length===0 && <tr><td colSpan={5}>Дисциплин пока нет.</td></tr>}
+                {all.filter(g=>g.score===null).map(g=><tr key={g.id}><td className="strong">{subjectCell(g.name)}</td><td>{g.form}</td><td colSpan={3}>Балл не выставлен</td></tr>)}
                 {list.map((d) => {
                   const g = gradeLabel(d.score, d.form)
-                  const warn = d.id === weakest.id
+                  const warn = d.id === weakest?.id
                   return (
                     <tr key={d.id}>
                       <td className="strong">
-                        {forMe.some((m) => m.subject === d.name) ? (
-                          <a className="subject-link" href="#materials" title="К материалам по предмету" onClick={(e) => { e.preventDefault(); openSubject(d.name) }}>
-                            {d.name}
-                            <span className="subject-link__n">{forMe.filter((m) => m.subject === d.name).length}</span>
-                          </a>
-                        ) : (
-                          d.name
-                        )}
+                        {subjectCell(d.name)}
                       </td>
                       <td className="muted">{d.form}</td>
                       <td className="grades-table__bar">
@@ -87,7 +92,7 @@ export function GradesPage() {
             </table>
           </div>
         </section>
-        <SubjectMaterials subjects={DISCIPLINES_AUTUMN.concat(DISCIPLINES_SPRING).map((d) => d.name)} />
+        <SubjectMaterials subjects={[...new Set(grades.map((g) => g.name))]} />
         </div>
 
         <div className="stack">
@@ -102,7 +107,7 @@ export function GradesPage() {
             <div className="tiles">
               <div className="tile">
                 <b className="display tile__value tile__value--hl">
-                  {admitted}/{list.length}
+                  {admitted}/{all.length}
                 </b>
                 <span>допуск</span>
               </div>
@@ -117,19 +122,18 @@ export function GradesPage() {
             </div>
           </section>
 
-          <section className="card card--hl">
+          {weakest && <section className="card card--hl">
             <h2 className="card__title card__title--lg">Обратите внимание</h2>
             <p>
               «{weakest.name}» — {weakest.score} баллов: {weakest.score >= 50 ? (weakest.form === 'Зачёт' ? 'зачёт есть' : 'допуск есть') : 'допуска пока нет'}, но это самый низкий результат семестра.
-              {term === 'autumn' && ' Эссе — 20 ноября 2026 года.'}
             </p>
-          </section>
+          </section>}
 
           <section className="card">
             <h2 className="card__title card__title--lg">Баллы отображаются неверно?</h2>
-            <p className="muted">Создайте заявку — деканат проверит данные в течение 3 рабочих дней.</p>
-            <Button variant="surface" icon="file" onClick={() => navigate('/student/requests')}>
-              Создать заявку
+            <p className="muted">Обратитесь к преподавателю дисциплины.</p>
+            <Button variant="surface" icon="file" onClick={() => navigate('/student/inquiries')}>
+              Написать преподавателю
             </Button>
           </section>
         </div>

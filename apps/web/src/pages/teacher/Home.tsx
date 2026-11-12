@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useUser } from '../../context/auth'
 import { useData } from '../../context/data'
-import { TEACHER_LESSONS } from '../../data/mock'
+import { useTodaySchedule } from '../../lib/useSchedule'
 import { useNow } from '../../context/clock'
 import { eyebrowDate } from '../../lib/format'
 import { NextLessonHero, TodayTimeline } from '../../components/schedule'
@@ -10,6 +10,7 @@ import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, NewYearButton, T
 
 export function TeacherHome() {
   const now = useNow()
+  const {lessons, error: scheduleError}=useTodaySchedule(now)
   const user = useUser()
   const ny = useNewYear()
   const { inquiries, newInquiries, sheets } = useData()
@@ -37,9 +38,10 @@ export function TeacherHome() {
           </>
         }
       />
+      {scheduleError && <p role="alert">{scheduleError}</p>}
       <div className="grid-home grid-home--teacher">
         <div className="stack">
-          <NextLessonHero lessons={TEACHER_LESSONS} who="group" />
+          <NextLessonHero lessons={lessons} who="group" />
           <div className="quick-actions">
             <ButtonLink to="/teacher/gradebook" variant="primary" icon="table">
               Выставить оценки
@@ -51,7 +53,7 @@ export function TeacherHome() {
               Отправить материалы
             </ButtonLink>
           </div>
-          <TodayTimeline lessons={TEACHER_LESSONS} who="group" />
+          <TodayTimeline lessons={lessons} who="group" />
         </div>
 
         <div className="stack">

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Badge } from '../../components/ui'
 import { Icon } from '../../components/Icon'
 import { useMaterials } from '../../context/materials'
-import { fileSize, linkLabel } from '../../lib/materials'
+import { downloadFile } from '../../lib/api'
+import { fileSize } from '../../lib/materials'
 import { pluralize } from '../../lib/format'
 
 export const subjectAnchor = (name: string) => `subject-${name.toLowerCase().replace(/[^a-zа-яё0-9]+/gi, '-')}`
@@ -17,7 +18,8 @@ export function openSubject(name: string) {
 
 /** Материалы от преподавателей, сгруппированные по предметам. Предметы текущего семестра идут первыми. */
 export function SubjectMaterials({ subjects }: { subjects: string[] }) {
-  const { forMe, isRead, markRead } = useMaterials()
+  const { forMe, isRead, markRead, loading, error, reload } = useMaterials()
+  const [problem, setProblem] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [closed, setClosed] = useState<string[]>([])
   const [finding, setFinding] = useState(false)
@@ -34,7 +36,7 @@ export function SubjectMaterials({ subjects }: { subjects: string[] }) {
     () =>
       q
         ? forMe.filter((m) =>
-            [m.subject, m.title, m.description, m.teacherName, ...m.links.map((l) => l.url), ...m.files.map((f) => f.name)].join(' ').toLowerCase().includes(q),
+            [m.subject, m.title, m.fileName].join(' ').toLowerCase().includes(q),
           )
         : forMe,
     [forMe, q],
@@ -85,7 +87,11 @@ export function SubjectMaterials({ subjects }: { subjects: string[] }) {
           {forMe.length > 0 && <Badge>{forMe.length}</Badge>}
         </div>
       </div>
-      {forMe.length > 0 && names.length === 0 ? (
+      {error && <p role="alert" className="form-error">{error} <button type="button" className="link-btn" onClick={() => void reload()}>Повторить</button></p>}
+      {problem && <p role="alert" className="form-error">{problem}</p>}
+      {loading && forMe.length === 0 ? (
+        <p className="mat-empty" role="status">Загружаем материалы…</p>
+      ) : forMe.length > 0 && names.length === 0 ? (
         <p className="mat-empty">По запросу «{query.trim()}» ничего не нашлось.</p>
       ) : names.length === 0 ? (
         <p className="mat-empty">Преподаватели пока ничего не присылали. Новые материалы появятся здесь, сгруппированные по предметам.</p>
@@ -125,27 +131,25 @@ export function SubjectMaterials({ subjects }: { subjects: string[] }) {
                             <b className="mat-item__title">{m.title}</b>
                             {!read && <Badge tone="hl">Новое</Badge>}
                           </div>
-                          <div className="mat-item__meta">{m.teacherName}</div>
-                          {m.description && <p className="mat-item__text">{m.description}</p>}
-                          {(m.links.length > 0 || m.files.length > 0 || !read) && (
-                            <div className="mat-item__files">
-                              {m.links.map((l) => (
-                                <a key={l.url} className="mat-chip" href={l.url} target="_blank" rel="noopener noreferrer" onClick={() => markRead(m.id)}>
-                                  <Icon name="arrowRight" size={14} /> {linkLabel(l.url)}
-                                </a>
-                              ))}
-                              {m.files.map((f) => (
-                                <a key={f.name} className="mat-chip" href={f.dataUrl} download={f.name} onClick={() => markRead(m.id)}>
-                                  <Icon name="download" size={14} /> {f.name} <span className="mat-chip__size">{fileSize(f.size)}</span>
-                                </a>
-                              ))}
-                              {!read && (
-                                <button type="button" className="mat-read" onClick={() => markRead(m.id)}>
-                                  <Icon name="check" size={14} /> Прочитано
-                                </button>
-                              )}
-                            </div>
-                          )}
+                          <div className="mat-item__meta">{m.fileName} · {fileSize(m.size)}</div>
+                          <div className="mat-item__files">
+                            <button
+                              type="button"
+                              className="mat-chip"
+                              onClick={() => {
+                                markRead(m.id)
+                                setProblem(null)
+                                void downloadFile(`/api/materials/${m.id}/file`, m.fileName).catch((e) => setProblem(e instanceof Error ? e.message : 'Не удалось скачать файл'))
+                              }}
+                            >
+                              <Icon name="download" size={14} /> Скачать
+                            </button>
+                            {!read && (
+                              <button type="button" className="mat-read" onClick={() => markRead(m.id)}>
+                                <Icon name="check" size={14} /> Прочитано
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </li>
                     )

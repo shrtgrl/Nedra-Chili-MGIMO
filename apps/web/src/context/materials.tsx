@@ -1,56 +1,39 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Material } from '../types'
-import { INITIAL_MATERIALS } from '../data/mock'
+import { dataApi, type ApiMaterial } from '../lib/api'
 import { load, save } from '../lib/storage'
+import { toBase64 } from '../lib/materials'
 import { useAuth } from './auth'
 
 /*
-  Материалы, которые преподаватели рассылают группам.
-  Хранилище общее для всех пользователей этого браузера (а не отдельное на пользователя),
-  поэтому в демо материал, отправленный преподавателем, сразу виден студентам этой группы.
-  В боевой версии здесь будут запросы к API, интерфейс контекста можно оставить прежним.
+  Учебные материалы: файлы, которые преподаватель прикрепляет к своей дисциплине и группе.
+  Список приходит с сервера (студент видит файлы своей группы, преподаватель — свои).
+  Отметки «прочитано» хранятся только в этом браузере.
 */
-export const MAX_FILE_BYTES = 1024 * 1024
-export const MAX_FILES = 3
-export const MAX_LINKS = 5
-
-export type MaterialInput = Omit<Material, 'id' | 'createdAt' | 'authorId' | 'teacherName'>
-
 interface Ctx {
-  materials: Material[]
-  /** Материалы для текущего студента (по его группе). */
-  forMe: Material[]
-  /** Материалы, отправленные текущим преподавателем. */
-  mine: Material[]
+  /** Материалы для текущего студента. */
+  forMe: ApiMaterial[]
+  /** Материалы, добавленные текущим преподавателем. */
+  mine: ApiMaterial[]
+  loading: boolean
+  error: string | null
   unread: number
   isRead: (id: string) => boolean
   markRead: (id: string) => void
-  /** Возвращает текст ошибки или null, если всё получилось. */
-  publish: (input: MaterialInput) => string | null
-  remove: (id: string) => void
+  reload: () => Promise<void>
+  /** Загружает файл в каждую выбранную связку «дисциплина + группа». Возвращает текст ошибки или null. */
+  publish: (assignmentIds: string[], title: string, file: File) => Promise<string | null>
+  remove: (id: string) => Promise<string | null>
 }
 
 const C = createContext<Ctx | null>(null)
-const KEY = 'materials'
-
-function shortName(u: { lastName: string; firstName: string; patronymic?: string }) {
-  const f = u.firstName ? `${u.firstName[0]}.` : ''
-  const p = u.patronymic ? ` ${u.patronymic[0]}.` : ''
-  return `${u.lastName} ${f}${p}`.trim()
-}
-
-function persist(items: Material[]): boolean {
-  try {
-    localStorage.setItem('mukpid:' + KEY, JSON.stringify(items))
-    return true
-  } catch {
-    return false
-  }
-}
+const msg = (e: unknown, fallback: string) => (e instanceof Error ? e.message : fallback)
 
 export function MaterialsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const [materials, setMaterials] = useState<Material[]>(() => load<Material[]>(KEY, INITIAL_MATERIALS))
+  const enabled = !!user && (user.role === 'student' || user.role === 'teacher')
+  const [rows, setRows] = useState<ApiMaterial[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const readKey = user ? `${user.id}:materials-read` : null
   const [read, setRead] = useState<string[]>(() => (readKey ? load<string[]>(readKey, []) : []))
 
@@ -58,40 +41,49 @@ export function MaterialsProvider({ children }: { children: ReactNode }) {
     setRead(readKey ? load<string[]>(readKey, []) : [])
   }, [readKey])
 
-  // Синхронизация между вкладками: преподаватель в одной, студент в другой.
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'mukpid:' + KEY) setMaterials(load<Material[]>(KEY, INITIAL_MATERIALS))
+  const reload = useCallback(async () => {
+    if (!enabled) { setRows([]); return }
+    setLoading(true)
+    try {
+      setRows(await dataApi.materials())
+      setError(null)
+    } catch (e) {
+      setError(msg(e, 'Не удалось загрузить материалы'))
+    } finally {
+      setLoading(false)
     }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [])
+  }, [enabled])
+
+  useEffect(() => { void reload() }, [reload, user?.id])
 
   const publish = useCallback(
-    (input: MaterialInput) => {
-      if (!user) return 'Войдите в систему'
-      const item: Material = {
-        ...input,
-        id: `m-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
-        createdAt: new Date().toISOString(),
-        authorId: user.id,
-        teacherName: shortName(user),
+    async (assignmentIds: string[], title: string, file: File) => {
+      try {
+        const contentBase64 = await toBase64(file)
+        for (const assignmentId of assignmentIds) {
+          await dataApi.uploadMaterial({ assignmentId, title, fileName: file.name, contentBase64 })
+        }
+        await reload()
+        return null
+      } catch (e) {
+        await reload()
+        return msg(e, 'Не удалось загрузить файл')
       }
-      const next = [item, ...materials]
-      if (!persist(next)) return 'Не удалось сохранить: в браузере не хватает места. Уберите файлы или сделайте их меньше.'
-      setMaterials(next)
-      return null
     },
-    [user, materials],
+    [reload],
   )
 
   const remove = useCallback(
-    (id: string) => {
-      const next = materials.filter((m) => m.id !== id)
-      persist(next)
-      setMaterials(next)
+    async (id: string) => {
+      try {
+        await dataApi.deleteMaterial(id)
+        await reload()
+        return null
+      } catch (e) {
+        return msg(e, 'Не удалось удалить')
+      }
     },
-    [materials],
+    [reload],
   )
 
   const markRead = useCallback(
@@ -108,20 +100,11 @@ export function MaterialsProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo<Ctx>(() => {
-    const sorted = [...materials].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    const forMe = user?.role === 'student' && user.group ? sorted.filter((m) => m.groups.includes(user.group!)) : []
-    const mine = user?.role === 'teacher' ? sorted.filter((m) => m.authorId === user.id) : []
-    return {
-      materials: sorted,
-      forMe,
-      mine,
-      unread: forMe.filter((m) => !read.includes(m.id)).length,
-      isRead: (id) => read.includes(id),
-      markRead,
-      publish,
-      remove,
-    }
-  }, [materials, user, read, markRead, publish, remove])
+    const sorted = [...rows].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    const forMe = user?.role === 'student' ? sorted : []
+    const mine = user?.role === 'teacher' ? sorted : []
+    return { forMe, mine, loading, error, unread: forMe.filter((m) => !read.includes(m.id)).length, isRead: (id) => read.includes(id), markRead, reload, publish, remove }
+  }, [rows, user, loading, error, read, markRead, reload, publish, remove])
 
   return <C.Provider value={value}>{children}</C.Provider>
 }

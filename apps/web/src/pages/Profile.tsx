@@ -44,7 +44,7 @@ export function ProfilePage() {
   const user = useUser()
   const { logout } = useAuth()
   const { theme, setTheme, variant, setVariant } = useSettings()
-  const { prefs, setPref, unreadCount, newInquiries, resetDemo } = useData()
+  const { prefs, setPref, unreadCount, newInquiries } = useData()
   const toast = useToast()
   const navigate = useNavigate()
   const isStudent = user.role === 'student'
@@ -66,7 +66,6 @@ export function ProfilePage() {
       ]
     : [
         ['Подразделение', user.department],
-        ['Дисциплины', 'Макроэкономика, Экономика данных'],
         ['Почта', user.email],
         ['Роль', 'Преподаватель'],
       ]
@@ -152,7 +151,7 @@ export function ProfilePage() {
           </section>
 
           {!isStaff && <section className="card prefs">
-            <h2 className="card__title card__title--lg">Уведомления на почту</h2>
+            <h2 className="card__title card__title--lg">Настройки уведомлений</h2>
             {isStudent ? (
               <>
                 <Toggle label="Дедлайны" checked={prefs.deadlines} onChange={(v) => setPref('deadlines', v)} />
@@ -161,7 +160,7 @@ export function ProfilePage() {
               </>
             ) : (
               <>
-                <Toggle label="Новые обращения студентов" checked={prefs.deadlines} onChange={(v) => setPref('deadlines', v)} />
+                <Toggle label="Дедлайны" checked={prefs.deadlines} onChange={(v) => setPref('deadlines', v)} />
                 <Toggle label="Изменения в расписании" checked={prefs.schedule} onChange={(v) => setPref('schedule', v)} />
                 <Toggle label="Новости деканата" checked={prefs.news} onChange={(v) => setPref('news', v)} />
               </>
@@ -182,16 +181,7 @@ export function ProfilePage() {
           >
             Выйти из кабинета
           </Button>
-          {!isStaff && <button
-            type="button"
-            className="link-btn small muted center"
-            onClick={() => {
-              resetDemo()
-              toast('Демо-данные сброшены')
-            }}
-          >
-            Сбросить демо-данные
-          </button>}
+
         </div>
       </div>
       <Disclaimer />

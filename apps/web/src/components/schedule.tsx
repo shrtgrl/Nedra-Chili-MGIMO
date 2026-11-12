@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Lesson } from '../types'
-import { DEMO_WEEK_MONDAY } from '../data/mock'
+import { moscowCivil, useSchedule } from '../lib/useSchedule'
 import { nextLesson, nowMinutes, todayIndex, todayLessons } from '../lib/lessons'
 import { useNow } from '../context/clock'
 import { addDays, humanDuration, monthShort, pluralize, toMinutes, WEEKDAYS, WEEKDAYS_SHORT } from '../lib/format'
@@ -216,7 +216,9 @@ function GridCell({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; p
   )
 }
 
-function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][]; monday: Date; today: number; week: number; who: 'teacher' | 'group'; now: Date }) {
+function WeekGrid({ byDay, weekdays, shortDays, monday, today, week, who, now }: { byDay: Lesson[][]; weekdays: string[]; shortDays: string[]; monday: Date; today: number; week: number; who: 'teacher' | 'group'; now: Date }) {
+  // воскресенье показываем только если в нём есть занятия
+  const cols = weekdays.map((_, i) => i).filter((i) => i < 6 || byDay[i].length > 0)
   const slots = new Map<string, string>()
   byDay.flat().forEach((l) => { if (!slots.has(l.start)) slots.set(l.start, l.end) })
   const rows = [...slots.entries()].sort((a, b) => toMinutes(a[0]) - toMinutes(b[0]))
@@ -227,12 +229,13 @@ function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][];
         <thead>
           <tr>
             <td className="tt__corner" />
-            {WEEKDAYS.map((name, i) => {
+            {cols.map((i) => {
+              const name = weekdays[i]
               const date = addDays(monday, i)
               const isToday = week === 0 && i === today
               return (
                 <th key={name} scope="col" className={`tt__day ${isToday ? 'is-today' : ''}`} aria-label={`${name}, ${date.getDate()} ${monthShort(date)}`}>
-                  <span className="tt__dow">{WEEKDAYS_SHORT[i]}</span>
+                  <span className="tt__dow">{shortDays[i]}</span>
                   <b className="tt__num">{date.getDate()}</b>
                   <span className="tt__mon">{monthShort(date)}</span>
                 </th>
@@ -243,7 +246,7 @@ function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][];
         <tbody>
           {rows.length === 0 && (
             <tr>
-              <td className="tt__empty" colSpan={7}>На этой неделе занятий нет</td>
+              <td className="tt__empty" colSpan={cols.length + 1}>На этой неделе занятий нет</td>
             </tr>
           )}
           {rows.map(([start, end]) => {
@@ -254,7 +257,7 @@ function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][];
                   <b>{start}</b>
                   <span>{end}</span>
                 </th>
-                {WEEKDAYS.map((_, i) => {
+                {cols.map((i) => {
                   const here = byDay[i].filter((l) => l.start === start)
                   const isToday = week === 0 && i === today
                   return (
@@ -283,10 +286,11 @@ function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][];
   )
 }
 
-export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teacher' | 'group' }) {
+export function WeekSchedule({ who }: { who: 'teacher' | 'group' }) {
   const now = useNow()
   const today = todayIndex(now)
-  const currentMonday = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -today)
+  const civil = moscowCivil(now)
+  const currentMonday = addDays(new Date(civil.getFullYear(), civil.getMonth(), civil.getDate()), -today)
   const [week, setWeek] = useState(0)
   const [mode, setMode] = useState<'day' | 'week'>(() => (window.matchMedia?.('(max-width: 760px)').matches ? 'day' : 'week'))
   const [day, setDay] = useState(today)
@@ -294,9 +298,11 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
   const monday = addDays(currentMonday, week * 7)
   const dayInd = useIndicator<HTMLDivElement>(`${day}-${mode}`)
 
-  // Переносы и отмены есть только на текущей неделе — на остальных показываем базовое расписание.
-  const weekLessons = monday.getTime() === DEMO_WEEK_MONDAY.getTime() ? lessons : lessons.map((l) => ({ ...l, status: undefined, movedFrom: undefined }))
-  const byDay = WEEKDAYS.map((_, i) => weekLessons.filter((l) => l.day === i).sort((a, b) => toMinutes(a.start) - toMinutes(b.start)))
+  const ymd=(d:Date)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  const {lessons:weekLessons,loading,error,reload}=useSchedule(ymd(monday),ymd(addDays(monday,7)))
+  const weekdays=[...WEEKDAYS,'Воскресенье']
+  const shortDays=[...WEEKDAYS_SHORT,'Вс']
+  const byDay = weekdays.map((_, i) => weekLessons.filter((l) => l.day === i).sort((a, b) => toMinutes(a.start) - toMinutes(b.start)))
   const visibleDays = [day]
 
   return (
@@ -331,7 +337,7 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
       {mode === 'day' && (
         <div ref={dayInd.box} className="day-picker" role="tablist" aria-label="День недели">
           <span ref={dayInd.ind} className="day-picker__ind" aria-hidden="true" />
-          {WEEKDAYS_SHORT.map((d, i) => {
+          {shortDays.map((d, i) => {
             const date = addDays(monday, i)
             return (
               <button key={d} role="tab" aria-selected={day === i} type="button" className={`day-picker__btn ${day === i ? 'is-active' : ''} ${week === 0 && i === today ? 'is-today' : ''}`} onClick={() => setDay(i)}>
@@ -343,17 +349,20 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
         </div>
       )}
 
+      <p className="small muted">Время занятий — МСК</p>
+      {loading && <p role="status">Загружаем расписание…</p>}
+      {error && <p role="alert">{error} <button onClick={reload}>Повторить</button></p>}
       {mode === 'week' ? (
-        <WeekGrid byDay={byDay} monday={monday} today={today} week={week} who={who} now={now} />
+        <WeekGrid byDay={byDay} weekdays={weekdays} shortDays={shortDays} monday={monday} today={today} week={week} who={who} now={now} />
       ) : (
       <div className={`week ${mode === 'day' ? 'week--day' : ''}`} data-fit-group>
         {visibleDays.map((i) => {
           const date = addDays(monday, i)
           const isToday = week === 0 && i === today
           return (
-            <section key={i} className={`week__col ${isToday ? 'is-today' : ''}`} aria-label={WEEKDAYS[i]}>
+            <section key={i} className={`week__col ${isToday ? 'is-today' : ''}`} aria-label={weekdays[i]}>
               <header className="week__head">
-                <h2>{WEEKDAYS[i]}</h2>
+                <h2>{weekdays[i]}</h2>
                 <span className={isToday ? 'week__date is-today' : 'week__date'}>
                   {date.getDate()} {monthShort(date)}
                 </span>

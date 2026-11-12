@@ -12,7 +12,7 @@ const dayLabel = (iso: string) => (iso ? iso.split('-').reverse().join('.') : '�
 interface Result { added: number; skipped: number; failed: string | null }
 
 /** Загрузка расписания группы из CSV: разбор в браузере, предпросмотр с проверкой строк, затем добавление по одному занятию. */
-export function CsvImportDialog({ group, onClose, onDone }: { group: ApiGroup; onClose: () => void; onDone: (r: Result) => void }) {
+export function CsvImportDialog({ group, teachers, onClose, onDone }: { group: ApiGroup; teachers:{id:string;name:string}[]; onClose: () => void; onDone: (r: Result) => void }) {
   const [fileName, setFileName] = useState('')
   const [rows, setRows] = useState<CsvLesson[] | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
@@ -31,12 +31,16 @@ export function CsvImportDialog({ group, onClose, onDone }: { group: ApiGroup; o
     if (!file) return
     setResult(null)
     setProblem(null)
+    setRows(null)
+    setFileName(file.name)
     if (file.size > 2_000_000) return setProblem('Файл слишком большой — до 2 МБ.')
+    try {
     const parsed = toLessons(parseCsv(decodeCsv(await file.arrayBuffer())))
     setFileName(file.name)
     if (parsed.lessons.length === 0) { setRows(null); return setProblem('В файле нет строк с занятиями.') }
     if (parsed.lessons.length > MAX_ROWS) { setRows(null); return setProblem(`В файле больше ${MAX_ROWS} строк — разделите его на части.`) }
-    setRows(parsed.lessons)
+    setRows(parsed.lessons.map(r=>{const matches=teachers.filter(t=>t.name.toLowerCase()===r.teacherName.trim().toLowerCase());return {...r,error:r.error||(matches.length!==1?'Нужно полное уникальное имя преподавателя из списка':undefined)}}))
+    } catch { setProblem('Не удалось прочитать CSV. Проверьте файл и кодировку.') }
   }
 
   const valid = rows?.filter((r) => !r.error) ?? []
@@ -49,8 +53,8 @@ export function CsvImportDialog({ group, onClose, onDone }: { group: ApiGroup; o
       setProgress(i)
       try {
         await staffApi.addLesson(group.id, {
-          subject: r.subject, kind: r.kind, teacherName: r.teacherName, room: r.room,
-          startsAt: new Date(`${r.date}T${r.from}`).toISOString(), endsAt: new Date(`${r.date}T${r.to}`).toISOString(),
+          subject: r.subject, kind: r.kind, teacherId:teachers.find(t=>t.name.toLowerCase()===r.teacherName.trim().toLowerCase())?.id, teacherName: r.teacherName, room: r.room,
+          startsAt: new Date(`${r.date}T${r.from}:00+03:00`).toISOString(), endsAt: new Date(`${r.date}T${r.to}:00+03:00`).toISOString(),
           changeNote: r.changeNote || null,
         })
         added++
@@ -88,7 +92,7 @@ export function CsvImportDialog({ group, onClose, onDone }: { group: ApiGroup; o
         {!result && (
           <>
             <p className="small muted csv-help">
-              Колонки: <b>дата; начало; конец; предмет; вид; преподаватель; аудитория; пометка</b>. Дата — дд.мм.гггг, время — чч:мм, вид — лекция, семинар или практика. Подойдёт CSV из Excel (разделитель «;» или «,»).{' '}
+              Колонки: <b>дата; начало; конец; предмет; вид; преподаватель; аудитория; пометка</b>. Преподаватель — полное имя из списка. Дата — дд.мм.гггг, время — чч:мм (МСК), вид — лекция, семинар или практика. Подойдёт CSV из Excel (разделитель «;» или «,»).{' '}
               <button type="button" className="link-btn" onClick={downloadTemplate}>Скачать шаблон</button>
             </p>
             <label
@@ -126,7 +130,7 @@ export function CsvImportDialog({ group, onClose, onDone }: { group: ApiGroup; o
               </table>
             </div>
             {rows.length > 200 && <p className="small muted">Показаны первые 200 строк из {rows.length}; проверены все.</p>}
-            <p className="small muted">Занятия, которые пересекаются по времени с уже существующими занятиями группы, будут пропущены. Студенты получат уведомление о каждом добавленном занятии.</p>
+            <p className="small muted">Занятия, которые пересекаются по времени с уже существующими занятиями группы, преподавателя или аудитории, будут пропущены. Подписанные на изменения студенты получат уведомления. Импорт может завершиться частично.</p>
           </>
         )}
 

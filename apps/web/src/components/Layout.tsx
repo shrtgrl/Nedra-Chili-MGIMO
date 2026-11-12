@@ -7,8 +7,6 @@ import { useUser } from '../context/auth'
 import { useData } from '../context/data'
 import { useStaffOptional } from '../context/staff'
 import { useMaterials } from '../context/materials'
-import { useNow } from '../context/clock'
-import { DEADLINES } from '../data/mock'
 import { Forest, Garland, Snowflake, useNewYear } from './newyear'
 
 interface NavItem {
@@ -35,7 +33,8 @@ function useNav(): NavItem[] {
       { to: '/student', label: 'Главная', icon: 'home', end: true },
       { to: '/student/schedule', label: 'Расписание', icon: 'calendar' },
       { to: '/student/grades', label: 'Предметы', icon: 'chart', badge: unreadMaterials },
-      { to: '/student/requests', label: 'Заявки', icon: 'doc', badge: requests.filter((r) => r.stage < 2).length },
+      { to: '/student/requests', label: 'Заявки', icon: 'doc', badge: requests.filter((r) => ['submitted','in_progress'].includes(r.status)).length },
+      { to: '/student/inquiries', label: 'Обращения', icon: 'inbox' },
       { to: '/student/notifications', label: 'Уведомления', icon: 'bell', badge: unreadCount },
     ]
   }
@@ -50,30 +49,11 @@ function useNav(): NavItem[] {
 
 function SidebarCard() {
   const user = useUser()
-  const now = useNow()
   const { sheets } = useData()
-  const ny = useNewYear()
-  if (user.role === 'student' && ny) {
-    return (
-      <Link to="/student/schedule" className="side-card">
-        <div className="eyebrow">Каникулы</div>
-        <div className="side-card__title">31 декабря — 11 января</div>
-        <div className="side-card__meta">Сессия с 12 января</div>
-      </Link>
-    )
-  }
-  if (user.role === 'student') {
-    const d = DEADLINES.find((item) => new Date(item.date).getTime() >= now.getTime())
-    return (
-      <Link to="/student/notifications" className="side-card">
-        <div className="eyebrow">Дедлайн</div>
-        <div className="side-card__title">{d?.title ?? 'Ближайших дедлайнов нет'}</div>
-        {d && <div className="side-card__meta">{d.dateLabel} 2026</div>}
-      </Link>
-    )
-  }
+  if (user.role === 'student') return <Link to="/student/grades" className="side-card"><div className="eyebrow">Учебные материалы</div><div className="side-card__title">Файлы ваших дисциплин</div></Link>
   if (user.role === 'staff') return null
   const s = sheets[0]
+  if (!s) return null
   return (
     <Link to="/teacher/gradebook" className="side-card">
       <div className="eyebrow">Ведомость</div>
@@ -165,8 +145,7 @@ function MobileBar() {
 }
 
 function BottomNav() {
-  const user = useUser()
-  const nav = useNav().slice(0, user.role === 'teacher' ? 5 : 4)
+  const nav = useNav()
   const { pathname } = useLocation()
   const { box, ind } = useIndicator<HTMLElement>(pathname)
   return (
@@ -187,6 +166,7 @@ function ForestSlot() {
 }
 
 export function AppLayout() {
+  const { loading, error, reload } = useData()
   const { pathname } = useLocation()
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -197,6 +177,8 @@ export function AppLayout() {
       <div className="app__main">
         <MobileBar />
         <main className="content" id="main">
+          {loading && <p role="status">Загружаем данные…</p>}
+          {error && <p className="form-error" role="alert">{error} <button className="link-btn" onClick={() => void reload()}>Повторить</button></p>}
           <Outlet />
         </main>
         <ForestSlot />

@@ -1,6 +1,6 @@
 import { hash, argon2id } from 'argon2';
 import { connectDatabase } from '../db.js';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 // День недели (0 = пн), начало, конец, предмет, вид, преподаватель, аудитория. Все данные вымышлены.
 const weekly: [number, string, string, string, string, string, string][] = [
@@ -20,7 +20,7 @@ const at = (week: number, day: number, hhmm: string) => {
   const [h, m] = hhmm.split(':').map(Number);
   return new Date(FIRST_MONDAY + ((week * 7 + day) * 24 + h! - 3) * 3_600_000 + m! * 60_000);
 };
-import { groups, lessons, subjects, users } from '../schema.js';
+import { groups, lessons, subjects, users, teachingAssignments } from '../schema.js';
 
 const passwords = [process.env.SEED_STUDENT_1_PASSWORD, process.env.SEED_STUDENT_2_PASSWORD, process.env.SEED_TEACHER_PASSWORD, process.env.SEED_STAFF_PASSWORD];
 if (process.env.NODE_ENV === 'production') throw new Error('Demo seed is disabled in production');
@@ -59,6 +59,19 @@ try {
     }
     if (hashes[2]) await tx.insert(users).values({ email: 'teacher@mukpid.ru', role: 'teacher', fullName: 'Орлов Андрей Викторович (демо)', faculty: 'Факультет цифровой экономики', department: 'Кафедра прикладных систем', passwordHash: hashes[2]! }).onConflictDoNothing({ target: users.email });
     if (hashes[3]) await tx.insert(users).values({ email: 'staff@staff.mukpid.ru', role: 'staff', fullName: 'Тестова Вера Демонстрационная', faculty: 'Учебный офис', passwordHash: hashes[3]! }).onConflictDoNothing({ target: users.email });
+  });
+  // Explicit fictional curriculum; never infer assignments for arbitrary existing users.
+  await connection.db.transaction(async tx => {
+    const [teacher] = await tx.select().from(users).where(eq(users.email,'teacher@mukpid.ru'));
+    if (!teacher || teacher.role !== 'teacher') throw new Error('Demo teacher missing');
+    const [subject] = await tx.select().from(subjects).where(eq(subjects.name,'Макроэкономика')).limit(1);
+    if (!subject) return;
+    for (const fixture of fixtures) {
+      const [group] = await tx.select().from(groups).where(eq(groups.name,fixture.group));
+      if (!group) continue;
+      await tx.insert(teachingAssignments).values({teacherId:teacher.id,subjectId:subject.id,groupId:group.id,semester:group.year*2-1,form:'Экзамен'}).onConflictDoNothing();
+      await tx.update(lessons).set({teacherId:teacher.id,teacherName:teacher.fullName}).where(and(eq(lessons.groupId,group.id),eq(lessons.subjectId,subject.id),eq(lessons.teacherName,'Орлов А. В.')));
+    }
   });
   console.log('Demo users ready: student@edu.mukpid.ru, student2@edu.mukpid.ru, teacher@mukpid.ru, staff@staff.mukpid.ru. Existing users and passwords preserved.');
 } finally {
