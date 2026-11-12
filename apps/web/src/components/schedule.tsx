@@ -187,6 +187,98 @@ function LessonCard({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group';
   )
 }
 
+/* ── Недельная сетка: строки — пары, столбцы — дни ──────── */
+const kindClass = (k: Lesson['kind']) => (k === 'Лекция' ? 'lec' : k === 'Семинар' ? 'sem' : 'pra')
+
+function GridCell({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; progress?: number }) {
+  const live = progress != null
+  return (
+    <article className={`tt-lesson tt-lesson--${kindClass(l.kind)} ${l.status ? `tt-lesson--${l.status}` : ''} ${live ? 'is-live' : ''}`} aria-current={live ? 'time' : undefined}>
+      <div className={`tt-lesson__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</div>
+      <div className="tt-lesson__meta">
+        {l.kind} · {l.room}
+      </div>
+      <div className="tt-lesson__meta">{subline(l, who)}</div>
+      {l.status === 'cancelled' && <span className="tt-tag tt-tag--danger">Отменено</span>}
+      {l.status === 'moved' && <span className="tt-tag tt-tag--warn">Было {l.movedFrom}</span>}
+      {live && (
+        <>
+          <span className="tt-tag tt-tag--live">
+            <span className="now-dot" aria-hidden="true" />
+            Идёт сейчас
+          </span>
+          <span className="tt-lesson__progress" role="progressbar" aria-label="Прошло времени" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+            <span style={{ width: `${progress * 100}%` }} />
+          </span>
+        </>
+      )}
+    </article>
+  )
+}
+
+function WeekGrid({ byDay, monday, today, week, who, now }: { byDay: Lesson[][]; monday: Date; today: number; week: number; who: 'teacher' | 'group'; now: Date }) {
+  const slots = new Map<string, string>()
+  byDay.flat().forEach((l) => { if (!slots.has(l.start)) slots.set(l.start, l.end) })
+  const rows = [...slots.entries()].sort((a, b) => toMinutes(a[0]) - toMinutes(b[0]))
+  const m = nowMinutes(now)
+  return (
+    <div className="tt-wrap" data-fit-group>
+      <table className="tt">
+        <thead>
+          <tr>
+            <td className="tt__corner" />
+            {WEEKDAYS.map((name, i) => {
+              const date = addDays(monday, i)
+              const isToday = week === 0 && i === today
+              return (
+                <th key={name} scope="col" className={`tt__day ${isToday ? 'is-today' : ''}`} aria-label={`${name}, ${date.getDate()} ${monthShort(date)}`}>
+                  <span className="tt__dow">{WEEKDAYS_SHORT[i]}</span>
+                  <b className="tt__num">{date.getDate()}</b>
+                  <span className="tt__mon">{monthShort(date)}</span>
+                </th>
+              )
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 && (
+            <tr>
+              <td className="tt__empty" colSpan={7}>На этой неделе занятий нет</td>
+            </tr>
+          )}
+          {rows.map(([start, end]) => {
+            const rowNow = week === 0 && m >= toMinutes(start) && m < toMinutes(end)
+            return (
+              <tr key={start}>
+                <th scope="row" className={`tt__time ${rowNow ? 'is-now' : ''}`}>
+                  <b>{start}</b>
+                  <span>{end}</span>
+                </th>
+                {WEEKDAYS.map((_, i) => {
+                  const here = byDay[i].filter((l) => l.start === start)
+                  const isToday = week === 0 && i === today
+                  return (
+                    <td key={i} className={`tt__cell ${isToday ? 'is-today' : ''} ${here.length ? '' : 'is-free'}`}>
+                      {here.map((l) => (
+                        <GridCell key={l.id} l={l} who={who} progress={isToday ? liveProgress(l, now) : undefined} />
+                      ))}
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+      <ul className="tt-key" aria-label="Обозначения">
+        <li className="tt-key__item tt-key__item--lec">Лекция</li>
+        <li className="tt-key__item tt-key__item--sem">Семинар</li>
+        <li className="tt-key__item tt-key__item--pra">Практика</li>
+      </ul>
+    </div>
+  )
+}
+
 export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teacher' | 'group' }) {
   const now = useNow()
   const today = todayIndex(now)
@@ -201,7 +293,7 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
   // Переносы и отмены есть только на текущей неделе — на остальных показываем базовое расписание.
   const weekLessons = monday.getTime() === DEMO_WEEK_MONDAY.getTime() ? lessons : lessons.map((l) => ({ ...l, status: undefined, movedFrom: undefined }))
   const byDay = WEEKDAYS.map((_, i) => weekLessons.filter((l) => l.day === i).sort((a, b) => toMinutes(a.start) - toMinutes(b.start)))
-  const visibleDays = mode === 'week' ? WEEKDAYS.map((_, i) => i) : [day]
+  const visibleDays = [day]
 
   return (
     <>
@@ -247,6 +339,9 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
         </div>
       )}
 
+      {mode === 'week' ? (
+        <WeekGrid byDay={byDay} monday={monday} today={today} week={week} who={who} now={now} />
+      ) : (
       <div className={`week ${mode === 'day' ? 'week--day' : ''}`} data-fit-group>
         {visibleDays.map((i) => {
           const date = addDays(monday, i)
@@ -267,6 +362,7 @@ export function WeekSchedule({ lessons, who }: { lessons: Lesson[]; who: 'teache
           )
         })}
       </div>
+      )}
     </>
   )
 }
