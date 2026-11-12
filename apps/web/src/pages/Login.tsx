@@ -88,14 +88,14 @@ export function LoginPage() {
           <span className="login__theme-label">{theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}</span>
         </button>
 
-        <form className="login__form" onSubmit={submit} noValidate>
+        <form className="login__form" method="post" onSubmit={submit} noValidate>
           <div className="eyebrow">Добро пожаловать</div>
           <h1 className="display login__title">Вход</h1>
           <p className="muted">Используйте учебную почту и пароль от личного кабинета.</p>
 
           <label className="field">
             <span className="field__label">Логин</span>
-            <input className="input" type="email" autoComplete="username" placeholder="name@edu.mukpid.ru" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input id="email" name="email" className="input" type="email" autoComplete="username" autoCapitalize="none" placeholder="name@edu.mukpid.ru" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </label>
 
           <div className="field">
@@ -110,6 +110,7 @@ export function LoginPage() {
             <div className="input-wrap">
               <input
                 id="pwd"
+                name="password"
                 className="input input--with-btn"
                 type={showPwd ? 'text' : 'password'}
                 autoComplete="current-password"

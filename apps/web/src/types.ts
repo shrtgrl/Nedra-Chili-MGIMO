@@ -79,6 +79,7 @@ export interface Inquiry {
   message: string
   status: InquiryStatus
   replies: string[]
+  assignmentId?: string
 }
 
 export interface SheetStudent {

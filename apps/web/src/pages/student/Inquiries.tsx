@@ -10,6 +10,7 @@ export function StudentInquiriesPage() {
     useEffect(() => { let live = true; dataApi.inquiryTeachers().then(rows => { if (live)
         setTeachers(rows); }).catch(e => { if (live)
         setError(e.message); }); return () => { live = false; }; }, []);
+    const teacherOf = (id?: string) => teachers.find(a => a.id === id);
     const submit = async (e: FormEvent) => { e.preventDefault(); if (busy)
         return; setBusy(true); setError(null); try {
         await dataApi.addInquiry(assignmentId || teachers[0]?.id, subject, text);
@@ -30,6 +31,6 @@ export function StudentInquiriesPage() {
       <label className="field">Тема<input required className="input" maxLength={200} value={subject} onChange={e => setSubject(e.target.value)}/></label>
       <label className="field">Сообщение<textarea required className="input textarea" rows={5} maxLength={5000} value={text} onChange={e => setText(e.target.value)}/></label>
       <Button type="submit" disabled={busy || !teachers.length}>{busy ? 'Отправляем…' : 'Отправить'}</Button>
-    </form><section className="card stack"><h2 className="card__title">Мои обращения</h2>{!inquiries.length && <p className="muted">Обращений пока нет.</p>}{inquiries.map(q => <article className="req" key={q.id}><div className="req__head"><h3>{q.subject}</h3><Badge>{status[q.status]}</Badge></div><p style={{ whiteSpace: 'pre-wrap' }}>{q.message}</p>{q.replies.map((r, i) => <blockquote key={i} style={{ whiteSpace: 'pre-wrap' }} className="req__comment">{r}</blockquote>)}<p className="small muted">Чтобы продолжить обсуждение, создайте новое обращение.</p></article>)}</section></div>
+    </form><section className="card stack"><h2 className="card__title">Мои обращения</h2>{!inquiries.length && <p className="muted">Обращений пока нет.</p>}{inquiries.map(q => <article className="req" key={q.id}><div className="req__head"><h3>{q.subject}</h3><Badge>{status[q.status]}</Badge></div>{teacherOf(q.assignmentId) && <p className="small muted">Кому: {teacherOf(q.assignmentId)!.teacher} · {teacherOf(q.assignmentId)!.subject}</p>}<p style={{ whiteSpace: 'pre-wrap' }}>{q.message}</p>{q.replies.map((r, i) => { const [when, ...rest] = r.split(' — '); return <blockquote key={i} style={{ whiteSpace: 'pre-wrap' }} className="req__comment"><b>{teacherOf(q.assignmentId)?.teacher ?? 'Преподаватель'}</b> <span className="small muted">· {when}</span><br />{rest.join(' — ')}</blockquote>; })}<p className="small muted">Чтобы продолжить обсуждение, создайте новое обращение.</p></article>)}</section></div>
   </>;
 }
