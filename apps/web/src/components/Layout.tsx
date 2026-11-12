@@ -43,7 +43,7 @@ function useNav(): NavItem[] {
     { to: '/teacher', label: 'Главная', icon: 'home', end: true },
     { to: '/teacher/schedule', label: 'Расписание', icon: 'calendar' },
     { to: '/teacher/gradebook', label: 'Ведомость', icon: 'table' },
-    { to: '/teacher/materials', label: 'Материалы', icon: 'send' },
+    { to: '/teacher/materials', label: 'Материалы', icon: 'book' },
     { to: '/teacher/inquiries', label: 'Обращения', icon: 'inbox', badge: newInquiries },
   ]
 }
