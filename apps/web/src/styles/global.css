@@ -5393,8 +5393,49 @@ button.stat--btn[aria-pressed='true'] {
   .sheet-table td {
     font-size: 15px;
   }
-  .sheet-table th {
-    font-size: 11px;
-    letter-spacing: 0.06em;
+  /* ведомость карточками: имя и оценка слева, поле баллов справа — без горизонтальной прокрутки */
+  .sheet-table,
+  .sheet-table tbody {
+    display: block;
   }
+  .sheet-table thead {
+    display: none;
+  }
+  .sheet-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name score'
+      'grade score';
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 2px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .sheet-table tr:last-child {
+    border-bottom: 0;
+  }
+  .sheet-table td {
+    padding: 0;
+    border: 0;
+  }
+  .sheet-table td:nth-child(2) {
+    grid-area: name;
+  }
+  .sheet-table td:nth-child(3) {
+    grid-area: score;
+  }
+  .sheet-table td:nth-child(4) {
+    grid-area: grade;
+    text-align: left;
+  }
+  .score-input {
+    width: 88px;
+  }
+}
+
+.sheet-pick {
+  max-width: 520px;
+  margin-bottom: 20px;
 }

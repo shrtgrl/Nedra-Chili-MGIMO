@@ -7,6 +7,7 @@ import { markFor, pluralize } from '../../lib/format'
 import type { GradeSheet } from '../../types'
 import { Badge, Button, Disclaimer, PageHeader, ThemeButton } from '../../components/ui'
 import { Icon } from '../../components/Icon'
+import { Combo, type ComboOption } from '../../components/Combo'
 
 export function GradebookPage() {
   const { sheets } = useData()
@@ -23,6 +24,8 @@ function SheetEditor({ source }: { source: GradeSheet }) {
   const { sheets, saveSheet, inquiries } = useData()
   const toast = useToast()
   const [, setParams] = useSearchParams()
+  const sheetOptions: ComboOption[] = sheets.map((x) => ({ id: x.id, value: `${x.subject} · ${x.group}`, hint: x.form }))
+  const [sheetText, setSheetText] = useState(() => sheetOptions.find((o) => o.id === source.id)?.value ?? '')
 
   // Черновик: значения полей как строки, чтобы можно было стирать и вводить.
   const [draft, setDraft] = useState<Record<string, string>>(() =>
@@ -77,16 +80,20 @@ function SheetEditor({ source }: { source: GradeSheet }) {
       />
 
       {source.version!==baseVersion && <p role="alert">Данные ведомости изменились. <button className="link-btn" onClick={()=>{setDraft(Object.fromEntries(source.students.map(s=>[s.id,s.score===null?'':String(s.score)])));setBaseVersion(source.version)}}>Загрузить актуальные баллы (заменить черновик)</button></p>}
-      <div className="sheet-tabs" role="tablist" aria-label="Ведомости">
-        {sheets.map((s) => (
-          <button key={s.id} type="button" role="tab" aria-selected={s.id === source.id} className={`sheet-tab ${s.id === source.id ? 'is-active' : ''}`} onClick={() => setParams({ id: s.id })}>
-            <b>{s.subject}</b>
-            <span>
-              {s.group} · {s.form.toLowerCase()}
-            </span>
-          </button>
-        ))}
-      </div>
+      {sheets.length > 1 && (
+        <div className="sheet-pick">
+          <Combo
+            label="Ведомость"
+            value={sheetText}
+            onChange={setSheetText}
+            onPick={(o) => o.id && setParams({ id: o.id })}
+            options={sheetOptions}
+            placeholder="Найдите предмет или группу"
+            emptyText="Такой ведомости нет"
+            invalid={!sheetOptions.some((o) => o.value === sheetText)}
+          />
+        </div>
+      )}
 
       <div className="grid-side">
         <section className="card">
