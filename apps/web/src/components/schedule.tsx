@@ -152,41 +152,6 @@ function liveProgress(l: Lesson, now: Date) {
   return m >= s && m < e ? (m - s) / (e - s) : undefined
 }
 
-function LessonCard({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; progress?: number }) {
-  const live = progress != null
-  return (
-    <article className={`lesson ${l.status ? `lesson--${l.status}` : ''} ${live ? 'lesson--now' : ''}`} aria-current={live ? 'time' : undefined}>
-      {live && (
-        <span className="now-badge">
-          <span className="now-dot" aria-hidden="true" />
-          Идёт сейчас
-        </span>
-      )}
-      <div className="lesson__time">
-        {l.start} – {l.end}
-      </div>
-      <FitText className={`lesson__title ${l.status === 'cancelled' ? 'strike' : ''}`} max={17} min={12} lines={2} grouped>{l.subject}</FitText>
-      <div className="lesson__meta">
-        {l.kind} · {l.room}
-      </div>
-      <div className="lesson__meta">{subline(l, who)}</div>
-      {l.status === 'cancelled' && (
-        <Badge tone="danger" outline>
-          Отменено
-        </Badge>
-      )}
-      {l.status === 'moved' && (
-        <span className="lesson__moved">Перенос: было {l.movedFrom}</span>
-      )}
-      {live && (
-        <span className="lesson__progress" role="progressbar" aria-label="Прошло времени" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
-          <span style={{ width: `${progress * 100}%` }} />
-        </span>
-      )}
-    </article>
-  )
-}
-
 /* ── Недельная сетка: строки — пары, столбцы — дни ──────── */
 const KIND_SHORT: Record<Lesson['kind'], string> = { Лекция: 'ЛК', Семинар: 'С', Практика: 'ПР' }
 const KIND_CLASS: Record<Lesson['kind'], string> = { Лекция: 'lec', Семинар: 'sem', Практика: 'pra' }
@@ -355,22 +320,35 @@ export function WeekSchedule({ who }: { who: 'teacher' | 'group' }) {
       {mode === 'week' ? (
         <WeekGrid byDay={byDay} weekdays={weekdays} shortDays={shortDays} monday={monday} today={today} week={week} who={who} now={now} />
       ) : (
-      <div className={`week ${mode === 'day' ? 'week--day' : ''}`} data-fit-group>
+      <div className="tt-dayview">
         {visibleDays.map((i) => {
-          const date = addDays(monday, i)
           const isToday = week === 0 && i === today
+          const m = nowMinutes(now)
           return (
-            <section key={i} className={`week__col ${isToday ? 'is-today' : ''}`} aria-label={weekdays[i]}>
-              <header className="week__head">
-                <h2>{weekdays[i]}</h2>
-                <span className={isToday ? 'week__date is-today' : 'week__date'}>
-                  {date.getDate()} {monthShort(date)}
-                </span>
-              </header>
-              {byDay[i].length === 0 && <p className="week__empty">Занятий нет</p>}
-              {byDay[i].map((l) => (
-                <LessonCard key={l.id} l={l} who={who} progress={isToday ? liveProgress(l, now) : undefined} />
-              ))}
+            <section key={i} aria-label={weekdays[i]}>
+              {byDay[i].length === 0 ? (
+                <p className="tt__empty">Занятий нет</p>
+              ) : (
+                <ol className="tt-dayview__list">
+                  {byDay[i].map((l) => {
+                    const rowNow = isToday && m >= toMinutes(l.start) && m < toMinutes(l.end)
+                    return (
+                      <li key={l.id} className={`tt-dayview__row ${isToday ? 'is-today' : ''}`}>
+                        <div className={`tt__time ${rowNow ? 'is-now' : ''}`}>
+                          <b>{l.start}</b>
+                          <span>{l.end}</span>
+                        </div>
+                        <GridCell l={l} who={who} progress={isToday ? liveProgress(l, now) : undefined} />
+                      </li>
+                    )
+                  })}
+                </ol>
+              )}
+              <ul className="tt-key" aria-label="Обозначения">
+                <li><b className="tt-k--lec">ЛК</b> лекция</li>
+                <li><b className="tt-k--sem">С</b> семинар</li>
+                <li><b className="tt-k--pra">ПР</b> практика</li>
+              </ul>
             </section>
           )
         })}
