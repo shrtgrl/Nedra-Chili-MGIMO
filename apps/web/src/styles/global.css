@@ -6383,3 +6383,227 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
     width: 100%;
   }
 }
+
+/* ═════════ Объявления сотрудника: форма слева, лента слева-направо по времени справа ═════════ */
+.ann {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1.2fr);
+  gap: 0 clamp(28px, 4vw, 56px);
+  padding-top: 12px;
+}
+.ann::before {
+  content: '';
+  grid-column: 2;
+  grid-row: 1;
+  background: var(--line);
+}
+.ann__form {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.ann__list {
+  grid-column: 3;
+  grid-row: 1;
+  min-width: 0;
+}
+.ann__h {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.ann__field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ann__label {
+  font-size: 16px;
+  font-weight: 600;
+}
+.ann__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ann-chip {
+  height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid var(--input-line);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-2);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.ann-chip.is-active {
+  background: var(--strong);
+  border-color: var(--strong);
+  color: var(--on-strong);
+}
+@media (hover: hover) {
+  .ann-chip:not(.is-active):hover {
+    color: var(--ink);
+    border-color: color-mix(in srgb, var(--ink) 35%, var(--input-line));
+  }
+}
+.ann__hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.ann__text {
+  min-height: 160px;
+}
+.ann__actions {
+  display: flex;
+  gap: 14px;
+}
+.ann__actions .btn {
+  height: 56px;
+  border-radius: 18px;
+}
+.ann__actions .btn--hl {
+  flex: 1;
+}
+.ann__list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.ann__draft {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding: 16px 22px;
+  border: 1.5px dashed var(--input-line);
+  border-radius: 20px;
+  color: var(--ink-2);
+}
+.ann__timeline {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ann__timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 14px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--line);
+}
+.ann-item {
+  position: relative;
+  padding: 0 0 36px 44px;
+}
+.ann-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 13px;
+  height: 13px;
+  box-sizing: border-box;
+  border: 2.5px solid var(--ink-3);
+  border-radius: 50%;
+  background: var(--bg);
+}
+.ann-item.is-latest::before {
+  border-color: var(--k-sem, #e0a932);
+  background: var(--k-sem, #e0a932);
+}
+.ann-item__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 22px;
+  font-weight: 700;
+}
+.ann-item__meta b {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.ann-item.is-latest .ann-item__meta b {
+  color: var(--k-sem, #e0a932);
+}
+.ann-item__to {
+  padding-left: 16px;
+  border-left: 1.5px solid var(--line);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.ann-item__title {
+  margin: 10px 0 8px;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.ann-item__body {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.ann-item__foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  min-height: 32px;
+}
+.ann-item__danger {
+  color: var(--danger-ink);
+}
+@media (max-width: 900px) {
+  .ann {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+  .ann::before {
+    display: none;
+  }
+  .ann__form,
+  .ann__list {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .ann__actions {
+    flex-direction: column-reverse;
+  }
+  .ann-item__meta b {
+    font-size: 28px;
+  }
+}
+@media (max-width: 900px) {
+  /* на телефоне кнопки формы объявления не сжимаются, а подпись «кому» уходит под дату */
+  .ann__actions .btn {
+    flex: none;
+    width: 100%;
+    min-height: 56px;
+  }
+  .ann-item__meta {
+    flex-wrap: wrap;
+    gap: 2px 14px;
+  }
+  .ann-item__meta time {
+    white-space: nowrap;
+  }
+  .ann-item__to {
+    font-size: 16px;
+  }
+}
