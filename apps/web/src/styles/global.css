@@ -6095,3 +6095,16 @@ select.input {
     color: var(--ink-2);
   }
 }
+@media (max-width: 900px) {
+  /* на телефоне страница входа прокручивается: раскрытый список тестовых аккаунтов не должен обрезаться */
+  html.lock-scroll,
+  html.lock-scroll body {
+    height: auto;
+    overflow-y: auto;
+    overscroll-behavior: auto;
+  }
+  .login {
+    height: auto;
+    overflow: visible;
+  }
+}

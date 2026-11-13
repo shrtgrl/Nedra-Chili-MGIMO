@@ -177,7 +177,12 @@ export function LoginPage() {
 
           {phone ? (
             <div className="login__demo-wrap">
-              <button type="button" className="login__demo-toggle" onClick={() => setDemoOpen((v) => !v)} aria-expanded={demoOpen} aria-controls="demo-accounts">
+              <button type="button" className="login__demo-toggle" onClick={() => {
+                  setDemoOpen((v) => !v)
+                  // раскрытый список может оказаться ниже экрана — подкручиваем к нему
+                  setTimeout(() => document.getElementById('demo-accounts')?.scrollIntoView({ block: 'end', behavior: 'smooth' }), 50)
+                }}
+                aria-expanded={demoOpen} aria-controls="demo-accounts">
                 Тестовые аккаунты
                 <Icon name="chevronDown" size={18} className={demoOpen ? 'is-open' : ''} />
               </button>
