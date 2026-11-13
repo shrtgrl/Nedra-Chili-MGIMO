@@ -110,6 +110,21 @@ export const teachingAssignments = pgTable('teaching_assignments', {
 }, t => [uniqueIndex('assignment_subject_group_semester').on(t.subjectId, t.groupId, t.semester),
   check('assignment_semester_positive', sql`${t.semester} > 0`),
   check('assignment_form_valid', sql`${t.form} in ('Экзамен', 'Зачёт')`)]);
+export const academicDeadlines = pgTable('academic_deadlines', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  assignmentId: uuid('assignment_id').notNull().references(() => teachingAssignments.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  dueAt: timestamp('due_at', { withTimezone: true }).notNull(),
+  createdAt: createdAt(),
+}, t => [index('academic_deadlines_assignment_due_idx').on(t.assignmentId, t.dueAt)]);
+export const announcements = pgTable('announcements', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  groupId: uuid('group_id').references(() => groups.id),
+  publishedBy: uuid('published_by').notNull().references(() => users.id),
+  title: text('title').notNull(),
+  body: text('body').notNull(),
+  createdAt: createdAt(),
+}, t => [index('announcements_created_idx').on(t.createdAt)]);
 export const gradeEntries = pgTable('grade_entries', {
   id: uuid('id').primaryKey().defaultRandom(),
   assignmentId: uuid('assignment_id').notNull().references(() => teachingAssignments.id, { onDelete: 'cascade' }),

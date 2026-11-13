@@ -1,6 +1,8 @@
 import { useTodaySchedule } from '../../lib/useSchedule'
 import { STATUS_LABEL } from '../../lib/staff'
 import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { dataApi, type ApiAnnouncement, type ApiDeadline } from '../../lib/api'
 import { useUser } from '../../context/auth'
 import { useData } from '../../context/data'
 import { REQUEST_STAGES, REQUEST_TYPES } from '../../data/mock'
@@ -21,6 +23,26 @@ const daysUntil = (iso: string, now: Date) => {
 }
 
 export function StudentHome() {
+  const [deadlines, setDeadlines] = useState<ApiDeadline[]>([])
+  const [deadlineError, setDeadlineError] = useState('')
+  const [announcements, setAnnouncements] = useState<ApiAnnouncement[]>([])
+  const [announcementError, setAnnouncementError] = useState('')
+  useEffect(() => {
+    let live = true
+    const reload = () => void dataApi.deadlines().then(rows => { if (live) { setDeadlines(rows); setDeadlineError('') } })
+      .catch(e => { if (live) setDeadlineError(e instanceof Error ? e.message : 'Не удалось загрузить дедлайны') })
+    reload()
+    window.addEventListener('focus', reload)
+    return () => { live = false; window.removeEventListener('focus', reload) }
+  }, [])
+  useEffect(() => {
+    let live = true
+    const reload = () => void dataApi.announcements().then(rows => { if (live) { setAnnouncements(rows); setAnnouncementError('') } })
+      .catch(e => { if (live) setAnnouncementError(e instanceof Error ? e.message : 'Не удалось загрузить объявления') })
+    reload()
+    window.addEventListener('focus', reload)
+    return () => { live = false; window.removeEventListener('focus', reload) }
+  }, [])
   const now = useNow()
   const user = useUser()
   const ny = useNewYear()
@@ -35,8 +57,8 @@ export function StudentHome() {
   const lastEnd = todayList.at(-1)?.end
   const working = requests.filter((r) => ['submitted','in_progress'].includes(r.status))
   const workTitle = working.length ? working.map((r) => REQUEST_TYPES[r.type]).join(', ') : null
-  const upcomingDeadlines: {title:string;date:string;dateLabel:string;id:string}[] = []
-  const announcements: {title:string;text:string;id:string}[]=[]
+  const upcomingDeadlines = deadlines.filter(d => new Date(d.dueAt) > now)
+  const deadlineDate = (value: string) => new Date(value).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
   return (
     <>
@@ -121,11 +143,11 @@ export function StudentHome() {
                 Все предметы <Icon name="arrowRight" size={14} />
               </Link>
             </div>
-            <Link to="/student/notifications" className="stat">
+            <div className="stat">
               <span className="stat__label">Дедлайн</span>
               <b className="stat__text">{upcomingDeadlines[0]?.title ?? 'Ближайших нет'}</b>
-              {upcomingDeadlines[0] && <span className="stat__danger">{upcomingDeadlines[0].dateLabel} 2026</span>}
-            </Link>
+              {upcomingDeadlines[0] && <span className="stat__danger">{deadlineDate(upcomingDeadlines[0].dueAt)} МСК</span>}
+            </div>
           </div>
 
           <TodayTimeline lessons={lessons} who="teacher" />
@@ -134,15 +156,16 @@ export function StudentHome() {
         <div className="stack">
           <section className="card">
             <h2 className="card__title">Ближайшие дедлайны</h2>
+            {deadlineError && <p role="alert" className="form-error">{deadlineError}</p>}
             <ul className="list">
-              {upcomingDeadlines.length === 0 && <li className="small muted">Ближайших дедлайнов нет.</li>}
+              {!deadlineError && upcomingDeadlines.length === 0 && <li className="small muted">Ближайших дедлайнов нет.</li>}
               {upcomingDeadlines.map((d) => {
-                const n = daysUntil(d.date, now)
+                const n = daysUntil(d.dueAt, now)
                 return (
                   <li key={d.id} className="list__row">
                     <div>
-                      <b>{d.title}</b>
-                      <span className="small muted">{d.dateLabel} 2026</span>
+                      <b>{d.title} · {d.subject}</b>
+                      <span className="small muted">{deadlineDate(d.dueAt)} МСК</span>
                     </div>
                     <Badge tone={n <= 1 ? 'danger' : n <= 3 ? 'warn' : 'neutral'}>{daysLeftLabel(n)}</Badge>
                   </li>
@@ -153,12 +176,13 @@ export function StudentHome() {
 
           <section className="card">
             <h2 className="card__title">Объявления деканата</h2>
+            {announcementError && <p role="alert" className="form-error">{announcementError}</p>}
             <ul className="announcements">
-              {!announcements.length && <li className="muted small">Объявлений пока нет.</li>}
+              {!announcementError && !announcements.length && <li className="muted small">Объявлений пока нет.</li>}
               {announcements.map((a) => (
                 <li key={a.id}>
                   <b>{a.title}</b>
-                  <span className="small muted">{a.text}</span>
+                  <span className="small muted">{a.body}</span>
                 </li>
               ))}
             </ul>

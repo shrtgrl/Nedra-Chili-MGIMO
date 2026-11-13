@@ -13,7 +13,7 @@ import { Icon } from '../../components/Icon'
 
 type Filter = 'all' | ApiStaffRequest['type']
 type StatusFilter = 'active' | 'all' | 'overdue' | 'done' | ApiStaffRequest['status']
-const STATUS_FILTERS: [StatusFilter, string][] = [['active', 'Активные'], ['submitted', 'Новые'], ['in_progress', 'В работе'], ['overdue', 'Просрочены'], ['ready', 'Готовы'], ['issued', 'Выданы'], ['rejected', 'Отклонены'], ['all', 'Все']]
+const STATUS_FILTERS: [StatusFilter, string][] = [['active', 'Активные'], ['submitted', 'Новые'], ['in_progress', 'В работе'], ['overdue', 'Просрочены'], ['ready', 'Готовы'], ['issued', 'Выданы'], ['rejected', 'Отклонены'], ['cancelled', 'Отменены'], ['all', 'Все']]
 const TONE: Record<ApiStaffRequest['status'], Tone> = { submitted: 'warn', in_progress: 'accent', ready: 'ok', issued: 'neutral', rejected: 'danger', cancelled: 'neutral' }
 
 const dayMonth = (iso: string | Date) => new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
@@ -167,7 +167,7 @@ export function StaffTasksPage() {
                 </div>
               </div>
               <div className="request-detail__body">
-                <Stages stages={STAGES} current={stageOf(selected.status)} />
+                {!['cancelled', 'rejected'].includes(selected.status) && <Stages stages={STAGES} current={stageOf(selected.status)} />}
                 <div className="msg">
                   <Avatar initials={initialsOf(selected.fullName)} size={40} tone="neutral" />
                   <p className="msg__bubble">
@@ -201,6 +201,7 @@ export function StaffTasksPage() {
                 </div>
                 <DocumentActions key={selected.id} row={selected} reload={reload}/>
                 {(selected.status === 'rejected') && <p className="muted small">Заявка отклонена — действий не требуется.</p>}
+                {(selected.status === 'cancelled') && <p className="muted small">Студент отменил заявку — дальнейшая обработка недоступна.</p>}
               </div>
             </>
           ) : (

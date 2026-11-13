@@ -22,7 +22,9 @@ import { TeacherHome } from './pages/teacher/Home'
 import { GradebookPage } from './pages/teacher/Gradebook'
 import { InquiriesPage } from './pages/teacher/Inquiries'
 import { TeacherMaterialsPage } from './pages/teacher/Materials'
+import { TeacherDeadlinesPage } from './pages/teacher/Deadlines'
 import { StaffTasksPage } from './pages/staff/Tasks'
+import { StaffAnnouncementsPage } from './pages/staff/Announcements'
 import { StaffSchedulePage } from './pages/staff/Schedule'
 
 function NewYearBackdrop() {
@@ -97,6 +99,7 @@ function AppRoutes() {
                   <Route path="schedule" element={<SchedulePage />} />
                   <Route path="gradebook" element={<GradebookPage />} />
                   <Route path="materials" element={<TeacherMaterialsPage />} />
+                  <Route path="deadlines" element={<TeacherDeadlinesPage />} />
                   <Route path="inquiries" element={<InquiriesPage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
@@ -112,6 +115,7 @@ function AppRoutes() {
                 >
                   <Route index element={<StaffTasksPage />} />
                   <Route path="schedule" element={<StaffSchedulePage />} />
+                  <Route path="announcements" element={<StaffAnnouncementsPage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
                 <Route path="*" element={<Home />} />
