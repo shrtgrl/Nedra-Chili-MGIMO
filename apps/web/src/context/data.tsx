@@ -44,7 +44,7 @@ export function DataProvider({ children }: {
             if (seq !== sequence.current)
                 return;
             setRequests(rs.map(requestView));
-            setNotices(ns.map(n => ({ id: n.id, title: n.title, text: n.body, time: dateLabel(n.createdAt), unread: !n.readAt, icon: n.kind === 'change' ? 'calendar' : n.kind === 'request' ? 'doc' : 'bell' })));
+            setNotices(ns.map(n => ({ id: n.id, title: n.title, text: n.body, time: dateLabel(n.createdAt), unread: !n.readAt, icon: n.kind === 'change' ? 'calendar' : n.kind === 'request' ? 'doc' : n.kind === 'inquiry' ? 'inbox' : 'bell', kind: n.kind })));
             setPrefs(ps);
             setInquiries(qs.map(q => ({ ...q, group: q.group ?? '—', initials: q.student.split(' ').slice(0, 2).map(n => n[0]).join(''), message: q.text, replies: q.replies.map(r => `${dateLabel(r.createdAt)} — ${r.text}`) })));
             setSheets(ss.map(s => ({ ...s, deadlineLabel: s.deadline ? dateLabel(s.deadline) : 'срок не задан' })));

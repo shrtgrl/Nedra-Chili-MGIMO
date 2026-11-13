@@ -98,6 +98,7 @@ function AppRoutes() {
                   <Route path="gradebook" element={<GradebookPage />} />
                   <Route path="materials" element={<TeacherMaterialsPage />} />
                   <Route path="inquiries" element={<InquiriesPage />} />
+                  <Route path="notifications" element={<NotificationsPage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
                 <Route

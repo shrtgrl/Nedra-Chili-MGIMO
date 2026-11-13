@@ -44,6 +44,7 @@ function useNav(): NavItem[] {
     { to: '/teacher/gradebook', label: 'Ведомость', icon: 'table' },
     { to: '/teacher/materials', label: 'Материалы', icon: 'book' },
     { to: '/teacher/inquiries', label: 'Обращения', icon: 'inbox', badge: newInquiries },
+    { to: '/teacher/notifications', label: 'Уведомления', icon: 'bell', badge: unreadCount },
   ]
 }
 
@@ -116,9 +117,8 @@ function Sidebar() {
 
 function MobileBar() {
   const user = useUser()
-  const { unreadCount, newInquiries } = useData()
+  const { unreadCount } = useData()
   const staff = useStaffOptional()
-  const isStudent = user.role === 'student'
   const isStaff = user.role === 'staff'
   const { pathname } = useLocation()
   const isHome = pathname === '/student' || pathname === '/teacher'
@@ -131,10 +131,10 @@ function MobileBar() {
         <ThemeButton />
         {isHome && <NewYearButton />}
         <IconButton
-          icon={isStudent ? 'bell' : 'inbox'}
-          label={isStudent ? 'Уведомления' : isStaff ? 'Задачи' : 'Обращения'}
-          to={isStudent ? '/student/notifications' : isStaff ? '/staff' : '/teacher/inquiries'}
-          dot={isStudent ? unreadCount > 0 : isStaff ? !!staff?.newCount : newInquiries > 0}
+          icon={isStaff ? 'inbox' : 'bell'}
+          label={isStaff ? 'Задачи' : 'Уведомления'}
+          to={isStaff ? '/staff' : `/${user.role}/notifications`}
+          dot={isStaff ? !!staff?.newCount : unreadCount > 0}
         />
         <Link to={`/${user.role}/profile`} aria-label="Профиль">
           <Avatar initials={user.initials} size={44} />

@@ -6322,3 +6322,27 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
 .nowrap {
   white-space: nowrap;
 }
+
+/* Новогодний лес прижат к низу окна, даже если страница короткая */
+.app__main {
+  display: flex;
+  flex-direction: column;
+}
+.forest {
+  margin-top: auto;
+  margin-bottom: -16px;
+  flex: none;
+}
+.notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  align-self: start;
+}
+@media (max-width: 600px) {
+  .notice__actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+}

@@ -50,7 +50,7 @@ export interface StudentRequest {
   stage: RequestStage
 }
 
-export type NoticeIcon = 'alert' | 'calendar' | 'doc' | 'bell'
+export type NoticeIcon = 'alert' | 'calendar' | 'doc' | 'bell' | 'inbox'
 
 export interface Notice {
   id: string
@@ -60,6 +60,8 @@ export interface Notice {
   time: string
   unread: boolean
   accent?: boolean
+  /** тип события — для перехода к нужному разделу */
+  kind?: string
 }
 
 export interface NotifyPrefs {
