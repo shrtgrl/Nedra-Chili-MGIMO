@@ -1,5 +1,7 @@
 import { DomainError } from './domain.js';
 import { academicRoutes } from './academic-routes.js';
+import { announcementRoutes } from './announcement-routes.js';
+import { deadlineRoutes } from './deadline-routes.js';
 import { materialRoutes } from './material-routes.js';
 import { notificationRoutes } from './notification-routes.js';
 import { SignJWT, jwtVerify } from 'jose';
@@ -73,6 +75,8 @@ export function buildApp(options: { logger?: boolean; origin?: string; secureCoo
     return user.id;
   };
   academicRoutes(app, db, authorize('*'));
+  announcementRoutes(app, db, authorize('*'));
+  deadlineRoutes(app, db, authorize('*'));
   materialRoutes(app, db, authorize('*'));
   notificationRoutes(app, db, authorize('*'));
   requestRoutes(app, db, authorize('student'), authorize('staff'));

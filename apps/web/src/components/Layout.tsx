@@ -26,6 +26,7 @@ function useNav(): NavItem[] {
     return [
       { to: '/staff', label: 'Задачи', icon: 'inbox', badge: staff?.newCount, end: true },
       { to: '/staff/schedule', label: 'Расписание групп', icon: 'calendar' },
+      { to: '/staff/announcements', label: 'Объявления', icon: 'bell' },
     ]
   }
   if (user.role === 'student') {
@@ -43,6 +44,7 @@ function useNav(): NavItem[] {
     { to: '/teacher/schedule', label: 'Расписание', icon: 'calendar' },
     { to: '/teacher/gradebook', label: 'Ведомость', icon: 'table' },
     { to: '/teacher/materials', label: 'Материалы', icon: 'book' },
+    { to: '/teacher/deadlines', label: 'Дедлайны', icon: 'calendar' },
     { to: '/teacher/inquiries', label: 'Обращения', icon: 'inbox', badge: newInquiries },
     { to: '/teacher/notifications', label: 'Уведомления', icon: 'bell', badge: unreadCount },
   ]

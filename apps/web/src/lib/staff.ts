@@ -28,11 +28,10 @@ const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDat
 export const overdueDays = (r: ApiStaffRequest, now: Date) => Math.round((startOfDay(now).getTime() - startOfDay(dueDate(r)).getTime()) / 86_400_000)
 export const isOverdue = (r: ApiStaffRequest, now: Date) => isActive(r) && overdueDays(r, now) > 0
 
-/** Очередь: сначала срочные (просроченные и старые), затем готовые, затем закрытые. Отменённые не показываем. */
+/** Сначала срочные (просроченные и старые), затем готовые, затем закрытые, включая отменённые. */
 export function sortQueue(list: ApiStaffRequest[]) {
   const rank = (r: ApiStaffRequest) => (isActive(r) ? 0 : r.status === 'ready' ? 1 : 2)
   return list
-    .filter((r) => r.status !== 'cancelled')
     .sort((a, b) => rank(a) - rank(b) || (rank(a) === 0 ? +new Date(a.createdAt) - +new Date(b.createdAt) : +new Date(b.updatedAt) - +new Date(a.updatedAt)))
 }
 

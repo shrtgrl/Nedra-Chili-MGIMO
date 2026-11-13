@@ -19,7 +19,8 @@
     "db:reset-demo-staff-password": "npm run db:reset-demo-staff-password -w apps/api",
     "test": "npm run test -w apps/api",
     "test:unit": "npm run test:unit -w apps/api",
-    "test:integration": "npm run test:integration -w apps/api"
+    "test:integration": "npm run test:integration -w apps/api",
+    "test:local": "node --env-file=.env scripts/test-local.mjs"
   },
   "dependencies": {
     "@neon/config": "^1.14.0",
