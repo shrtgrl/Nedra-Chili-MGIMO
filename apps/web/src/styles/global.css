@@ -6371,3 +6371,15 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
 .tt-wrap {
   padding: 0 10px 28px 0;
 }
+
+/* ведомость: кнопка «Сохранить» — в конце блока со студентами, справа */
+.sheet-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+@media (max-width: 600px) {
+  .sheet-foot .btn {
+    width: 100%;
+  }
+}

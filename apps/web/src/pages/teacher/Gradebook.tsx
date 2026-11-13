@@ -24,7 +24,7 @@ function SheetEditor({ source }: { source: GradeSheet }) {
   const { sheets, saveSheet, inquiries } = useData()
   const toast = useToast()
   const [, setParams] = useSearchParams()
-  const sheetOptions: ComboOption[] = sheets.map((x) => ({ id: x.id, value: `${x.subject} · ${x.group}`, hint: x.form }))
+  const sheetOptions: ComboOption[] = sheets.map((x) => ({ id: x.id, value: `${x.subject} · ${x.group} · ${x.form.toLowerCase()}` }))
   const [sheetText, setSheetText] = useState(() => sheetOptions.find((o) => o.id === source.id)?.value ?? '')
 
   // Черновик: значения полей как строки, чтобы можно было стирать и вводить.
@@ -72,9 +72,6 @@ function SheetEditor({ source }: { source: GradeSheet }) {
         actions={
           <>
             <ThemeButton />
-            <Button variant="primary" icon="check" onClick={save} disabled={!dirty || busy || !!(source.deadline && new Date(source.deadline)<now)}>
-              Сохранить
-            </Button>
           </>
         }
       />
@@ -152,6 +149,11 @@ function SheetEditor({ source }: { source: GradeSheet }) {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="sheet-foot">
+            <Button variant="primary" icon="check" onClick={save} disabled={!dirty || busy || !!(source.deadline && new Date(source.deadline)<now)}>
+              Сохранить
+            </Button>
           </div>
         </section>
 
