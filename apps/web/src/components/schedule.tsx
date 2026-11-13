@@ -158,7 +158,9 @@ const KIND_CLASS: Record<Lesson['kind'], string> = { Лекция: 'lec', Сем
 function GridCell({ l, who, live }: { l: Lesson; who: 'teacher' | 'group'; live: boolean }) {
   return (
     <article className={`tc tc--${KIND_CLASS[l.kind]} ${l.status ? `tc--${l.status}` : ''} ${live ? 'is-live' : ''}`} aria-current={live ? 'time' : undefined}>
-      <h4 className={`tc__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</h4>
+      <h4 className={`tc__title ${l.status === 'cancelled' ? 'strike' : ''}`}>
+        {l.subject.split(/(\S+-\S+)/).map((part, i) => (i % 2 ? <span key={i} className="nowrap">{part}</span> : part))}
+      </h4>
       <p className="tc__meta">{l.room}</p>
       <p className="tc__meta">{subline(l, who)}</p>
       <div className="tc__foot">
@@ -211,7 +213,6 @@ function WeekGrid({ byDay, weekdays, shortDays, monday, today, week, who, now }:
           )}
           {rows.map(([start, end], ri) => {
             const rowNow = week === 0 && m >= toMinutes(start) && m < toMinutes(end)
-            const last = ri === rows.length - 1
             return (
               <tr key={start}>
                 <th scope="row" className={`tt__time ${rowNow ? 'is-now' : ''}`}>
@@ -221,8 +222,11 @@ function WeekGrid({ byDay, weekdays, shortDays, monday, today, week, who, now }:
                 {cols.map((i) => {
                   const here = byDay[i].filter((l) => l.start === start)
                   const isToday = week === 0 && i === today
+                  // подсветка сегодняшнего дня идёт до последнего занятия этого дня и там заканчивается
+                  const endRow = isToday ? Math.max(0, rows.map(([st]) => byDay[i].some((l) => l.start === st)).lastIndexOf(true)) : -1
+                  const tint = isToday && ri <= endRow
                   return (
-                    <td key={i} className={`tt__cell ${isToday ? 'is-today' : ''} ${last ? 'is-last' : ''}`}>
+                    <td key={i} className={`tt__cell ${tint ? 'is-today' : ''} ${isToday && ri === endRow ? 'is-last' : ''}`}>
                       {here.length > 0 && (
                         <div className="tt__stack">
                           {here.map((l) => (

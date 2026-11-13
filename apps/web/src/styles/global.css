@@ -6302,3 +6302,23 @@ tbody tr:last-child .tt__cell.is-today {
 .tt__dow {
   color: var(--ink-2);
 }
+
+/* названия предметов не переносятся по слогам: слово всегда целиком в одной строке */
+.tc__title {
+  font-size: 15px;
+  hyphens: none;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.tc {
+  padding-inline: 18px 10px;
+}
+.tt {
+  min-width: 1020px;
+}
+tbody tr:last-child .tt__cell.is-today:not(.is-last) {
+  border-radius: 0;
+}
+.nowrap {
+  white-space: nowrap;
+}
