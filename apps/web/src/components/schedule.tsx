@@ -153,30 +153,25 @@ function liveProgress(l: Lesson, now: Date) {
 }
 
 /* ── Недельная сетка: строки — пары, столбцы — дни ──────── */
-const KIND_SHORT: Record<Lesson['kind'], string> = { Лекция: 'ЛК', Семинар: 'С', Практика: 'ПР' }
 const KIND_CLASS: Record<Lesson['kind'], string> = { Лекция: 'lec', Семинар: 'sem', Практика: 'pra' }
 
-function GridCell({ l, who, progress }: { l: Lesson; who: 'teacher' | 'group'; progress?: number }) {
-  const live = progress != null
+function GridCell({ l, who, live }: { l: Lesson; who: 'teacher' | 'group'; live: boolean }) {
   return (
-    <article className={`tt-lesson ${l.status ? `tt-lesson--${l.status}` : ''} ${live ? 'is-live' : ''}`} aria-current={live ? 'time' : undefined}>
-      <span className={`tt-badge tt-k--${KIND_CLASS[l.kind]}`} title={l.kind} aria-label={l.kind}>{KIND_SHORT[l.kind]}</span>
-      <div className={`tt-lesson__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</div>
-      <div className="tt-lesson__meta">{l.room}</div>
-      <div className="tt-lesson__meta">{subline(l, who)}</div>
-      {l.status === 'cancelled' && <span className="tt-tag tt-tag--danger">Отменено</span>}
-      {l.status === 'moved' && <span className="tt-tag tt-tag--warn">Было {l.movedFrom}</span>}
-      {live && (
-        <>
-          <span className="tt-tag tt-tag--live">
+    <article className={`tc tc--${KIND_CLASS[l.kind]} ${l.status ? `tc--${l.status}` : ''} ${live ? 'is-live' : ''}`} aria-current={live ? 'time' : undefined}>
+      <h4 className={`tc__title ${l.status === 'cancelled' ? 'strike' : ''}`}>{l.subject}</h4>
+      <p className="tc__meta">{l.room}</p>
+      <p className="tc__meta">{subline(l, who)}</p>
+      <div className="tc__foot">
+        {live && (
+          <span className="tc__live">
             <span className="now-dot" aria-hidden="true" />
             Идёт сейчас
           </span>
-          <span className="tt-lesson__progress" role="progressbar" aria-label="Прошло времени" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
-            <span style={{ width: `${progress * 100}%` }} />
-          </span>
-        </>
-      )}
+        )}
+        {l.status === 'cancelled' && <span className="tc__note tc__note--danger">Отменено</span>}
+        {l.status === 'moved' && <span className="tc__note tc__note--warn">Было {l.movedFrom}</span>}
+        <span className="tc__kind">{l.kind}</span>
+      </div>
     </article>
   )
 }
@@ -202,7 +197,7 @@ function WeekGrid({ byDay, weekdays, shortDays, monday, today, week, who, now }:
                 <th key={name} scope="col" className={`tt__day ${isToday ? 'is-today' : ''}`} aria-label={`${name}, ${date.getDate()} ${monthShort(date)}`}>
                   <span className="tt__dow">{shortDays[i]}</span>
                   <b className="tt__num">{date.getDate()}</b>
-                  <span className="tt__mon">{monthShort(date)}</span>
+                  {isToday && <span className="tt__today">сегодня</span>}
                 </th>
               )
             })}
@@ -214,8 +209,9 @@ function WeekGrid({ byDay, weekdays, shortDays, monday, today, week, who, now }:
               <td className="tt__empty" colSpan={cols.length + 1}>На этой неделе занятий нет</td>
             </tr>
           )}
-          {rows.map(([start, end]) => {
+          {rows.map(([start, end], ri) => {
             const rowNow = week === 0 && m >= toMinutes(start) && m < toMinutes(end)
+            const last = ri === rows.length - 1
             return (
               <tr key={start}>
                 <th scope="row" className={`tt__time ${rowNow ? 'is-now' : ''}`}>
@@ -226,14 +222,15 @@ function WeekGrid({ byDay, weekdays, shortDays, monday, today, week, who, now }:
                   const here = byDay[i].filter((l) => l.start === start)
                   const isToday = week === 0 && i === today
                   return (
-                    <td key={i} className={`tt__cell ${isToday ? 'is-today' : ''}`}>
+                    <td key={i} className={`tt__cell ${isToday ? 'is-today' : ''} ${last ? 'is-last' : ''}`}>
                       {here.length > 0 && (
                         <div className="tt__stack">
                           {here.map((l) => (
-                            <GridCell key={l.id} l={l} who={who} progress={isToday ? liveProgress(l, now) : undefined} />
+                            <GridCell key={l.id} l={l} who={who} live={isToday && liveProgress(l, now) != null} />
                           ))}
                         </div>
                       )}
+                      {ri === 0 && byDay[i].length === 0 && <div className="tt__none">Нет занятий</div>}
                     </td>
                   )
                 })}
@@ -242,11 +239,6 @@ function WeekGrid({ byDay, weekdays, shortDays, monday, today, week, who, now }:
           })}
         </tbody>
       </table>
-      <ul className="tt-key" aria-label="Обозначения">
-        <li><b className="tt-k--lec">ЛК</b> лекция</li>
-        <li><b className="tt-k--sem">С</b> семинар</li>
-        <li><b className="tt-k--pra">ПР</b> практика</li>
-      </ul>
     </div>
   )
 }
