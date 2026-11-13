@@ -5904,3 +5904,194 @@ select.input {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ═════════ Вход на телефоне: цветная шапка с гербом + форма без подписей ═════════ */
+.login__forgot,
+.login__demo-wrap {
+  display: none;
+}
+@media (max-width: 900px) {
+  .login {
+    padding: 0;
+    gap: 0;
+    min-height: 100dvh;
+    grid-template-rows: auto minmax(0, 1fr);
+    background: var(--bg);
+  }
+  .login__promo,
+  .login__promo--ny {
+    padding: 64px 24px 44px;
+    border-radius: 0 0 40px 40px;
+    justify-content: center;
+    min-height: min(36dvh, 300px);
+  }
+  .login__promo--ny {
+    padding-top: 76px;
+  }
+  .login__promo-body {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    text-align: center;
+  }
+  .login__logo,
+  .login__promo--ny .login__logo {
+    height: clamp(104px, 17dvh, 150px);
+    width: auto;
+    max-width: 60%;
+  }
+  .login__headline,
+  .login__promo--ny .login__headline {
+    margin-top: 20px;
+    font-size: clamp(20px, 6.4vw, 28px);
+    line-height: 1.15;
+    max-width: 16ch;
+    text-wrap: balance;
+  }
+  .login__promo:not(.login__promo--ny) .login__headline {
+    max-width: none;
+  }
+  .promo-forest {
+    display: none;
+  }
+
+  /* кнопка темы — просто значок на шапке */
+  .login__theme {
+    top: 14px;
+    right: 14px;
+    width: 48px;
+    height: 48px;
+    border: 0;
+    background: transparent;
+    color: var(--on-promo, var(--on-hl));
+    z-index: 3;
+  }
+  .login__theme:hover {
+    background: color-mix(in srgb, var(--on-promo, var(--on-hl)) 12%, transparent);
+    border-color: transparent;
+  }
+  .login__promo--ny ~ .login__form-wrap .login__theme {
+    top: 40px;
+  }
+
+  /* форма */
+  .login__form-wrap,
+  .login__form-wrap--ny {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 32px 24px max(20px, env(safe-area-inset-bottom));
+  }
+  .login__form,
+  .login__form-wrap--ny .login__form {
+    flex: 1;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    gap: 14px;
+  }
+  .login__title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .login__form > .muted {
+    display: none;
+  }
+  .login__form .field {
+    gap: 0;
+  }
+  .login__form .input {
+    height: 56px;
+    border-radius: 20px;
+    padding-inline: 22px;
+    font-size: 17px;
+  }
+  .login__form .input--with-btn {
+    padding-inline-end: 60px;
+  }
+  .login__form .btn--lg {
+    height: 56px;
+    border-radius: 20px;
+    font-size: 18px;
+    margin-top: 4px;
+  }
+  .login__form .btn--lg svg {
+    display: none;
+  }
+  .login__forgot {
+    display: block;
+    align-self: center;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .login__forgot-hint {
+    text-align: center;
+    margin-top: -8px;
+  }
+
+  /* тестовые аккаунты — внизу, раскрываются */
+  .login__demo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 24px;
+  }
+  .login__demo-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .login__demo-toggle svg {
+    transition: transform 0.2s ease;
+  }
+  .login__demo-toggle svg.is-open {
+    transform: rotate(180deg);
+  }
+  .login__demo-wrap .login__demo {
+    width: 100%;
+    padding: 14px 18px;
+    gap: 2px;
+    font-size: 14px;
+    text-align: center;
+  }
+  .login__note {
+    text-align: center;
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+}
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .login__demo-toggle svg {
+    transition: none;
+  }
+}
+@media (max-width: 900px) {
+  .promo-flake--2 {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  /* подписей над полями нет — подсказка внутри поля и мелкая сноска должны читаться (≥4.5:1) */
+  .login__form .input::placeholder {
+    color: var(--ink-2);
+  }
+  .login__note {
+    color: var(--ink-2);
+  }
+}

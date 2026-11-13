@@ -7,10 +7,25 @@ import { Button, ThemeIcon } from '../components/ui'
 import { Icon } from '../components/Icon'
 import { Garland, Snowflake, Tree, TreeSilhouette, useNewYear } from '../components/newyear'
 
+/** узкий экран (телефон/планшет): вход показывается как шапка + форма без подписей */
+function usePhone() {
+  const q = '(max-width: 900px)'
+  const [phone, setPhone] = useState(() => window.matchMedia?.(q).matches ?? false)
+  useEffect(() => {
+    const m = window.matchMedia(q)
+    const on = () => setPhone(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
+  return phone
+}
+
 export function LoginPage() {
   const { login } = useAuth()
   const { theme, toggleTheme } = useSettings()
   const ny = useNewYear()
+  const phone = usePhone()
+  const [demoOpen, setDemoOpen] = useState(false)
 
   // страница входа статична: прокрутку документа выключаем, пока она открыта
   useEffect(() => {
@@ -88,36 +103,37 @@ export function LoginPage() {
           <span className="login__theme-label">{theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}</span>
         </button>
 
-        <form className="login__form" method="post" onSubmit={submit} noValidate>
+        <form className="login__form" onSubmit={submit} noValidate>
           <div className="eyebrow">Добро пожаловать</div>
           <h1 className="display login__title">Вход</h1>
           <p className="muted">Используйте учебную почту и пароль от личного кабинета.</p>
 
           <label className="field">
-            <span className="field__label">Логин</span>
-            <input id="email" name="email" className="input" type="email" autoComplete="username" autoCapitalize="none" placeholder="name@edu.mukpid.ru" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <span className={`field__label ${phone ? 'sr-only' : ''}`}>Логин</span>
+            <input className="input" type="email" autoComplete="username" placeholder={phone ? 'Учебная почта' : 'name@edu.mukpid.ru'} value={email} onChange={(e) => setEmail(e.target.value)} required />
           </label>
 
           <div className="field">
             <div className="field__row">
-              <label className="field__label" htmlFor="pwd">
+              <label className={`field__label ${phone ? 'sr-only' : ''}`} htmlFor="pwd">
                 Пароль
               </label>
-              <button type="button" className="link-btn" onClick={() => setForgot((v) => !v)}>
-                Забыли пароль?
-              </button>
+              {!phone && (
+                <button type="button" className="link-btn" onClick={() => setForgot((v) => !v)}>
+                  Забыли пароль?
+                </button>
+              )}
             </div>
             <div className="input-wrap">
               <input
                 id="pwd"
-                name="password"
                 className="input input--with-btn"
                 type={showPwd ? 'text' : 'password'}
                 autoComplete="current-password"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
-                placeholder="Введите пароль"
+                placeholder={phone ? 'Пароль' : 'Введите пароль'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -137,7 +153,7 @@ export function LoginPage() {
                 </span>
               </button>
             </div>
-            {forgot && <p className="field__hint">Для демонстрационного аккаунта используйте пароль, заданный при заполнении базы.</p>}
+            {forgot && !phone && <p className="field__hint">Для демонстрационного аккаунта используйте пароль, заданный при заполнении базы.</p>}
           </div>
 
           {error && (
@@ -150,12 +166,38 @@ export function LoginPage() {
             {busy ? 'Входим…' : 'Войти'}
           </Button>
 
-          <div className="login__demo">
-            <b>Тестовые аккаунты</b>
-            <span>
-              student@edu.mukpid.ru · teacher@mukpid.ru · staff@staff.mukpid.ru — пароли задаются при заполнении базы
-            </span>
-          </div>
+          {phone && (
+            <>
+              <button type="button" className="login__forgot" onClick={() => setForgot((v) => !v)} aria-expanded={forgot}>
+                Забыли пароль?
+              </button>
+              {forgot && <p className="field__hint login__forgot-hint">Для демонстрационного аккаунта используйте пароль, заданный при заполнении базы.</p>}
+            </>
+          )}
+
+          {phone ? (
+            <div className="login__demo-wrap">
+              <button type="button" className="login__demo-toggle" onClick={() => setDemoOpen((v) => !v)} aria-expanded={demoOpen} aria-controls="demo-accounts">
+                Тестовые аккаунты
+                <Icon name="chevronDown" size={18} className={demoOpen ? 'is-open' : ''} />
+              </button>
+              {demoOpen && (
+                <div id="demo-accounts" className="login__demo">
+                  <span>student@edu.mukpid.ru</span>
+                  <span>teacher@mukpid.ru</span>
+                  <span>staff@staff.mukpid.ru</span>
+                  <span>Пароли задаются при заполнении базы</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="login__demo">
+              <b>Тестовые аккаунты</b>
+              <span>
+                student@edu.mukpid.ru · teacher@mukpid.ru · staff@staff.mukpid.ru — пароли задаются при заполнении базы
+              </span>
+            </div>
+          )}
           <p className="login__note">Концепт для конкурса «Вайб-кодинг». Не является официальным сервисом вуза. Все данные вымышлены.</p>
         </form>
       </section>
