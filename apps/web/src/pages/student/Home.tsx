@@ -13,6 +13,7 @@ import { todayLessons } from '../../lib/lessons'
 import { Search } from '../../components/Search'
 import { Badge, ButtonLink, Disclaimer, IconButton, PageHeader, Ring, Stages, NewYearButton, ThemeButton } from '../../components/ui'
 import { Icon } from '../../components/Icon'
+import { AnnouncementsCard } from '../../components/AnnouncementsCard'
 import { Countdown, useNewYear } from '../../components/newyear'
 
 const daysUntil = (iso: string, now: Date) => {
@@ -174,19 +175,7 @@ export function StudentHome() {
             </ul>
           </section>
 
-          <section className="card">
-            <h2 className="card__title">Объявления деканата</h2>
-            {announcementError && <p role="alert" className="form-error">{announcementError}</p>}
-            <ul className="announcements">
-              {!announcementError && !announcements.length && <li className="muted small">Объявлений пока нет.</li>}
-              {announcements.map((a) => (
-                <li key={a.id}>
-                  <b>{a.title}</b>
-                  <span className="small muted">{a.body}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <AnnouncementsCard items={announcements} userId={user.id} error={announcementError} />
 
           <section className="card">
             <div className="card__head">

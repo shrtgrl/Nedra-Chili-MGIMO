@@ -6607,3 +6607,205 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
     font-size: 16px;
   }
 }
+
+/* ═════════ Объявления деканата на главной студента ═════════ */
+:root {
+  --new-ink: #8f6300;
+}
+[data-theme='dark'] {
+  --new-ink: #f2c14e;
+}
+.ann-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.ann-card__head .card__title {
+  margin: 0;
+}
+.ann-card__all {
+  min-height: 40px;
+  padding: 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  border-bottom: 2px solid var(--line);
+  line-height: 1.2;
+  transition: border-color 0.15s ease;
+}
+@media (hover: hover) {
+  .ann-card__all:hover {
+    border-color: var(--ink);
+  }
+}
+.ann-stage {
+  display: grid;
+}
+.ann-slide {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+.ann-card__meta {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.ann-card__to {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.ann-card__to--new {
+  color: var(--new-ink);
+}
+.ann-card__title {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.1vw, 28px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.ann-card__body {
+  margin: 0 0 16px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.ann-card__body.is-open {
+  display: block;
+  overflow: visible;
+}
+.ann-card__more {
+  min-height: 40px;
+  font-size: 17px;
+  font-weight: 700;
+  border-bottom: 2px solid var(--line);
+  line-height: 1.2;
+}
+.ann-card__foot {
+  margin-top: 20px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+.ann-card__next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  font-size: 17px;
+  color: var(--ink-2);
+  text-align: left;
+  transition: transform 0.15s ease-out;
+}
+.ann-card__next:active {
+  transform: scale(0.98);
+}
+.ann-card__count {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.ann-card__next svg {
+  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (hover: hover) {
+  .ann-card__next:hover svg {
+    transform: translateX(3px);
+  }
+}
+.ann-card__done {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  margin: 0;
+  font-size: 16px;
+  color: var(--ink-2);
+}
+
+/* список «Все» */
+.ann-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.ann-list__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 0;
+  text-align: left;
+  border-top: 1px solid var(--line);
+}
+.ann-list li:first-child .ann-list__row {
+  border-top: 0;
+}
+.ann-list__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.ann-list__dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--ink-3);
+}
+.ann-list__dot.is-new {
+  border-color: var(--new-ink);
+  background: var(--new-ink);
+}
+
+/* смена объявлений: прежнее мягко уходит, новое появляется по частям (opacity + blur 4px + 12px) */
+@keyframes ann-in {
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes ann-out {
+  from { opacity: 1; transform: none; filter: blur(0); }
+  to { opacity: 0; transform: translateY(-12px); filter: blur(4px); }
+}
+@keyframes ann-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.ann-slide.is-entering .ann-c,
+.ann-list.is-entering .ann-c {
+  animation: ann-in 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.ann-slide.is-leaving {
+  pointer-events: none;
+  animation: ann-out 150ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ann-slide.is-entering .ann-c,
+  .ann-list.is-entering .ann-c {
+    animation: ann-fade 150ms ease-out both;
+    animation-delay: 0ms;
+  }
+  .ann-slide.is-leaving {
+    animation: ann-fade 150ms ease-out reverse both;
+  }
+  .ann-card__next,
+  .ann-card__next svg {
+    transition: none;
+  }
+}
