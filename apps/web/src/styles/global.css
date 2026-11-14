@@ -7601,9 +7601,31 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
   .mobile-bar__actions .icon-btn { width: 40px; height: 40px; }
   .mobile-bar__actions .avatar { width: 40px; height: 40px; font-size: 14px; }
 }
+/* название никогда не обрезается: сначала уходит подпись, потом кнопки сжимаются */
+.mobile-bar .brand__name { flex: none; white-space: nowrap; }
+.mobile-bar:has(.mobile-bar__actions > :nth-child(4)) .brand__sub { display: none; }
+@media (max-width: 420px) {
+  .mobile-bar:has(.mobile-bar__actions > :nth-child(4)) { padding: 8px 8px 8px 12px; gap: 4px; }
+  .mobile-bar:has(.mobile-bar__actions > :nth-child(4)) .brand { gap: 8px; }
+  .mobile-bar:has(.mobile-bar__actions > :nth-child(4)) .brand__emblem { width: 36px; }
+  .mobile-bar:has(.mobile-bar__actions > :nth-child(4)) .brand__name { font-size: 15px; }
+  .mobile-bar:has(.mobile-bar__actions > :nth-child(4)) .mobile-bar__actions { gap: 2px; }
+  .mobile-bar:has(.mobile-bar__actions > :nth-child(4)) .icon-btn { width: 36px; height: 36px; }
+  .mobile-bar:has(.mobile-bar__actions > :nth-child(4)) .avatar { width: 36px; height: 36px; font-size: 13px; margin-inline-start: 2px; }
+}
+@media (max-width: 350px) {
+  .mobile-bar .brand__name { font-size: 14px; }
+  .mobile-bar .brand__emblem { width: 32px; }
+}
 @media (max-width: 380px) {
-  .mobile-bar { padding-inline-start: 12px; }
+  .mobile-bar { padding: 8px 8px 8px 12px; gap: 4px; }
+  .mobile-bar .brand { gap: 8px; }
+  .mobile-bar .brand__emblem { width: 36px; }
+  .mobile-bar .brand__name { font-size: 15px; }
   .mobile-bar .brand__sub { display: none; }
+  .mobile-bar__actions { gap: 2px; }
+  .mobile-bar__actions .icon-btn { width: 36px; height: 36px; }
+  .mobile-bar__actions .avatar { width: 36px; height: 36px; font-size: 13px; margin-inline-start: 2px; }
 }
 @media (max-width: 330px) {
   .mobile-bar .brand__name { display: none; }
