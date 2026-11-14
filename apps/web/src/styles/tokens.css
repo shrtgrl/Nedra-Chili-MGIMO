@@ -78,14 +78,14 @@
 /* ───────────── Туман · тёмная ───────────── */
 [data-variant='fog'][data-theme='dark'] {
   color-scheme: dark;
-  --stage: #0b0c10;
-  --bg: #101116;
-  --surface: #191c25;
-  --surface-2: #232733;
-  --surface-3: #1d2029;
-  --line: #262a35;
-  --input-bg: #1a1d27;
-  --input-line: #2e3342;
+  --stage: #0c0e14;
+  --bg: #13161f;
+  --surface: #1a1c24;
+  --surface-2: #242732;
+  --surface-3: #1e2029;
+  --line: #272a34;
+  --input-bg: #1d2029;
+  --input-line: #2f3240;
 
   --ink: #f2f2ee;
   --ink-2: #b9bdc6;
@@ -118,7 +118,7 @@
   --danger-ink: #f0a08c;
   --ok-bg: #1d3324;
   --ok-ink: #8fc79a;
-  --neutral-chip: #262a35;
+  --neutral-chip: #272a34;
 
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
@@ -174,14 +174,14 @@
 /* ───────────── Графитово-синий · тёмная ───────────── */
 [data-variant='graphite'][data-theme='dark'] {
   color-scheme: dark;
-  --stage: #0b0c10;
-  --bg: #101116;
-  --surface: #191c25;
-  --surface-2: #232733;
-  --surface-3: #1d2029;
-  --line: #262a35;
-  --input-bg: #1a1d27;
-  --input-line: #2e3342;
+  --stage: #0c0e14;
+  --bg: #13161f;
+  --surface: #1a1c24;
+  --surface-2: #242732;
+  --surface-3: #1e2029;
+  --line: #272a34;
+  --input-bg: #1d2029;
+  --input-line: #2f3240;
 
   --ink: #f2f2ee;
   --ink-2: #b9bdc6;
@@ -214,7 +214,7 @@
   --danger-ink: #f0a08c;
   --ok-bg: #1d3324;
   --ok-ink: #8fc79a;
-  --neutral-chip: #262a35;
+  --neutral-chip: #272a34;
 
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
