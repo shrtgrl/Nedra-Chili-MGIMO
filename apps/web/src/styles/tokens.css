@@ -3,7 +3,8 @@
     data-variant="fog"      — «Туман» (по умолчанию)
     data-variant="graphite" — «Графитово-синий»
     data-theme="light" | "dark"
-  Цвета сняты с макетов MUKPiD_maket_Grafit_i_Tuman.pdf.
+  Цвета сняты с макетов MUKPiD_maket_Grafit_i_Tuman.pdf;
+  «Туман» и «Графит» — по дизайн-коду «Матовое стекло» (MUKPiD_dizayn-kod_matovoe_steklo.pdf).
 */
 
 :root {
@@ -30,71 +31,133 @@
 :root,
 [data-variant='fog'][data-theme='light'] {
   color-scheme: light;
-  --stage: #e9e8e0;
+  /* подложка: фон + три мягких пятна под стеклом */
+  --stage: #f5f4ef;
   --bg: #f5f4ef;
-  --surface: #ffffff;
-  --surface-2: #f0efe9;     /* плашки внутри карточек, сегменты */
-  --surface-3: #e9e9df;     /* колонки расписания */
-  --line: #ebeae4;
-  --input-bg: #ffffff;
-  --input-line: #dedcd3;
+  --blob-1: #c3cbd8;
+  --blob-2: #eff0a4;
+  --blob-3: #d9d3e8;
+
+  /* матовое стекло */
+  --glass: rgba(255, 255, 255, 0.58);
+  --glass-2: rgba(255, 255, 255, 0.38);
+  --glass-3: rgba(240, 239, 233, 0.45);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --glass-hi: rgba(255, 255, 255, 0.9);
+  --blur: 24px;
+  --sat: 150%;
+  --grain: 0.05;
+
+  --surface: var(--glass);
+  --surface-2: var(--glass-2);
+  --surface-3: var(--glass-3);
+  --line: rgba(24, 30, 42, 0.08);
+  --input-bg: rgba(255, 255, 255, 0.72);
+  --input-line: #c9c7bd;
+
+  /* сплошные значения — для браузеров без backdrop-filter и «Уменьшить прозрачность» */
+  --surface-solid: #ffffff;
+  --surface-2-solid: #f0efe9;
+  --surface-3-solid: #e9e9df;
+  --line-solid: #ebeae4;
+  --input-bg-solid: #ffffff;
+  --accent-solid: #c3cbd8;
+  --accent-2-solid: #b1bac9;
+  --primary-solid: #c3cbd8;
+  --hl-soft-solid: #f7f8d6;
+  --track-solid: #eeeee4;
+  --warn-bg-solid: #fae3b7;
+  --danger-bg-solid: #f7d5cc;
+  --ok-bg-solid: #ddefd9;
+  --neutral-chip-solid: #f0efe9;
 
   --ink: #181e2a;
   --ink-2: #4a505c;
-  --ink-3: #8a8e96;
+  --ink-3: #5e636c;
 
-  --accent: #c3cbd8;        /* сайдбар, hero, вторичные кнопки */
-  --accent-2: #b1bac9;      /* карточка дедлайна, плитки */
+  --accent: rgba(195, 203, 216, 0.7);
+  --accent-2: rgba(177, 186, 201, 0.66);
   --on-accent: #181e2a;
   --on-accent-2: #4a5262;
-  --on-accent-hl: #181e2a;  /* акцентный текст на --accent */
+  --on-accent-hl: #181e2a;
   --nav-badge: #181e2a;
   --on-nav-badge: #ffffff;
 
-  --strong: #181e2a;        /* активный сегмент */
+  --strong: #181e2a;
   --on-strong: #ffffff;
-  --primary: #c3cbd8;       /* основная кнопка */
+  --primary: rgba(195, 203, 216, 0.85);
   --on-primary: #181e2a;
 
-  --hl-soft: #f7f8d6;       /* подсветка текущей пары */
+  --hl-soft: rgba(239, 240, 164, 0.55);
   --progress: #181e2a;
-  --track: #eeeee4;
+  --track: rgba(24, 30, 42, 0.08);
   --ring-track: rgba(24, 30, 42, 0.14);
   --ring: #181e2a;
   --ring-on-accent: #181e2a;
   --ring-on-accent-track: rgba(24, 30, 42, 0.16);
 
-  --warn-bg: #fae3b7;
+  --warn-bg: rgba(250, 227, 183, 0.75);
   --warn-ink: #70511a;
-  --danger-bg: #f7d5cc;
+  --danger-bg: rgba(247, 213, 204, 0.75);
   --danger-ink: #9b2c1c;
-  --ok-bg: #ddefd9;
+  --ok-bg: rgba(221, 239, 217, 0.75);
   --ok-ink: #3b6b3f;
-  --neutral-chip: #f0efe9;
+  --neutral-chip: rgba(255, 255, 255, 0.45);
 
-  --shadow: 0 1px 2px rgba(24, 30, 42, 0.04), 0 10px 30px rgba(24, 30, 42, 0.05);
+  --shadow: 0 1px 2px rgba(24, 30, 42, 0.05), 0 12px 32px rgba(24, 30, 42, 0.08);
 }
 
 /* ───────────── Туман · тёмная ───────────── */
 [data-variant='fog'][data-theme='dark'] {
   color-scheme: dark;
-  --stage: #12141b;
+  /* подложка: фон + три мягких пятна под стеклом */
+  --stage: #1c1f29;
   --bg: #1c1f29;
-  --surface: #1a1b24;
-  --surface-2: #22252f;
-  --surface-3: #1e2029;
-  --line: #272a34;
-  --input-bg: #1d2029;
-  --input-line: #2f3240;
+  --blob-1: #2e3a55;
+  --blob-2: #3b3e24;
+  --blob-3: #2c2742;
+
+  /* матовое стекло */
+  --glass: rgba(26, 27, 36, 0.62);
+  --glass-2: rgba(255, 255, 255, 0.06);
+  --glass-3: rgba(30, 32, 41, 0.5);
+  --glass-edge: rgba(255, 255, 255, 0.12);
+  --glass-hi: rgba(255, 255, 255, 0.14);
+  --blur: 28px;
+  --sat: 140%;
+  --grain: 0.06;
+
+  --surface: var(--glass);
+  --surface-2: var(--glass-2);
+  --surface-3: var(--glass-3);
+  --line: rgba(255, 255, 255, 0.07);
+  --input-bg: rgba(14, 16, 22, 0.5);
+  --input-line: #454a5a;
+
+  /* сплошные значения — для браузеров без backdrop-filter и «Уменьшить прозрачность» */
+  --surface-solid: #1a1b24;
+  --surface-2-solid: #22252f;
+  --surface-3-solid: #1e2029;
+  --line-solid: #272a34;
+  --input-bg-solid: #1d2029;
+  --accent-solid: #afb8c9;
+  --accent-2-solid: #9da8ba;
+  --primary-solid: #eff0a4;
+  --hl-soft-solid: #2b2c1c;
+  --track-solid: #2b303c;
+  --warn-bg-solid: #3a2f18;
+  --danger-bg-solid: #3d1f17;
+  --ok-bg-solid: #1d3324;
+  --neutral-chip-solid: #272a34;
 
   --ink: #f2f2ee;
   --ink-2: #b9bdc6;
-  --ink-3: #7c8190;
+  --ink-3: #8f94a3;
 
-  --accent: #afb8c9;
-  --accent-2: #9da8ba;
+  --accent: rgba(175, 184, 201, 0.86);
+  --accent-2: rgba(157, 168, 186, 0.82);
   --on-accent: #12151d;
-  --on-accent-2: #3b4352;
+  --on-accent-2: #30374a;
   --on-accent-hl: #12151d;
   --nav-badge: #181e2a;
   --on-nav-badge: #ffffff;
@@ -104,91 +167,153 @@
   --primary: #eff0a4;
   --on-primary: #181e2a;
 
-  --hl-soft: #2b2c1c;
+  --hl-soft: rgba(239, 240, 164, 0.12);
   --progress: #eceee8;
-  --track: #2b303c;
+  --track: rgba(255, 255, 255, 0.1);
   --ring-track: rgba(24, 30, 42, 0.14);
   --ring: #181e2a;
   --ring-on-accent: #12151d;
   --ring-on-accent-track: rgba(18, 21, 29, 0.18);
 
-  --warn-bg: #3a2f18;
+  --warn-bg: rgba(58, 47, 24, 0.7);
   --warn-ink: #e7bd6f;
-  --danger-bg: #3d1f17;
+  --danger-bg: rgba(61, 31, 23, 0.7);
   --danger-ink: #f0a08c;
-  --ok-bg: #1d3324;
+  --ok-bg: rgba(29, 51, 36, 0.7);
   --ok-ink: #8fc79a;
-  --neutral-chip: #272a34;
+  --neutral-chip: rgba(255, 255, 255, 0.07);
 
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 40px rgba(0, 0, 0, 0.35);
 }
 
 /* ───────────── Графитово-синий · светлая ───────────── */
 [data-variant='graphite'][data-theme='light'] {
   color-scheme: light;
-  --stage: #e9e8e0;
+  /* подложка: фон + три мягких пятна под стеклом */
+  --stage: #f5f4ef;
   --bg: #f5f4ef;
-  --surface: #ffffff;
-  --surface-2: #f0efe9;
-  --surface-3: #e9e9df;
-  --line: #ebeae4;
-  --input-bg: #ffffff;
-  --input-line: #dedcd3;
+  --blob-1: #b7c0d0;
+  --blob-2: #eff0a4;
+  --blob-3: #d5d9e4;
+
+  /* матовое стекло */
+  --glass: rgba(255, 255, 255, 0.58);
+  --glass-2: rgba(255, 255, 255, 0.38);
+  --glass-3: rgba(240, 239, 233, 0.45);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --glass-hi: rgba(255, 255, 255, 0.9);
+  --blur: 24px;
+  --sat: 150%;
+  --grain: 0.05;
+
+  --surface: var(--glass);
+  --surface-2: var(--glass-2);
+  --surface-3: var(--glass-3);
+  --line: rgba(24, 30, 42, 0.08);
+  --input-bg: rgba(255, 255, 255, 0.72);
+  --input-line: #c9c7bd;
+
+  /* сплошные значения — для браузеров без backdrop-filter и «Уменьшить прозрачность» */
+  --surface-solid: #ffffff;
+  --surface-2-solid: #f0efe9;
+  --surface-3-solid: #e9e9df;
+  --line-solid: #ebeae4;
+  --input-bg-solid: #ffffff;
+  --accent-solid: #495468;
+  --accent-2-solid: #57617b;
+  --primary-solid: #495468;
+  --hl-soft-solid: #f7f8d6;
+  --track-solid: #eeeee4;
+  --warn-bg-solid: #fae3b7;
+  --danger-bg-solid: #f7d5cc;
+  --ok-bg-solid: #ddefd9;
+  --neutral-chip-solid: #f0efe9;
 
   --ink: #181e2a;
   --ink-2: #4a505c;
-  --ink-3: #8a8e96;
+  --ink-3: #5e636c;
 
-  --accent: #495468;
-  --accent-2: #57617b;
+  --accent: rgba(73, 84, 104, 0.9);
+  --accent-2: rgba(87, 97, 123, 0.88);
   --on-accent: #f5f4ef;
-  --on-accent-2: #c3c8d3;
+  --on-accent-2: #e0e3ea;
   --on-accent-hl: #eff0a4;
   --nav-badge: #bac6a2;
   --on-nav-badge: #181e2a;
 
   --strong: #495468;
   --on-strong: #ffffff;
-  --primary: #495468;
+  --primary: rgba(73, 84, 104, 0.92);
   --on-primary: #eff0a4;
 
-  --hl-soft: #f7f8d6;
+  --hl-soft: rgba(239, 240, 164, 0.55);
   --progress: #181e2a;
-  --track: #eeeee4;
+  --track: rgba(24, 30, 42, 0.08);
   --ring-track: rgba(24, 30, 42, 0.14);
   --ring: #181e2a;
   --ring-on-accent: #eff0a4;
   --ring-on-accent-track: rgba(255, 255, 255, 0.14);
 
-  --warn-bg: #fae3b7;
+  --warn-bg: rgba(250, 227, 183, 0.75);
   --warn-ink: #70511a;
-  --danger-bg: #f7d5cc;
+  --danger-bg: rgba(247, 213, 204, 0.75);
   --danger-ink: #9b2c1c;
-  --ok-bg: #ddefd9;
+  --ok-bg: rgba(221, 239, 217, 0.75);
   --ok-ink: #3b6b3f;
-  --neutral-chip: #f0efe9;
+  --neutral-chip: rgba(255, 255, 255, 0.45);
 
-  --shadow: 0 1px 2px rgba(24, 30, 42, 0.04), 0 10px 30px rgba(24, 30, 42, 0.05);
+  --shadow: 0 1px 2px rgba(24, 30, 42, 0.05), 0 12px 32px rgba(24, 30, 42, 0.08);
 }
 
 /* ───────────── Графитово-синий · тёмная ───────────── */
 [data-variant='graphite'][data-theme='dark'] {
   color-scheme: dark;
-  --stage: #12141b;
+  /* подложка: фон + три мягких пятна под стеклом */
+  --stage: #1c1f29;
   --bg: #1c1f29;
-  --surface: #1a1b24;
-  --surface-2: #22252f;
-  --surface-3: #1e2029;
-  --line: #272a34;
-  --input-bg: #1d2029;
-  --input-line: #2f3240;
+  --blob-1: #33405c;
+  --blob-2: #3b3e24;
+  --blob-3: #2a3346;
+
+  /* матовое стекло */
+  --glass: rgba(26, 27, 36, 0.62);
+  --glass-2: rgba(255, 255, 255, 0.06);
+  --glass-3: rgba(30, 32, 41, 0.5);
+  --glass-edge: rgba(255, 255, 255, 0.12);
+  --glass-hi: rgba(255, 255, 255, 0.14);
+  --blur: 28px;
+  --sat: 140%;
+  --grain: 0.06;
+
+  --surface: var(--glass);
+  --surface-2: var(--glass-2);
+  --surface-3: var(--glass-3);
+  --line: rgba(255, 255, 255, 0.07);
+  --input-bg: rgba(14, 16, 22, 0.5);
+  --input-line: #454a5a;
+
+  /* сплошные значения — для браузеров без backdrop-filter и «Уменьшить прозрачность» */
+  --surface-solid: #1a1b24;
+  --surface-2-solid: #22252f;
+  --surface-3-solid: #1e2029;
+  --line-solid: #272a34;
+  --input-bg-solid: #1d2029;
+  --accent-solid: #353c4e;
+  --accent-2-solid: #3f4a5c;
+  --primary-solid: #eff0a4;
+  --hl-soft-solid: #2b2c1c;
+  --track-solid: #2b303c;
+  --warn-bg-solid: #3a2f18;
+  --danger-bg-solid: #3d1f17;
+  --ok-bg-solid: #1d3324;
+  --neutral-chip-solid: #272a34;
 
   --ink: #f2f2ee;
   --ink-2: #b9bdc6;
-  --ink-3: #7c8190;
+  --ink-3: #8f94a3;
 
-  --accent: #353c4e;
-  --accent-2: #3f4a5c;
+  --accent: rgba(53, 60, 78, 0.66);
+  --accent-2: rgba(63, 74, 92, 0.66);
   --on-accent: #f2f2ee;
   --on-accent-2: #aab1bf;
   --on-accent-hl: #eff0a4;
@@ -200,23 +325,23 @@
   --primary: #eff0a4;
   --on-primary: #181e2a;
 
-  --hl-soft: #2b2c1c;
+  --hl-soft: rgba(239, 240, 164, 0.12);
   --progress: #eceee8;
-  --track: #2b303c;
+  --track: rgba(255, 255, 255, 0.1);
   --ring-track: rgba(24, 30, 42, 0.14);
   --ring: #181e2a;
   --ring-on-accent: #eff0a4;
   --ring-on-accent-track: rgba(255, 255, 255, 0.12);
 
-  --warn-bg: #3a2f18;
+  --warn-bg: rgba(58, 47, 24, 0.7);
   --warn-ink: #e7bd6f;
-  --danger-bg: #3d1f17;
+  --danger-bg: rgba(61, 31, 23, 0.7);
   --danger-ink: #f0a08c;
-  --ok-bg: #1d3324;
+  --ok-bg: rgba(29, 51, 36, 0.7);
   --ok-ink: #8fc79a;
-  --neutral-chip: #272a34;
+  --neutral-chip: rgba(255, 255, 255, 0.07);
 
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 40px rgba(0, 0, 0, 0.35);
 }
 
 /* ───────────── Новогодняя · светлая ─────────────
