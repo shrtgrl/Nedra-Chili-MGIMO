@@ -7573,13 +7573,17 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
   .bottom-nav__item.is-active .bottom-nav__label { max-width: 5.2em; }
 }
 
-/* липкая шапка телефона: полоса на всю ширину вместо «коробки» с краями у логотипа и аватара */
+/* липкая шапка телефона: выходит за боковые отступы страницы, поэтому слева и справа нет «полосок» фона.
+   Без тени на 100vmax и clip-path: они не везде одинаково рисуются (Safari). */
+.app { --app-pad: 16px; }
+@media (max-width: 380px) { .app { --app-pad: 12px; } }
 @media (max-width: 860px) {
   .mobile-bar {
-    --bar-bg: color-mix(in srgb, var(--bg) 82%, transparent);
-    background: var(--bar-bg);
-    box-shadow: 0 0 0 100vmax var(--bar-bg);
-    clip-path: inset(0 -100vmax);
+    margin-inline: calc(var(--app-pad) * -1);
+    padding-inline: var(--app-pad);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    box-shadow: none;
+    clip-path: none;
   }
 }
 
