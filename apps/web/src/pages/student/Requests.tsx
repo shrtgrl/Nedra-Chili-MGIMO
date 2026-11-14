@@ -92,7 +92,7 @@ export function RequestsPage() {
           <h2 className="card__title card__title--lg">{target === 'dean' ? 'Новая заявка' : 'Обращение к преподавателю'}</h2>
           <Segmented
             soft
-            check
+           
             className="seg--wide"
             label="Кому"
             value={target}
@@ -146,7 +146,7 @@ export function RequestsPage() {
             <span className="field__label" id="req-delivery-label">Как получить</span>
             <Segmented
               soft
-              check
+             
               className="seg--wide"
               label="Как получить"
               value={delivery}

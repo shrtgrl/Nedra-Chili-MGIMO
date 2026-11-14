@@ -126,7 +126,6 @@ export function StaffAnnouncementsPage() {
               {isPhoto ? (
                 <div className="cover-tile is-active cover-tile--photo">
                   <img src={coverSrc(form.cover) ?? ''} alt="Ваше фото" />
-                  <span className="cover-tile__check" aria-hidden="true"><Icon name="check" size={16} /></span>
                   <button type="button" className="cover-tile__act" onClick={() => fileRef.current?.click()} disabled={coverBusy}>Заменить</button>
                 </div>
               ) : (
@@ -141,7 +140,6 @@ export function StaffAnnouncementsPage() {
                 return (
                   <button key={c.id} type="button" className={`cover-tile ${on ? 'is-active' : ''}`} aria-pressed={on} onClick={() => set({ cover: on ? null : v })}>
                     <img src={c.src} alt="" loading="lazy" />
-                    <span className="cover-tile__check" aria-hidden="true"><Icon name="check" size={16} /></span>
                     <span className="sr-only">{c.label}</span>
                   </button>
                 )

@@ -2914,9 +2914,6 @@ a.stat:hover {
   }
 }
 @media (max-width: 860px) {
-  [data-variant='newyear'] .mobile-bar {
-    background: color-mix(in srgb, var(--bg) 80%, transparent);
-  }
   .forest {
     height: 200px;
     margin-inline: -16px;
@@ -3754,11 +3751,6 @@ html.lock-scroll body {
 .mobile-bar__actions .icon-btn {
   width: 46px;
   height: 46px;
-}
-@media (max-width: 440px) {
-  .mobile-bar .brand__name {
-    display: none;
-  }
 }
 
 /* ═════════ Состояния наведения (единообразно для всех тем) ═════════ */
@@ -7096,9 +7088,6 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
 .tp__opt .tp__text small {
   font-size: 14px;
 }
-.tp__ok {
-  flex: none;
-}
 .tp__empty {
   margin: 0;
   padding: 18px 12px;
@@ -7161,14 +7150,6 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
 }
 .seg__btn {
   white-space: nowrap;
-}
-/* переключатель с галочкой: активный вариант — сплошной, как в дизайн-коде */
-.seg--check .seg__ind {
-  background: var(--strong);
-  box-shadow: none;
-}
-.seg--check .seg__btn.is-active {
-  color: var(--on-strong);
 }
 .tp__other {
   margin-top: 6px;
@@ -7573,18 +7554,62 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
   .bottom-nav__item.is-active .bottom-nav__label { max-width: 5.2em; }
 }
 
-/* липкая шапка телефона: выходит за боковые отступы страницы, поэтому слева и справа нет «полосок» фона.
-   Без тени на 100vmax и clip-path: они не везде одинаково рисуются (Safari). */
-.app { --app-pad: 16px; }
-@media (max-width: 380px) { .app { --app-pad: 12px; } }
+/* Шапка телефона: парящая стеклянная капсула с отступами от краёв экрана.
+   Контент уходит под неё при прокрутке, поэтому у капсулы свой фон, размытие и тонкая кромка. */
 @media (max-width: 860px) {
   .mobile-bar {
-    margin-inline: calc(var(--app-pad) * -1);
-    padding-inline: var(--app-pad);
-    background: color-mix(in srgb, var(--bg) 82%, transparent);
-    box-shadow: none;
-    clip-path: none;
+    top: max(10px, env(safe-area-inset-top));
+    margin: 10px 0 6px;
+    padding: 8px 10px 8px 16px;
+    gap: 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface-solid) 92%, transparent);
+    border: 1px solid var(--glass-edge);
+    box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.35), inset 0 1px 0 var(--glass-hi);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
   }
+  .mobile-bar .brand { gap: 10px; min-width: 0; overflow: hidden; }
+  .mobile-bar .brand > div { min-width: 0; }
+  .mobile-bar .brand__sub { overflow: hidden; text-overflow: ellipsis; }
+  .mobile-bar .brand__emblem { width: 42px; }
+  .mobile-bar .brand__name { font-size: 16px; }
+  .mobile-bar .brand__sub {
+    font-size: 13px;
+    margin-top: 2px;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .mobile-bar__actions { gap: 4px; flex: none; }
+  .mobile-bar__actions .icon-btn {
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .mobile-bar__actions .avatar { margin-inline-start: 4px; }
+}
+@media (max-width: 860px) {
+  /* у «Нового года» поверхности светлые и в тёмной теме: капсулу строим от фона */
+  [data-variant='newyear'][data-theme='dark'] .mobile-bar {
+    background: color-mix(in srgb, var(--bg) 88%, white 8%);
+    border-color: rgb(255 255 255 / 0.14);
+  }
+}
+@media (max-width: 420px) {
+  .mobile-bar__actions .icon-btn { width: 40px; height: 40px; }
+  .mobile-bar__actions .avatar { width: 40px; height: 40px; font-size: 14px; }
+}
+@media (max-width: 380px) {
+  .mobile-bar { padding-inline-start: 12px; }
+  .mobile-bar .brand__sub { display: none; }
+}
+@media (max-width: 330px) {
+  .mobile-bar .brand__name { display: none; }
+}
+@media (hover: hover) and (max-width: 860px) {
+  .mobile-bar__actions .icon-btn:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
 }
 
 /* список обращений: бейдж статуса переносится под ФИО, длинные темы не вылезают */

@@ -112,7 +112,6 @@ export function RequestTypePicker({ value, onChange, labelId }: { value: Request
                   >
                     <span className="tp__icon tp__icon--sm"><Icon name={REQUEST_ICONS[i.type]} size={20} /></span>
                     <span className="tp__text"><b>{i.label}</b><small>{i.hint}</small></span>
-                    {i.type === value && <Icon name="check" size={20} className="tp__ok" />}
                   </div>
                 ))}
               </div>
@@ -129,7 +128,6 @@ export function RequestTypePicker({ value, onChange, labelId }: { value: Request
                 >
                   <span className="tp__icon tp__icon--sm tp__icon--dashed"><Icon name={REQUEST_OTHER.icon} size={20} /></span>
                   <span className="tp__text"><b>{REQUEST_OTHER.label}</b><small>{REQUEST_OTHER.hint}</small></span>
-                  {value === REQUEST_OTHER.type && <Icon name="check" size={20} className="tp__ok" />}
                 </div>
               </div>
             )}
