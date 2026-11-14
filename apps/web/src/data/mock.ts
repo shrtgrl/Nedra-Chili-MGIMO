@@ -18,7 +18,7 @@ const GROUPS = [
   {
     title: 'Учебный процесс',
     items: [
-      { type: 'credit', label: 'Перезачёт дисциплин или сертификата', hint: 'IELTS, TOEFL, HSK, перевод из другого вуза', icon: 'refresh' },
+      { type: 'credit', label: 'Перезачёт дисциплин или сертификата', hint: 'Языковой сертификат или перевод из другого вуза', icon: 'refresh' },
       { type: 'iup', label: 'Индивидуальный учебный план', hint: 'Работа по специальности, стажировка', icon: 'route' },
       { type: 'transfer', label: 'Перевод на другую программу или форму', hint: 'Например, с платного на бюджет', icon: 'swap' },
       { type: 'extension', label: 'Продление сессии', hint: 'Нужна медицинская справка', icon: 'clock' },
