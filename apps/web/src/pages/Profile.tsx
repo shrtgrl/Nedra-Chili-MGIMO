@@ -139,9 +139,9 @@ export function ProfilePage() {
               {(['fog', 'graphite', 'newyear'] as Variant[]).map((v) => (
                 <button key={v} type="button" role="radio" aria-checked={variant === v} className={`theme-opt ${variant === v ? 'is-active' : ''}`} onClick={() => setVariant(v)}>
                   <Preview variant={v} theme={theme} />
-                  <span>
-                    {v === 'fog' ? 'Туман' : v === 'graphite' ? 'Графитово-синий' : 'Новогодняя'}
-                    {v === 'fog' && <small className="muted"> · основной</small>}
+                  <span className="theme-opt__label">
+                    <span className="theme-opt__name">{v === 'fog' ? 'Туман' : v === 'graphite' ? 'Графитово-синий' : 'Новогодняя'}</span>
+                    {v === 'fog' && <small className="theme-opt__tag">основной</small>}
                   </span>
                 </button>
               ))}

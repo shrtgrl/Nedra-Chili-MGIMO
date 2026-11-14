@@ -7692,3 +7692,31 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
 @media (max-width: 600px) {
   .staff-bar .staff-chips { flex-wrap: wrap; overflow: visible; }
 }
+
+/* ═════════ Выбор оформления: одна рамка выбора, подписи без «висящих» точек ═════════ */
+.theme-opt {
+  min-width: 0;
+}
+.theme-opt__label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+.theme-opt__name {
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  line-height: 1.25;
+}
+.theme-opt__tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+/* у выбранной карточки уже есть рамка: фокус с клавиатуры рисуем мягким ореолом, а не второй рамкой */
+.theme-opt:focus-visible {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 32%, transparent);
+}
