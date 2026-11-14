@@ -34,7 +34,8 @@ export interface Lesson {
 
 export type ExamForm = 'Экзамен' | 'Зачёт'
 
-export type RequestType = 'study' | 'order' | 'leave' | 'retake'
+import type { RequestTypeId } from './data/mock'
+export type RequestType = RequestTypeId
 export type RequestStage = 0 | 1 | 2 | 3 // Принята, В работе, Готова, Выдана
 export type Delivery = 'pdf' | 'office'
 

@@ -7170,3 +7170,12 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
 .seg--check .seg__btn.is-active {
   color: var(--on-strong);
 }
+.tp__other {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line-solid, var(--line));
+}
+.tp__icon--dashed {
+  background: none;
+  border: 1.5px dashed var(--ink-3);
+}

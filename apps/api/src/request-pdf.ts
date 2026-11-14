@@ -1,7 +1,8 @@
 import PDFDocument from 'pdfkit';
 import { fileURLToPath } from 'node:url';
+import { REQUEST_TYPE_LABELS } from './request-types.js';
 
-const labels: Record<string, string> = { study: 'Справка об обучении', order: 'Копия приказа', leave: 'Академический отпуск', retake: 'Пересдача экзамена' };
+const labels: Record<string, string> = REQUEST_TYPE_LABELS;
 export async function requestPdf(data: { id: string; type: string; purpose: string; fullName: string; groupName: string | null; readyAt: Date; faculty?: string; program?: string; year?: number; draft?: boolean }): Promise<Buffer> {
   const doc = new PDFDocument({ size: 'A4', margin: 56, info: { Title: 'Демонстрационный документ МУКПиД', Author: 'Конкурсный прототип' } });
   const chunks: Buffer[] = [];

@@ -1,17 +1,18 @@
 import type { ApiLessonKind, ApiRequestStatus, ApiStaffRequest } from './api'
 import { addDays } from './format'
+import { REQUEST_CATALOG, REQUEST_TYPES } from '../data/mock'
 
 /** Срок обработки заявки, дней. Берётся из интерфейса студента («до 3 рабочих дней»); в API срока нет. */
 export const SLA_DAYS = 3
 
-export const TYPE_LABEL: Record<ApiStaffRequest['type'], string> = {
-  study: 'Справка об обучении',
-  order: 'Копия приказа',
-  leave: 'Академический отпуск',
-  retake: 'Пересдача экзамена',
-}
-export const TYPE_SHORT: Record<ApiStaffRequest['type'], string> = { study: 'Справки', order: 'Приказы', leave: 'Отпуска', retake: 'Пересдачи' }
-export const TYPE_DOT: Record<ApiStaffRequest['type'], string> = { study: '#dd723c', order: '#5aa469', leave: '#a45bb4', retake: '#5b7fd1' }
+export const TYPE_LABEL: Record<ApiStaffRequest['type'], string> = REQUEST_TYPES
+/** Короткие подписи для фильтров: по виду заявки, ключи — все типы. */
+export const TYPE_SHORT: Record<ApiStaffRequest['type'], string> = Object.fromEntries(Object.keys(REQUEST_TYPES).map((t) => [t, REQUEST_TYPES[t as ApiStaffRequest['type']]])) as Record<ApiStaffRequest['type'], string>
+const GROUP_DOT = ['#dd723c', '#5b7fd1', '#5aa469']
+export const TYPE_DOT: Record<ApiStaffRequest['type'], string> = Object.fromEntries([
+  ...REQUEST_CATALOG.flatMap((g, gi) => g.items.map((i) => [i.type, GROUP_DOT[gi]] as const)),
+  ['other', '#a45bb4'],
+]) as Record<ApiStaffRequest['type'], string>
 
 export const STATUS_LABEL: Record<ApiRequestStatus, string> = {
   submitted: 'Новая', in_progress: 'В работе', ready: 'Готова', issued: 'Выдана', rejected: 'Отклонена', cancelled: 'Отменена',

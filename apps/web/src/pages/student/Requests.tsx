@@ -58,9 +58,10 @@ export function RequestsPage() {
       return
     }
     if (!purpose.trim()) {
-      setError('Укажите цель — например, «по месту требования»')
+      setError(type === 'other' ? 'Коротко напишите, что нужно' : 'Укажите цель — например, «по месту требования»')
       return
     }
+    if (type === 'other' && !comment.trim()) return setCommentError('Опишите, что нужно, — иначе деканат не поймёт обращение')
     setBusy(true)
     const ok = await addRequest({ type, purpose: purpose.trim(), comment: comment.trim(), delivery })
     setBusy(false)
@@ -125,7 +126,7 @@ export function RequestsPage() {
             <span className="field__label">{target === 'teacher' ? 'Тема' : 'Цель'}</span>
             <input
               className={`input ${error ? 'is-invalid' : ''}`}
-              placeholder={target === 'teacher' ? 'Например, вопрос по контрольной' : type === 'retake' ? 'Дисциплина, например «Теория вероятностей»' : 'Например, для предоставления по месту требования'}
+              placeholder={target === 'teacher' ? 'Например, вопрос по контрольной' : type === 'retake' ? 'Дисциплина, например «Теория вероятностей»' : type === 'other' ? 'Коротко: что нужно' : 'Например, для предоставления по месту требования'}
               maxLength={target === 'teacher' ? 200 : 500}
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
@@ -135,7 +136,7 @@ export function RequestsPage() {
           </label>
 
           <label className="field">
-            <span className="field__label">{target === 'teacher' ? 'Сообщение' : <>Комментарий <span className="field__opt">— необязательно</span></>}</span>
+            <span className="field__label">{target === 'teacher' ? 'Сообщение' : type === 'other' ? 'Опишите обращение' : <>Комментарий <span className="field__opt">— необязательно</span></>}</span>
             <textarea className={`input textarea ${commentError ? 'is-invalid' : ''}`} placeholder={target === 'teacher' ? 'Опишите вопрос или просьбу' : 'Дополнительные сведения'} rows={4} maxLength={target === 'teacher' ? 5000 : 2000} value={comment} onChange={(e) => { setComment(e.target.value); setCommentError('') }} />
             {commentError && <span className="field__error">{commentError}</span>}
           </label>

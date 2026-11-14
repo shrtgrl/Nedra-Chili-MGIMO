@@ -1,3 +1,4 @@
+import { REQUEST_TYPE_IDS } from './request-types.js';
 import { randomUUID } from 'node:crypto';
 import { bodyObject, fail, uuid, type DbSession } from './domain.js';
 import type { DocumentSnapshot } from './schema.js';
@@ -27,7 +28,7 @@ export function requestRoutes(app: FastifyInstance, db: ReturnType<typeof connec
   });
   app.post<{ Body: Input }>('/api/requests', {
     schema: { body: { type: 'object', required: ['type', 'purpose', 'delivery'], additionalProperties: false, properties: {
-      type: { type: 'string', enum: ['study', 'order', 'leave', 'retake'] },
+      type: { type: 'string', enum: REQUEST_TYPE_IDS },
       purpose: { type: 'string', minLength: 1, maxLength: 500 },
       comment: { type: 'string', maxLength: 2000 },
       delivery: { type: 'string', enum: ['pdf', 'office'] },

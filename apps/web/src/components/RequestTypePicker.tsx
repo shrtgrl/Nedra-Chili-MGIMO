@@ -1,10 +1,8 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { REQUEST_CATALOG, REQUEST_TYPES } from '../data/mock'
+import { REQUEST_CATALOG, REQUEST_HINTS, REQUEST_ICONS, REQUEST_OTHER, REQUEST_TYPES } from '../data/mock'
 import { pluralize } from '../lib/format'
 import type { RequestType } from '../types'
-import { Icon, type IconName } from './Icon'
-
-const TYPE_ICON: Record<RequestType, IconName> = { study: 'doc', order: 'clipboard', leave: 'pause', retake: 'refresh' }
+import { Icon } from './Icon'
 
 /**
  * Выпадающий выбор вида заявки: поиск, группы, пояснения. Стрелки, Home/End, Enter и Esc работают с клавиатуры.
@@ -22,14 +20,12 @@ export function RequestTypePicker({ value, onChange, labelId }: { value: Request
 
   const groups = useMemo(() => {
     const needle = q.trim().toLowerCase()
-    return REQUEST_CATALOG.map((g) => ({
-      ...g,
-      items: g.items.filter((i) => !needle || REQUEST_TYPES[i.type].toLowerCase().includes(needle) || i.hint.toLowerCase().includes(needle)),
-    })).filter((g) => g.items.length)
+    const match = (i: { label: string; hint: string }) => !needle || i.label.toLowerCase().includes(needle) || i.hint.toLowerCase().includes(needle)
+    return REQUEST_CATALOG.map((g) => ({ title: g.title, items: g.items.filter(match) as readonly { type: RequestType; label: string; hint: string }[] })).filter((g) => g.items.length)
   }, [q])
-  const flat = groups.flatMap((g) => g.items.map((i) => i.type))
+  const otherShown = !q.trim() || REQUEST_OTHER.label.toLowerCase().includes(q.trim().toLowerCase()) || REQUEST_OTHER.hint.toLowerCase().includes(q.trim().toLowerCase()) || 'другое'.includes(q.trim().toLowerCase())
+  const flat: RequestType[] = [...groups.flatMap((g) => g.items.map((i) => i.type)), ...(otherShown ? [REQUEST_OTHER.type] : [])]
   const total = REQUEST_CATALOG.reduce((n, g) => n + g.items.length, 0)
-  const current = REQUEST_CATALOG.flatMap((g) => g.items).find((i) => i.type === value)!
   const optId = (t: string) => `${uid}-${t}`
 
   useEffect(() => {
@@ -74,10 +70,10 @@ export function RequestTypePicker({ value, onChange, labelId }: { value: Request
         onClick={() => (open ? closeList(false) : openList())}
         onKeyDown={(e) => { if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !open) { e.preventDefault(); openList() } }}
       >
-        <span className="tp__icon"><Icon name={TYPE_ICON[value]} size={22} /></span>
+        <span className="tp__icon"><Icon name={REQUEST_ICONS[value]} size={22} /></span>
         <span className="tp__text" id={`${uid}-cur`}>
           <b>{REQUEST_TYPES[value]}</b>
-          <small>{current.hint}</small>
+          <small>{REQUEST_HINTS[value]}</small>
         </span>
         <Icon name="chevronDown" size={20} className="tp__chev" />
       </button>
@@ -114,14 +110,30 @@ export function RequestTypePicker({ value, onChange, labelId }: { value: Request
                     onPointerMove={() => i.type !== active && setActive(i.type)}
                     onClick={() => pick(i.type)}
                   >
-                    <span className="tp__icon tp__icon--sm"><Icon name={TYPE_ICON[i.type]} size={20} /></span>
-                    <span className="tp__text"><b>{REQUEST_TYPES[i.type]}</b><small>{i.hint}</small></span>
+                    <span className="tp__icon tp__icon--sm"><Icon name={REQUEST_ICONS[i.type]} size={20} /></span>
+                    <span className="tp__text"><b>{i.label}</b><small>{i.hint}</small></span>
                     {i.type === value && <Icon name="check" size={20} className="tp__ok" />}
                   </div>
                 ))}
               </div>
             ))}
-            {!groups.length && <p className="tp__empty">Ничего не нашлось. Попробуйте другое слово.</p>}
+            {otherShown && (
+              <div className="tp__other">
+                <div
+                  id={optId(REQUEST_OTHER.type)}
+                  role="option"
+                  aria-selected={value === REQUEST_OTHER.type}
+                  className={`tp__opt ${value === REQUEST_OTHER.type ? 'is-selected' : ''} ${active === REQUEST_OTHER.type ? 'is-active' : ''}`}
+                  onPointerMove={() => active !== REQUEST_OTHER.type && setActive(REQUEST_OTHER.type)}
+                  onClick={() => pick(REQUEST_OTHER.type)}
+                >
+                  <span className="tp__icon tp__icon--sm tp__icon--dashed"><Icon name={REQUEST_OTHER.icon} size={20} /></span>
+                  <span className="tp__text"><b>{REQUEST_OTHER.label}</b><small>{REQUEST_OTHER.hint}</small></span>
+                  {value === REQUEST_OTHER.type && <Icon name="check" size={20} className="tp__ok" />}
+                </div>
+              </div>
+            )}
+            {!flat.length && <p className="tp__empty">Ничего не нашлось. Попробуйте другое слово.</p>}
           </div>
           <p className="tp__keys" aria-hidden="true">
             <span><kbd>↑</kbd><kbd>↓</kbd> выбрать</span>
@@ -130,7 +142,7 @@ export function RequestTypePicker({ value, onChange, labelId }: { value: Request
           </p>
         </div>
       )}
-      <p className="tp__count">{total} {pluralize(total, 'вид', 'вида', 'видов')} {pluralize(total, 'заявки', 'заявок', 'заявок')}.</p>
+      <p className="tp__count">{total + 1} {pluralize(total + 1, 'вид', 'вида', 'видов')} {pluralize(total + 1, 'заявки', 'заявок', 'заявок')}. Не нашли нужную — выберите «Иное обращение».</p>
     </div>
   )
 }

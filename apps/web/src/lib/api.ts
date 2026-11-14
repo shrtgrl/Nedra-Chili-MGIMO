@@ -1,3 +1,4 @@
+import type { RequestType } from '../types'
 export interface ApiProfile {
   id: string
   fullName: string
@@ -52,7 +53,7 @@ export type ApiRequestStatus = 'submitted' | 'in_progress' | 'ready' | 'rejected
 export interface ApiStaffRequest {
   id: string
   studentId: string
-  type: 'study' | 'order' | 'leave' | 'retake'
+  type: RequestType
   purpose: string
   comment: string
   delivery: 'pdf' | 'office'
