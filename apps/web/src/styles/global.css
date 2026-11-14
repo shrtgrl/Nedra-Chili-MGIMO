@@ -7720,3 +7720,190 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
   border-color: var(--ink);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 32%, transparent);
 }
+
+/* ═════════ Боковое меню: полоска ↔ полное меню ═════════
+   Клик по пустому месту сворачивает меню в полоску; клик по пустому месту полоски разворачивает насовсем;
+   долгое наведение на полоску раскрывает меню поверх страницы (is-peek), уход курсора возвращает полоску. */
+.sidebar__toggle,
+.rail-tip {
+  display: none;
+}
+@media (min-width: 861px) {
+  .app {
+    --sidebar-rail-w: 84px;
+    transition: grid-template-columns 0.3s var(--ease-out);
+  }
+  .app--rail {
+    grid-template-columns: var(--sidebar-rail-w) minmax(0, 1fr);
+  }
+  .sidebar {
+    width: 100%;
+    overflow: hidden;
+    transition: width 0.3s var(--ease-out), box-shadow 0.3s ease, background-color 0.25s ease;
+  }
+  .sidebar.is-rail {
+    cursor: pointer;
+  }
+  /* раскрыто поверх страницы: колонка остаётся полоской, меню лежит над контентом */
+  .sidebar.is-peek {
+    width: var(--sidebar-w);
+    z-index: 20;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+  }
+
+  /* подписи плавно гаснут и уезжают влево, но остаются в потоке: ничего не прыгает */
+  .brand__text,
+  .nav-item__label,
+  .side-user__text,
+  .side-card__text {
+    transition: opacity 0.18s ease-out, transform 0.3s var(--ease-out);
+  }
+  .sidebar .nav-item,
+  .sidebar .side-user,
+  .sidebar .brand,
+  .sidebar .brand__text,
+  .sidebar .nav-item__label,
+  .sidebar .side-user__text {
+    white-space: nowrap;
+  }
+  .sidebar.is-rail .brand__text,
+  .sidebar.is-rail .nav-item__label,
+  .sidebar.is-rail .side-user__text,
+  .sidebar.is-rail .side-card__text {
+    opacity: 0;
+    transform: translateX(-8px);
+    pointer-events: none;
+  }
+
+  /* иконки встают по центру полоски */
+  .sidebar__brand,
+  .nav-item,
+  .side-card {
+    transition-property: padding, background-color, color, transform;
+    transition-duration: 0.3s, 0.15s, 0.3s, 0.15s;
+    transition-timing-function: var(--ease-out);
+  }
+  .sidebar.is-rail .sidebar__brand {
+    padding-inline: 6px;
+  }
+  .sidebar.is-rail .nav-item {
+    padding-left: 18px;
+    padding-right: 0;
+  }
+  .sidebar.is-moving .nav-ind {
+    transition: none;
+  }
+  .sidebar .nav-item > svg,
+  .sidebar .side-card__icon {
+    flex: none;
+  }
+
+  /* счётчик в полоске — маленький бейдж на углу иконки */
+  .nav-item__badge {
+    transition: transform 0.3s var(--ease-out), min-width 0.3s var(--ease-out), height 0.3s var(--ease-out);
+  }
+  .sidebar.is-rail .nav-item__badge {
+    position: absolute;
+    left: 31px;
+    top: 5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 10.5px;
+    box-shadow: 0 0 0 2px var(--accent-solid, var(--accent));
+  }
+
+  /* карточка внизу: в полоске остаётся только значок */
+  .side-card {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+  }
+  .side-card__icon {
+    display: none;
+    flex: none;
+  }
+  .sidebar.is-rail .side-card {
+    justify-content: center;
+    padding-inline: 0;
+  }
+  .sidebar.is-rail .side-card__icon {
+    display: block;
+  }
+  /* текст карточки схлопывается по высоте (grid 1fr → 0fr), ширина фиксирована, чтобы он не перестраивался */
+  .side-card__text {
+    display: grid;
+    grid-template-rows: 1fr;
+    flex: none;
+    width: 176px;
+    transition: grid-template-rows 0.3s var(--ease-out), opacity 0.18s ease-out, transform 0.3s var(--ease-out);
+  }
+  .side-card__in {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .sidebar.is-rail .side-card__text {
+    grid-template-rows: 0fr;
+    width: 0;
+  }
+
+  /* кнопка для клавиатуры: появляется только при фокусе (можно также нажать «[») */
+  .sidebar__toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--on-accent);
+    background: color-mix(in srgb, var(--on-accent) 12%, transparent);
+    opacity: 0;
+  }
+  .sidebar.is-rail .sidebar__toggle {
+    right: 25px;
+  }
+  .sidebar__toggle:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--on-accent);
+    outline-offset: 2px;
+  }
+
+  /* подсказка названия пункта в полоске (для клавиатуры) */
+  .rail-tip {
+    display: block;
+    position: fixed;
+    z-index: 60;
+    transform: translateY(-50%);
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(24, 30, 42, 0.94);
+    color: #f2f2ee;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app,
+  .sidebar,
+  .sidebar__brand,
+  .nav-item,
+  .side-card,
+  .nav-item__badge {
+    transition: none;
+  }
+  .brand__text,
+  .nav-item__label,
+  .side-user__text,
+  .side-card__text {
+    transition: opacity 0.15s ease-out;
+    transform: none !important;
+  }
+}

@@ -1,5 +1,7 @@
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, type FocusEvent, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
+import { useSidebarRail } from '../lib/useSidebarRail'
 import { useIndicator } from '../lib/useIndicator'
 import { Icon, type IconName } from './Icon'
 import { Avatar, Brand, IconButton, NewYearButton, ThemeButton } from './ui'
@@ -53,30 +55,74 @@ function useNav(): NavItem[] {
 function SidebarCard() {
   const user = useUser()
   const { sheets } = useData()
-  if (user.role === 'student') return <Link to="/student/grades" className="side-card"><div className="eyebrow">Учебные материалы</div><div className="side-card__title">Файлы ваших дисциплин</div></Link>
+  if (user.role === 'student') return (
+    <Link to="/student/grades" className="side-card" data-tip="Учебные материалы">
+      <Icon name="book" size={22} className="side-card__icon" />
+      <div className="side-card__text"><div className="side-card__in"><div className="eyebrow">Учебные материалы</div><div className="side-card__title">Файлы ваших дисциплин</div></div></div>
+    </Link>
+  )
   if (user.role === 'staff') return null
   const s = sheets[0]
   if (!s) return null
   return (
-    <Link to="/teacher/gradebook" className="side-card">
-      <div className="eyebrow">Ведомость</div>
-      <div className="side-card__title">
-        {s.subject} · {s.group}
+    <Link to="/teacher/gradebook" className="side-card" data-tip="Ведомость">
+      <Icon name="table" size={22} className="side-card__icon" />
+      <div className="side-card__text">
+        <div className="side-card__in">
+          <div className="eyebrow">Ведомость</div>
+          <div className="side-card__title">
+            {s.subject} · {s.group}
+          </div>
+          <div className="side-card__meta">Открыта до {s.deadlineLabel}</div>
+        </div>
       </div>
-      <div className="side-card__meta">Открыта до {s.deadlineLabel}</div>
     </Link>
   )
 }
 
-function Sidebar() {
+interface RailState {
+  rail: boolean
+  peek: boolean
+  moving: boolean
+  pin: (next?: boolean) => void
+  onEnter: () => void
+  onLeave: () => void
+}
+
+function Sidebar({ rail, peek, moving, pin, onEnter, onLeave }: RailState) {
   const user = useUser()
+  const [tip, setTip] = useState<{ text: string; x: number; y: number } | null>(null)
   const nav = useNav()
   const profile = `/${user.role}/profile`
   const { pathname } = useLocation()
   const { box, ind } = useIndicator<HTMLElement>(pathname)
   const ny = useNewYear()
+  // клик по пустому месту: свернуть в полоску или (из полоски) развернуть насовсем
+  const onBlank = (e: MouseEvent<HTMLElement>) => {
+    if ((e.target as HTMLElement).closest('a, button')) return
+    pin()
+    setTip(null)
+  }
+  // подсказки в полоске нужны тем, кто ходит по меню с клавиатуры
+  const showTip = (e: FocusEvent<HTMLElement>) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-tip]')
+    if (!rail || !el || !el.matches(':focus-visible')) return
+    const r = el.getBoundingClientRect()
+    setTip({ text: el.dataset.tip ?? '', x: r.right + 12, y: r.top + r.height / 2 })
+  }
   return (
-    <aside className="sidebar" aria-label="Основная навигация">
+    <aside
+      className={`sidebar ${rail ? 'is-rail' : ''} ${peek ? 'is-peek' : ''} ${moving ? 'is-moving' : ''}`}
+      aria-label="Основная навигация"
+      onClick={onBlank}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      onFocusCapture={showTip}
+      onBlurCapture={() => setTip(null)}
+    >
+      <button type="button" className="sidebar__toggle" aria-expanded={!rail} onClick={() => pin()} aria-label={rail ? 'Развернуть меню' : 'Свернуть меню'}>
+        <Icon name={rail ? 'chevronRight' : 'chevronLeft'} size={18} />
+      </button>
       {ny && (
         <>
           <Garland className="sidebar__garland" spacing={52} />
@@ -90,9 +136,9 @@ function Sidebar() {
       <nav ref={box} className="sidebar__nav">
         <span ref={ind} className="nav-ind" aria-hidden="true" />
         {nav.map((n) => (
-          <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
+          <NavLink key={n.to} to={n.to} end={n.end} data-tip={n.label} className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
             <Icon name={n.icon} size={19} />
-            <span>{n.label}</span>
+            <span className="nav-item__label">{n.label}</span>
             {!!n.badge && (
               <span className="nav-item__badge" aria-label={`${n.badge} новых`}>
                 {n.badge}
@@ -103,9 +149,9 @@ function Sidebar() {
       </nav>
       <div className="sidebar__bottom">
         <SidebarCard />
-        <NavLink to={profile} className={({ isActive }) => `side-user ${isActive ? 'is-active' : ''}`}>
+        <NavLink to={profile} data-tip="Профиль" className={({ isActive }) => `side-user ${isActive ? 'is-active' : ''}`}>
           <Avatar initials={user.initials} size={42} />
-          <span>
+          <span className="side-user__text">
             <span className="side-user__name">
               {user.lastName} {user.firstName}
             </span>
@@ -113,6 +159,13 @@ function Sidebar() {
           </span>
         </NavLink>
       </div>
+      {tip &&
+        createPortal(
+          <span className="rail-tip" role="tooltip" style={{ left: tip.x, top: tip.y }}>
+            {tip.text}
+          </span>,
+          document.body,
+        )}
     </aside>
   )
 }
@@ -219,12 +272,13 @@ function ForestSlot() {
 export function AppLayout() {
   const { loading, error, reload } = useData()
   const { pathname } = useLocation()
+  const sb = useSidebarRail()
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
   return (
-    <div className="app">
-      <Sidebar />
+    <div className={`app ${sb.pinned ? 'app--rail' : ''}`}>
+      <Sidebar rail={sb.rail} peek={sb.peek} moving={sb.moving} pin={sb.pin} onEnter={sb.onEnter} onLeave={sb.onLeave} />
       <div className="app__main">
         <MobileBar />
         <main className="content" id="main">

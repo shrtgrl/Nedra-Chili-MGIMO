@@ -10,7 +10,7 @@ export function Brand() {
   return (
     <div className="brand">
       <img src={emblem} alt="" className="brand__emblem" width={44} height={38} />
-      <div>
+      <div className="brand__text">
         <div className="brand__name">МУКПиД</div>
         <div className="brand__sub">Онлайн деканат</div>
       </div>
