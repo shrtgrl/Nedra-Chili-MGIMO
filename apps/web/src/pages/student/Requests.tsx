@@ -2,6 +2,7 @@ import { dataApi, downloadFile, type ApiAssignment } from '../../lib/api'
 import { STATUS_LABEL } from '../../lib/staff'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useIndicator } from '../../lib/useIndicator'
+import { useSmoothHeight } from '../../lib/useSmoothHeight'
 import { useData } from '../../context/data'
 import { useToast } from '../../context/toast'
 import { REQUEST_STAGES, REQUEST_TYPES } from '../../data/mock'
@@ -73,6 +74,7 @@ export function RequestsPage() {
   }
 
   const chipsInd = useIndicator<HTMLDivElement>(filter)
+  const swapRef = useSmoothHeight(target)
   const shown = requests.filter((r) => (filter === 'all' ? true : filter === 'work' ? ['submitted','in_progress'].includes(r.status) : ['ready','issued'].includes(r.status)))
 
   return (
@@ -89,7 +91,7 @@ export function RequestsPage() {
       />
       <div className="grid-half grid-half--req">
         <form className="card" onSubmit={submit} noValidate>
-          <h2 className="card__title card__title--lg">{target === 'dean' ? 'Новая заявка' : 'Обращение к преподавателю'}</h2>
+          <h2 key={target} className="card__title card__title--lg title-swap">{target === 'dean' ? 'Новая заявка' : 'Обращение к преподавателю'}</h2>
           <Segmented
             soft
            
@@ -102,6 +104,7 @@ export function RequestsPage() {
               { value: 'teacher', label: 'Преподавателю' },
             ]}
           />
+          <div ref={swapRef} className="form-swap-wrap">
           <div key={target} className="form-swap">
           {target === 'dean' && (
           <div className="field">
@@ -159,6 +162,7 @@ export function RequestsPage() {
             <span className="small muted">{delivery === 'pdf' ? 'Файл появится в личном кабинете.' : 'Заберёте в деканате.'}</span>
           </div>
           )}
+          </div>
           </div>
 
           <Button disabled={busy} type="submit" variant="primary" size="lg" block>

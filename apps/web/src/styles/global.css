@@ -4523,17 +4523,24 @@ html.lock-scroll body {
 }
 
 /* ═════════ Форма заявки: переключатель «В деканат / Преподавателю» ═════════ */
+.form-swap-wrap {
+  display: block;
+  gap: inherit;
+}
 .form-swap {
   display: flex;
   flex-direction: column;
   gap: inherit;
-  animation: form-swap-in 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
+  animation: form-swap-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.title-swap {
+  animation: form-swap-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 @keyframes form-swap-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); filter: blur(3px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .form-swap { animation: none; }
+  .form-swap, .title-swap { animation: none; }
 }
 
 /* ── Материалы: рассылка преподавателя и раздел «Предметы» ───────── */
