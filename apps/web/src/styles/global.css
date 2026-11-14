@@ -7179,3 +7179,11 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
   background: none;
   border: 1.5px dashed var(--ink-3);
 }
+/* любые сегменты: выбранный вариант всегда сплошной, чтобы не сливаться со стеклом */
+.seg--soft .seg__ind {
+  background: var(--strong);
+  box-shadow: none;
+}
+.seg--soft .seg__btn.is-active {
+  color: var(--on-strong);
+}

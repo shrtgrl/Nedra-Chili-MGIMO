@@ -116,7 +116,7 @@ interface SegOption<T extends string> {
   value: T
   label: ReactNode
 }
-export function Segmented<T extends string>({ options, value, onChange, label, soft, check, className = '' }: { options: SegOption<T>[]; value: T; onChange: (v: T) => void; label: string; soft?: boolean; check?: boolean; className?: string }) {
+export function Segmented<T extends string>({ options, value, onChange, label, soft, check = true, className = '' }: { options: SegOption<T>[]; value: T; onChange: (v: T) => void; label: string; soft?: boolean; check?: boolean; className?: string }) {
   const { box, ind } = useIndicator<HTMLDivElement>(value)
   return (
     <div ref={box} className={`seg ${soft ? 'seg--soft' : ''} ${check ? 'seg--check' : ''} ${className}`} role="radiogroup" aria-label={label}>
