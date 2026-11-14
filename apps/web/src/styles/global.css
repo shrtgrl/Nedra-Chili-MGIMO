@@ -6922,3 +6922,251 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
     backdrop-filter: none;
   }
 }
+
+/* ═════════ Выбор вида заявки (выпадающий список) ═════════ */
+.tp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tp__trigger {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 20px 12px 14px;
+  text-align: left;
+  border-radius: 22px;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-line);
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease-out;
+}
+.tp__trigger:active {
+  transform: scale(0.99);
+}
+@media (hover: hover) {
+  .tp__trigger:hover {
+    border-color: var(--ink-3);
+  }
+}
+.tp.is-open .tp__trigger {
+  border-color: var(--ink);
+  border-width: 2px;
+  padding: 11.5px 19.5px 11.5px 13.5px;
+}
+.tp__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--strong);
+  color: var(--on-strong);
+}
+.tp__icon--sm {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.tp__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+.tp__text b {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.tp__text small {
+  font-size: 15px;
+  color: var(--ink-2);
+  line-height: 1.3;
+}
+.tp__chev {
+  flex: none;
+  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.tp.is-open .tp__chev {
+  transform: rotate(180deg);
+}
+.tp__count {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.tp__pop {
+  position: absolute;
+  z-index: 30;
+  inset-inline: 0;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 24px;
+  background: var(--surface-solid, var(--surface));
+  border: 1px solid var(--line-solid, var(--line));
+  box-shadow: 0 2px 6px rgba(20, 24, 40, 0.08), 0 24px 56px rgba(20, 24, 40, 0.22);
+  transform-origin: top center;
+  animation: tp-in 160ms ease-out both;
+}
+@keyframes tp-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+.tp__search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: var(--surface-2-solid, var(--surface-2));
+  color: var(--ink-2);
+}
+.tp__search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  border: 0;
+  outline: 0;
+  background: none;
+  font-size: 17px;
+  color: var(--ink);
+}
+.tp__search input::placeholder {
+  color: var(--ink-2);
+}
+.tp__search:focus-within {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.tp__list {
+  max-height: min(56vh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+}
+.tp__group {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 12px 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.tp__group span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+.tp__opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.tp__opt.is-active {
+  background: var(--surface-2-solid, var(--surface-2));
+}
+.tp__opt.is-selected {
+  background: var(--hl-soft-solid, var(--hl-soft));
+}
+.tp__opt.is-selected .tp__icon--sm {
+  background: var(--strong);
+  color: var(--on-strong);
+}
+.tp__opt .tp__text b {
+  font-size: 17px;
+  font-weight: 600;
+}
+.tp__opt.is-selected .tp__text b {
+  font-weight: 700;
+}
+.tp__opt .tp__text small {
+  font-size: 14px;
+}
+.tp__ok {
+  flex: none;
+}
+.tp__empty {
+  margin: 0;
+  padding: 18px 12px;
+  color: var(--ink-2);
+}
+.tp__keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 6px 12px 4px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.tp__keys span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tp__keys kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--input-line);
+  color: var(--ink);
+}
+@media (hover: none) {
+  .tp__keys {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  .tp__trigger {
+    gap: 12px;
+  }
+  .tp__text b {
+    font-size: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp__pop {
+    animation: ann-fade 150ms ease-out both;
+  }
+  .tp__chev,
+  .tp__trigger {
+    transition: none;
+  }
+}
+
+/* галочка в активном сегменте переключателя */
+.seg__btn svg {
+  margin-inline-end: 8px;
+  vertical-align: -3px;
+}
+.seg__btn {
+  white-space: nowrap;
+}
+/* переключатель с галочкой: активный вариант — сплошной, как в дизайн-коде */
+.seg--check .seg__ind {
+  background: var(--strong);
+  box-shadow: none;
+}
+.seg--check .seg__btn.is-active {
+  color: var(--on-strong);
+}

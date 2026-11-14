@@ -116,10 +116,10 @@ interface SegOption<T extends string> {
   value: T
   label: ReactNode
 }
-export function Segmented<T extends string>({ options, value, onChange, label, soft, className = '' }: { options: SegOption<T>[]; value: T; onChange: (v: T) => void; label: string; soft?: boolean; className?: string }) {
+export function Segmented<T extends string>({ options, value, onChange, label, soft, check, className = '' }: { options: SegOption<T>[]; value: T; onChange: (v: T) => void; label: string; soft?: boolean; check?: boolean; className?: string }) {
   const { box, ind } = useIndicator<HTMLDivElement>(value)
   return (
-    <div ref={box} className={`seg ${soft ? 'seg--soft' : ''} ${className}`} role="radiogroup" aria-label={label}>
+    <div ref={box} className={`seg ${soft ? 'seg--soft' : ''} ${check ? 'seg--check' : ''} ${className}`} role="radiogroup" aria-label={label}>
       <span ref={ind} className="seg__ind" aria-hidden="true" />
       {options.map((o) => (
         <button
@@ -130,6 +130,7 @@ export function Segmented<T extends string>({ options, value, onChange, label, s
           className={`seg__btn ${o.value === value ? 'is-active' : ''}`}
           onClick={() => onChange(o.value)}
         >
+          {check && o.value === value && <Icon name="check" size={16} />}
           {o.label}
         </button>
       ))}
