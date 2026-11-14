@@ -4,14 +4,13 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useIndicator } from '../../lib/useIndicator'
 import { useData } from '../../context/data'
 import { useToast } from '../../context/toast'
-import { DEAN_REQUEST_TYPES, REQUEST_STAGES, REQUEST_TYPES } from '../../data/mock'
+import { REQUEST_STAGES, REQUEST_TYPES } from '../../data/mock'
 import type { Delivery, RequestType } from '../../types'
 import { Badge, Button, Disclaimer, IconButton, PageHeader, Segmented, Stages, ThemeButton } from '../../components/ui'
-import { Icon, type IconName } from '../../components/Icon'
+import { RequestTypePicker } from '../../components/RequestTypePicker'
 import { Link } from 'react-router-dom'
 
 type Filter = 'all' | 'work' | 'ready'
-const TYPE_ICON: Record<RequestType, IconName> = { study: 'doc', order: 'clipboard', leave: 'pause', retake: 'refresh' }
 type Target = 'dean' | 'teacher'
 
 export function RequestsPage() {
@@ -59,9 +58,10 @@ export function RequestsPage() {
       return
     }
     if (!purpose.trim()) {
-      setError('Укажите цель — например, «по месту требования»')
+      setError(type === 'other' ? 'Коротко напишите, что нужно' : 'Укажите цель — например, «по месту требования»')
       return
     }
+    if (type === 'other' && !comment.trim()) return setCommentError('Опишите, что нужно, — иначе деканат не поймёт обращение')
     setBusy(true)
     const ok = await addRequest({ type, purpose: purpose.trim(), comment: comment.trim(), delivery })
     setBusy(false)
@@ -92,6 +92,7 @@ export function RequestsPage() {
           <h2 className="card__title card__title--lg">{target === 'dean' ? 'Новая заявка' : 'Обращение к преподавателю'}</h2>
           <Segmented
             soft
+            check
             className="seg--wide"
             label="Кому"
             value={target}
@@ -104,21 +105,8 @@ export function RequestsPage() {
           <div key={target} className="form-swap">
           {target === 'dean' && (
           <div className="field">
-            <span className="field__label" id="req-type-label">Что нужно</span>
-            <div className="type-grid" role="radiogroup" aria-labelledby="req-type-label">
-              {DEAN_REQUEST_TYPES.map((t) => (
-                <button key={t} type="button" role="radio" aria-checked={type === t} className={`type-card ${type === t ? 'is-active' : ''}`} onClick={() => setType(t)}>
-                  <span className="type-card__icon">
-                    <Icon name={TYPE_ICON[t]} size={20} />
-                  </span>
-                  {type === t && <span className="type-card__check" aria-hidden="true"><Icon name="check" size={14} /></span>}
-                  {REQUEST_TYPES[t]}
-                </button>
-              ))}
-            </div>
-            <select className="input type-select" aria-labelledby="req-type-label" value={type} onChange={(e) => setType(e.target.value as RequestType)}>
-              {DEAN_REQUEST_TYPES.map((t) => <option key={t} value={t}>{REQUEST_TYPES[t]}</option>)}
-            </select>
+            <span className="field__label" id="req-type-label">Что нужно оформить</span>
+            <RequestTypePicker value={type} onChange={setType} labelId="req-type-label" />
           </div>
           )}
 
@@ -138,7 +126,7 @@ export function RequestsPage() {
             <span className="field__label">{target === 'teacher' ? 'Тема' : 'Цель'}</span>
             <input
               className={`input ${error ? 'is-invalid' : ''}`}
-              placeholder={target === 'teacher' ? 'Например, вопрос по контрольной' : type === 'retake' ? 'Дисциплина, например «Теория вероятностей»' : 'Например, для предоставления по месту требования'}
+              placeholder={target === 'teacher' ? 'Например, вопрос по контрольной' : type === 'retake' ? 'Дисциплина, например «Теория вероятностей»' : type === 'other' ? 'Коротко: что нужно' : 'Например, для предоставления по месту требования'}
               maxLength={target === 'teacher' ? 200 : 500}
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
@@ -148,7 +136,7 @@ export function RequestsPage() {
           </label>
 
           <label className="field">
-            <span className="field__label">{target === 'teacher' ? 'Сообщение' : <>Комментарий <span className="field__opt">— необязательно</span></>}</span>
+            <span className="field__label">{target === 'teacher' ? 'Сообщение' : type === 'other' ? 'Опишите обращение' : <>Комментарий <span className="field__opt">— необязательно</span></>}</span>
             <textarea className={`input textarea ${commentError ? 'is-invalid' : ''}`} placeholder={target === 'teacher' ? 'Опишите вопрос или просьбу' : 'Дополнительные сведения'} rows={4} maxLength={target === 'teacher' ? 5000 : 2000} value={comment} onChange={(e) => { setComment(e.target.value); setCommentError('') }} />
             {commentError && <span className="field__error">{commentError}</span>}
           </label>
@@ -156,14 +144,19 @@ export function RequestsPage() {
           {target === 'dean' && (
           <div className="field">
             <span className="field__label" id="req-delivery-label">Как получить</span>
-            <div className="radio-cards" role="radiogroup" aria-labelledby="req-delivery-label">
-              {([['pdf', 'PDF', 'в личном кабинете'], ['office', 'Бумажная', 'в деканате']] as [Delivery, string, string][]).map(([v, title, hint]) => (
-                <button key={v} type="button" role="radio" aria-checked={delivery === v} className={`radio-card ${delivery === v ? 'is-active' : ''}`} onClick={() => setDelivery(v)}>
-                  <span className="radio-card__dot" aria-hidden="true" />
-                  <span><b>{title}</b><small>{hint}</small></span>
-                </button>
-              ))}
-            </div>
+            <Segmented
+              soft
+              check
+              className="seg--wide"
+              label="Как получить"
+              value={delivery}
+              onChange={setDelivery}
+              options={[
+                { value: 'pdf', label: 'PDF' },
+                { value: 'office', label: 'Бумажная' },
+              ]}
+            />
+            <span className="small muted">{delivery === 'pdf' ? 'Файл появится в личном кабинете.' : 'Заберёте в деканате.'}</span>
           </div>
           )}
           </div>

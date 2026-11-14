@@ -123,6 +123,7 @@ export const announcements = pgTable('announcements', {
   publishedBy: uuid('published_by').notNull().references(() => users.id),
   title: text('title').notNull(),
   body: text('body').notNull(),
+  cover: text('cover'),
   createdAt: createdAt(),
 }, t => [index('announcements_created_idx').on(t.createdAt)]);
 export const gradeEntries = pgTable('grade_entries', {

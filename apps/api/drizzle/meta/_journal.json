@@ -71,6 +71,13 @@
       "when": 1794566402801,
       "tag": "0009_opposite_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794642165567,
+      "tag": "0010_sticky_catseye",
+      "breakpoints": true
     }
   ]
 }

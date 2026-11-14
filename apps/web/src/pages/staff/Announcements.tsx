@@ -1,15 +1,19 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { dataApi, staffApi, type ApiAnnouncement, type ApiGroup } from '../../lib/api'
 import { load, remove as removeKey, save } from '../../lib/storage'
 import { Button, PageHeader, ThemeButton } from '../../components/ui'
+import { Icon } from '../../components/Icon'
+import { STOCK_COVERS, coverSrc, photoToCover } from '../../lib/covers'
 
 interface Draft {
   audience: 'all' | 'group'
   groupId: string
   title: string
   body: string
+  /** `stock:<id>`, загруженное фото (data-URL) или без обложки. */
+  cover: string | null
 }
-const EMPTY: Draft = { audience: 'all', groupId: '', title: '', body: '' }
+const EMPTY: Draft = { audience: 'all', groupId: '', title: '', body: '', cover: null }
 const MONTHS_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 const MONTHS_PREP = ['январе', 'феврале', 'марте', 'апреле', 'мае', 'июне', 'июле', 'августе', 'сентябре', 'октябре', 'ноябре', 'декабре']
 
@@ -24,7 +28,7 @@ export function StaffAnnouncementsPage() {
   const [groups, setGroups] = useState<ApiGroup[]>([])
   const [rows, setRows] = useState<ApiAnnouncement[]>([])
   const [form, setForm] = useState<Draft>(EMPTY)
-  const [draft, setDraft] = useState<Draft | null>(() => load<Draft | null>('announcement-draft', null))
+  const [draft, setDraft] = useState<Draft | null>(() => { const d = load<Draft | null>('announcement-draft', null); return d ? { ...EMPTY, ...d } : null })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirmId, setConfirmId] = useState<string | null>(null)
@@ -34,6 +38,19 @@ export function StaffAnnouncementsPage() {
       .then(([g, a]) => { setGroups(g); setRows(a) })
       .catch((e) => setError(e instanceof Error ? e.message : 'Не удалось загрузить объявления'))
   }, [])
+
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [coverBusy, setCoverBusy] = useState(false)
+  const pickFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setCoverBusy(true); setError('')
+    try { set({ cover: await photoToCover(file) }) }
+    catch (err) { setError(err instanceof Error ? err.message : 'Не удалось добавить фото') }
+    finally { setCoverBusy(false) }
+  }
+  const isPhoto = !!form.cover && !form.cover.startsWith('stock:')
 
   const set = (patch: Partial<Draft>) => setForm((f) => ({ ...f, ...patch }))
   const groupName = (id: string) => groups.find((g) => g.id === id)?.name
@@ -45,7 +62,7 @@ export function StaffAnnouncementsPage() {
     if (!form.title.trim() || !form.body.trim()) { setError('Заполните заголовок и текст'); return }
     setBusy(true); setError('')
     try {
-      await dataApi.addAnnouncement(form.title.trim(), form.body.trim(), form.audience === 'group' ? form.groupId : null)
+      await dataApi.addAnnouncement(form.title.trim(), form.body.trim(), form.audience === 'group' ? form.groupId : null, form.cover)
       await reload(); setForm(EMPTY)
     } catch (err) { setError(err instanceof Error ? err.message : 'Не удалось опубликовать объявление') }
     finally { setBusy(false) }
@@ -102,6 +119,41 @@ export function StaffAnnouncementsPage() {
             <textarea className="input textarea ann__text" value={form.body} maxLength={2000} placeholder="Что изменилось, с какого числа и что нужно сделать" onChange={(e) => set({ body: e.target.value })} />
           </label>
 
+          <div className="ann__field" role="group" aria-labelledby="ann-cover">
+            <span className="ann__label" id="ann-cover">Обложка</span>
+            <div className="cover-grid">
+              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="cover-grid__file" tabIndex={-1} aria-hidden="true" onChange={(e) => void pickFile(e)} />
+              {isPhoto ? (
+                <div className="cover-tile is-active cover-tile--photo">
+                  <img src={coverSrc(form.cover) ?? ''} alt="Ваше фото" />
+                  <span className="cover-tile__check" aria-hidden="true"><Icon name="check" size={16} /></span>
+                  <button type="button" className="cover-tile__act" onClick={() => fileRef.current?.click()} disabled={coverBusy}>Заменить</button>
+                </div>
+              ) : (
+                <button type="button" className="cover-tile cover-tile--upload" onClick={() => fileRef.current?.click()} disabled={coverBusy}>
+                  <Icon name="upload" size={22} />
+                  <span>{coverBusy ? 'Загружаем…' : 'Своё фото'}</span>
+                </button>
+              )}
+              {STOCK_COVERS.map((c) => {
+                const v = `stock:${c.id}`
+                const on = form.cover === v
+                return (
+                  <button key={c.id} type="button" className={`cover-tile ${on ? 'is-active' : ''}`} aria-pressed={on} onClick={() => set({ cover: on ? null : v })}>
+                    <img src={c.src} alt="" loading="lazy" />
+                    <span className="cover-tile__check" aria-hidden="true"><Icon name="check" size={16} /></span>
+                    <span className="sr-only">{c.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <p className="ann__hint">
+              {form.cover ? 'Нажмите на выбранную обложку ещё раз, чтобы убрать её. ' : 'Без обложки покажем стандартную картинку. '}
+              Своё фото уменьшим до 1200 px.
+              {isPhoto && <> <button type="button" className="link-btn" onClick={() => set({ cover: null })}>Убрать фото</button></>}
+            </p>
+          </div>
+
           {error && <p role="alert" className="form-error">{error}</p>}
           <div className="ann__actions">
             <Button type="button" variant="surface" onClick={saveDraft} disabled={busy}>Сохранить черновик</Button>
@@ -132,6 +184,7 @@ export function StaffAnnouncementsPage() {
                     <time dateTime={row.createdAt}><b>{d.day}</b> {MONTHS_GEN[d.month]}</time>
                     <span className="ann-item__to">{row.groupName ? `группе ${row.groupName}` : 'всем студентам'}</span>
                   </div>
+                  {coverSrc(row.cover) && <img className="ann-item__thumb" src={coverSrc(row.cover) ?? ''} alt="" loading="lazy" width="1200" height="630" />}
                   <h3 className="ann-item__title">{row.title}</h3>
                   <p className="ann-item__body">{row.body}</p>
                   <div className="ann-item__foot">

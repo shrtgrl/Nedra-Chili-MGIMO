@@ -1,3 +1,4 @@
+import type { RequestType } from '../types'
 export interface ApiProfile {
   id: string
   fullName: string
@@ -52,7 +53,7 @@ export type ApiRequestStatus = 'submitted' | 'in_progress' | 'ready' | 'rejected
 export interface ApiStaffRequest {
   id: string
   studentId: string
-  type: 'study' | 'order' | 'leave' | 'retake'
+  type: RequestType
   purpose: string
   comment: string
   delivery: 'pdf' | 'office'
@@ -115,7 +116,7 @@ export const staffApi = {
 export interface ApiAssignment { id:string; teacherId:string; subjectId:string; groupId:string; subject:string; group:string; teacher:string; semester:number; form:'Экзамен'|'Зачёт'; deadline:string|null; version:number }
 export interface ApiGrade {id:string;name:string;form:'Экзамен'|'Зачёт';semester:number;score:number|null}
 export interface ApiDeadline {id:string;assignmentId:string;title:string;dueAt:string;subject:string;group:string}
-export interface ApiAnnouncement {id:string;groupId:string|null;groupName:string|null;title:string;body:string;createdAt:string}
+export interface ApiAnnouncement {id:string;groupId:string|null;groupName:string|null;title:string;body:string;cover:string|null;createdAt:string}
 export interface ApiSheet extends ApiAssignment { students:{id:string;name:string;score:number|null}[] }
 export interface ApiNotice {id:string;kind:string;title:string;body:string;readAt:string|null;createdAt:string}
 export interface ApiInquiry {id:string;studentId:string;teacherId:string;assignmentId:string;student:string;group:string|null;subject:string;text:string;status:'new'|'progress'|'closed';createdAt:string;replies:{id:string;text:string;authorId:string;createdAt:string}[]}
@@ -135,7 +136,7 @@ export const dataApi = {
   grades:()=>request<ApiGrade[]>('/api/grades'),
   deadlines:()=>request<ApiDeadline[]>('/api/deadlines'),
   announcements:()=>request<ApiAnnouncement[]>('/api/announcements'),
-  addAnnouncement:(title:string,body:string,groupId:string|null)=>request<ApiAnnouncement>('/api/announcements','POST',{title,body,groupId}),
+  addAnnouncement:(title:string,body:string,groupId:string|null,cover:string|null=null)=>request<ApiAnnouncement>('/api/announcements','POST',{title,body,groupId,cover}),
   deleteAnnouncement:(id:string)=>request<void>(`/api/announcements/${id}`,'DELETE'),
   addDeadline:(assignmentId:string,title:string,dueAt:string)=>request<ApiDeadline>('/api/deadlines','POST',{assignmentId,title,dueAt}),
   deleteDeadline:(id:string)=>request<void>(`/api/deadlines/${id}`,'DELETE'),
