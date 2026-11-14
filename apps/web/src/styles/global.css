@@ -7187,3 +7187,78 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
 .seg--soft .seg__btn.is-active {
   color: var(--on-strong);
 }
+
+/* ═════════ Автосмена объявлений: точки-индикаторы с полосой времени ═════════ */
+.ann-dots {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+  padding-bottom: 6px;
+}
+.ann-dot {
+  display: grid;
+  align-items: center;
+  min-width: 36px;
+  height: 44px;
+  padding: 0 6px;
+  flex: 0 0 auto;
+  transition: min-width 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.ann-dot.is-active {
+  min-width: 64px;
+}
+.ann-dot__bar {
+  position: relative;
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--track);
+}
+.ann-dot.is-past .ann-dot__bar {
+  background: var(--ink-3);
+}
+/* без автосмены (или в паузе) активная точка просто закрашена целиком */
+.ann-dot.is-active .ann-dot__bar {
+  background: var(--ink);
+}
+.ann-dot.is-active .ann-dot__bar:has(.ann-dot__fill) {
+  background: var(--track);
+}
+.ann-dot__fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ink);
+  transform-origin: left center;
+  animation: ann-fill var(--dur, 7s) linear both;
+}
+@keyframes ann-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.ann-dots__pause {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-inline-start: auto;
+  border-radius: 50%;
+  color: var(--ink-2);
+  transition: transform 0.15s ease-out, background-color 0.15s ease;
+}
+.ann-dots__pause:active {
+  transform: scale(0.94);
+}
+@media (hover: hover) {
+  .ann-dots__pause:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ann-dot {
+    transition: none;
+  }
+}

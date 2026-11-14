@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { ApiAnnouncement } from '../lib/api'
 import { load, save } from '../lib/storage'
 import { pluralize } from '../lib/format'
@@ -12,12 +12,38 @@ const dateLabel = (iso: string) => {
 }
 const audience = (a: ApiAnnouncement) => (a.groupName ? `для группы ${a.groupName}` : 'для всех студентов')
 
-/** Длительность выхода предыдущего слайда (мс) — совпадает с CSS. */
+/** Длительность выхода предыдущего слайда и входа нового (мс) — совпадает с CSS. */
 const LEAVE_MS = 150
 const ENTER_MS = 460
+/** Сколько объявлений крутится по очереди. Остальные — в списке «Все». */
+const ROTATION_MAX = 6
+/** Время показа: больше текста — дольше (6–12 секунд). */
+const showMs = (a: ApiAnnouncement) => Math.min(12000, Math.max(6000, 5000 + (a.title.length + a.body.length) * 35))
+
+const useReducedMotion = () => {
+  const [reduced, setReduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  useEffect(() => {
+    const m = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const on = () => setReduced(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
+  return reduced
+}
+const useTabHidden = () => {
+  const [hidden, setHidden] = useState(() => typeof document !== 'undefined' && document.hidden)
+  useEffect(() => {
+    const on = () => setHidden(document.hidden)
+    document.addEventListener('visibilitychange', on)
+    return () => document.removeEventListener('visibilitychange', on)
+  }, [])
+  return hidden
+}
 
 /**
- * Карточка «Объявления деканата»: показывает одно объявление, непрочитанные сменяют друг друга.
+ * Карточка «Объявления деканата»: актуальные объявления сменяют друг друга сами.
+ * Крутятся непрочитанные (если их нет — последние); смена останавливается при наведении,
+ * фокусе, раскрытом тексте, в фоновой вкладке и по кнопке «Пауза». При «уменьшении движения» автосмены нет.
  * Прочитанное хранится в браузере (на сервере пока нет отметок о прочтении).
  */
 export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnouncement[]; userId: string; error?: string }) {
@@ -28,6 +54,11 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
   const [view, setView] = useState<'one' | 'all'>('one')
   const [leaving, setLeaving] = useState<{ a: ApiAnnouncement; read: boolean; expanded: boolean } | null>(null)
   const [entering, setEntering] = useState(false)
+  const [userPaused, setUserPaused] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const reduced = useReducedMotion()
+  const hidden = useTabHidden()
   const timers = useRef<number[]>([])
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), [])
 
@@ -42,11 +73,21 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
   }, [key])
 
   const unread = items.filter((a) => !read.includes(a.id))
-  const current = items.find((a) => a.id === currentId) ?? unread[0] ?? items[0]
-  const others = current ? unread.filter((a) => a.id !== current.id) : []
+  const rotation = (unread.length ? unread : items).slice(0, ROTATION_MAX)
+  const current = items.find((a) => a.id === currentId) ?? rotation[0]
+  const idx = current ? rotation.findIndex((a) => a.id === current.id) : -1
+  const nextInRotation = current && rotation.length > 1 ? rotation[(idx + 1) % rotation.length] : undefined
+  const unreadElsewhere = current ? unread.filter((a) => a.id !== current.id).length : 0
 
+  const autoplay = !reduced && rotation.length > 1 && view === 'one'
+  const paused = userPaused || hovered || focused || expanded || hidden || !!leaving
+
+  const flash = (ms: number, set: (v: boolean) => void) => {
+    set(true)
+    timers.current.push(window.setTimeout(() => set(false), ms))
+  }
   /** Плавная смена: предыдущее объявление уходит (150 мс), новое появляется по частям. */
-  const swapTo = (id: string | null) => {
+  const swapTo = (id: string) => {
     if (current) setLeaving({ a: current, read: isRead(current.id), expanded })
     setCurrentId(id)
     setExpanded(false)
@@ -54,10 +95,12 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
     setEntering(true)
     timers.current.push(window.setTimeout(() => setLeaving(null), LEAVE_MS), window.setTimeout(() => setEntering(false), ENTER_MS))
   }
+  const advance = () => { if (nextInRotation) swapTo(nextInRotation.id) }
+  /** Ручной переход «Ещё N непрочитанных»: показанное считается прочитанным. */
   const next = () => {
-    if (!current || !others[0]) return
+    if (!current || !nextInRotation) return
     markRead(current.id)
-    swapTo(others[0].id)
+    swapTo(nextInRotation.id)
   }
   const openFull = () => {
     if (!current) return
@@ -65,16 +108,14 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
     markRead(current.id)
   }
   const toggleAll = () => {
-    setEntering(true)
+    flash(ENTER_MS, setEntering)
     setView((v) => (v === 'all' ? 'one' : 'all'))
-    timers.current.push(window.setTimeout(() => setEntering(false), ENTER_MS))
   }
   const pick = (id: string) => {
     setCurrentId(id)
     setExpanded(false)
     setView('one')
-    setEntering(true)
-    timers.current.push(window.setTimeout(() => setEntering(false), ENTER_MS))
+    flash(ENTER_MS, setEntering)
   }
 
   const slide = (a: ApiAnnouncement, opts: { read: boolean; expanded: boolean; leaving?: boolean }) => (
@@ -94,7 +135,14 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
   )
 
   return (
-    <section className="card ann-card" aria-label="Объявления деканата">
+    <section
+      className="card ann-card"
+      aria-label="Объявления деканата"
+      onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false) }}
+    >
       <div className="ann-card__head">
         <h2 className="card__title">Объявления деканата</h2>
         {items.length > 1 && (
@@ -109,14 +157,18 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
 
       {current && view === 'one' && (
         <>
-          <div className="ann-stage" aria-live="polite">
+          <div className="ann-stage" aria-live={autoplay && !paused ? 'off' : 'polite'}>
             {leaving && slide(leaving.a, { read: leaving.read, expanded: leaving.expanded, leaving: true })}
             {slide(current, { read: isRead(current.id), expanded })}
           </div>
           <div className="ann-card__foot">
-            {others.length > 0 ? (
+            {nextInRotation ? (
               <button type="button" className="ann-card__next" onClick={next}>
-                <span>Ещё <b className="ann-card__count">{others.length}</b> {pluralize(others.length, 'непрочитанное', 'непрочитанных', 'непрочитанных')}</span>
+                <span>
+                  {unreadElsewhere > 0
+                    ? <>Ещё <b className="ann-card__count">{unreadElsewhere}</b> {pluralize(unreadElsewhere, 'непрочитанное', 'непрочитанных', 'непрочитанных')}</>
+                    : 'Следующее объявление'}
+                </span>
                 <Icon name="chevronRight" size={20} />
               </button>
             ) : !isRead(current.id) ? (
@@ -126,6 +178,46 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
               </button>
             ) : (
               <p className="ann-card__done"><Icon name="check" size={18} /> Все прочитано</p>
+            )}
+
+            {rotation.length > 1 && (
+              <div className="ann-dots" role="group" aria-label="Выбор объявления">
+                {rotation.map((a, i) => {
+                  const active = a.id === current.id
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      className={`ann-dot ${active ? 'is-active' : ''} ${i < idx ? 'is-past' : ''}`}
+                      aria-label={`Объявление ${i + 1} из ${rotation.length}: ${a.title}`}
+                      aria-current={active || undefined}
+                      onClick={() => !active && swapTo(a.id)}
+                    >
+                      <span className="ann-dot__bar" aria-hidden="true">
+                        {active && autoplay && (
+                          <i
+                            key={current.id}
+                            className="ann-dot__fill"
+                            style={{ ['--dur' as string]: `${showMs(current)}ms`, animationPlayState: paused ? 'paused' : 'running' } as CSSProperties}
+                            onAnimationEnd={advance}
+                          />
+                        )}
+                      </span>
+                    </button>
+                  )
+                })}
+                {autoplay && (
+                  <button
+                    type="button"
+                    className="ann-dots__pause"
+                    aria-pressed={userPaused}
+                    aria-label={userPaused ? 'Возобновить смену объявлений' : 'Остановить смену объявлений'}
+                    onClick={() => setUserPaused((v) => !v)}
+                  >
+                    <Icon name={userPaused ? 'play' : 'pauseBars'} size={18} />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </>
