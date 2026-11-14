@@ -2,15 +2,9 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import type { ApiAnnouncement } from '../lib/api'
 import { load, save } from '../lib/storage'
 import { pluralize } from '../lib/format'
+import { audience, dateLabel } from '../lib/news'
+import { NewsModal } from './NewsModal'
 import { Icon } from './Icon'
-
-const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
-const dateLabel = (iso: string) => {
-  const p = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', day: 'numeric', month: 'numeric' }).formatToParts(new Date(iso))
-  const get = (t: string) => Number(p.find((x) => x.type === t)?.value)
-  return `${get('day')} ${MONTHS[get('month') - 1]}`
-}
-const audience = (a: ApiAnnouncement) => (a.groupName ? `для группы ${a.groupName}` : 'для всех студентов')
 
 /** Длительность выхода предыдущего слайда и входа нового (мс) — совпадает с CSS. */
 const LEAVE_MS = 150
@@ -50,9 +44,9 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
   const key = `announcements-read:${userId}`
   const [read, setRead] = useState<string[]>(() => load<string[]>(key, []))
   const [currentId, setCurrentId] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState(false)
+  const [modalId, setModalId] = useState<string | null>(null)
   const [view, setView] = useState<'one' | 'all'>('one')
-  const [leaving, setLeaving] = useState<{ a: ApiAnnouncement; read: boolean; expanded: boolean } | null>(null)
+  const [leaving, setLeaving] = useState<{ a: ApiAnnouncement; read: boolean } | null>(null)
   const [entering, setEntering] = useState(false)
   const [userPaused, setUserPaused] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -80,7 +74,7 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
   const unreadElsewhere = current ? unread.filter((a) => a.id !== current.id).length : 0
 
   const autoplay = !reduced && rotation.length > 1 && view === 'one'
-  const paused = userPaused || hovered || focused || expanded || hidden || !!leaving
+  const paused = userPaused || hovered || focused || !!modalId || hidden || !!leaving
 
   const flash = (ms: number, set: (v: boolean) => void) => {
     set(true)
@@ -88,9 +82,8 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
   }
   /** Плавная смена: предыдущее объявление уходит (150 мс), новое появляется по частям. */
   const swapTo = (id: string) => {
-    if (current) setLeaving({ a: current, read: isRead(current.id), expanded })
+    if (current) setLeaving({ a: current, read: isRead(current.id) })
     setCurrentId(id)
-    setExpanded(false)
     setView('one')
     setEntering(true)
     timers.current.push(window.setTimeout(() => setLeaving(null), LEAVE_MS), window.setTimeout(() => setEntering(false), ENTER_MS))
@@ -102,33 +95,29 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
     markRead(current.id)
     swapTo(nextInRotation.id)
   }
-  const openFull = () => {
-    if (!current) return
-    setExpanded((v) => !v)
-    markRead(current.id)
-  }
+  /** Закрепляем показанное объявление: пока окно листают, карточка под ним не должна «прыгать». */
+  const openFull = () => { if (!current) return; setCurrentId(current.id); setModalId(current.id) }
   const toggleAll = () => {
     flash(ENTER_MS, setEntering)
     setView((v) => (v === 'all' ? 'one' : 'all'))
   }
   const pick = (id: string) => {
     setCurrentId(id)
-    setExpanded(false)
     setView('one')
     flash(ENTER_MS, setEntering)
   }
 
-  const slide = (a: ApiAnnouncement, opts: { read: boolean; expanded: boolean; leaving?: boolean }) => (
+  const slide = (a: ApiAnnouncement, opts: { read: boolean; leaving?: boolean }) => (
     <div className={`ann-slide ${opts.leaving ? 'is-leaving' : entering ? 'is-entering' : ''}`} key={`${a.id}${opts.leaving ? '-out' : ''}`} aria-hidden={opts.leaving || undefined} {...(opts.leaving ? { inert: true } : {})}>
       <p className="ann-card__meta ann-c" style={{ ['--i' as string]: 0 }}>
         <time dateTime={a.createdAt}>{dateLabel(a.createdAt)}</time>
         <span className={opts.read ? 'ann-card__to' : 'ann-card__to ann-card__to--new'}> · {opts.read ? '' : 'новое, '}{audience(a)}</span>
       </p>
       <h3 className="ann-card__title ann-c" style={{ ['--i' as string]: 1 }}>{a.title}</h3>
-      <p className={`ann-card__body ann-c ${opts.expanded ? 'is-open' : ''}`} style={{ ['--i' as string]: 2 }}>{a.body}</p>
+      <p className="ann-card__body ann-c" style={{ ['--i' as string]: 2 }}>{a.body}</p>
       <div className="ann-c" style={{ ['--i' as string]: 3 }}>
-        <button type="button" className="ann-card__more" onClick={openFull} aria-expanded={opts.expanded} tabIndex={opts.leaving ? -1 : 0}>
-          {opts.expanded ? 'Свернуть' : 'Читать полностью'}
+        <button type="button" className="ann-card__more" onClick={openFull} aria-haspopup="dialog" tabIndex={opts.leaving ? -1 : 0}>
+          Читать полностью
         </button>
       </div>
     </div>
@@ -158,8 +147,8 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
       {current && view === 'one' && (
         <>
           <div className="ann-stage" aria-live={autoplay && !paused ? 'off' : 'polite'}>
-            {leaving && slide(leaving.a, { read: leaving.read, expanded: leaving.expanded, leaving: true })}
-            {slide(current, { read: isRead(current.id), expanded })}
+            {leaving && slide(leaving.a, { read: leaving.read, leaving: true })}
+            {slide(current, { read: isRead(current.id) })}
           </div>
           <div className="ann-card__foot">
             {nextInRotation ? (
@@ -239,6 +228,7 @@ export function AnnouncementsCard({ items, userId, error }: { items: ApiAnnounce
           ))}
         </ul>
       )}
+      {modalId && <NewsModal items={items} startId={modalId} onClose={() => setModalId(null)} onSeen={markRead} />}
     </section>
   )
 }

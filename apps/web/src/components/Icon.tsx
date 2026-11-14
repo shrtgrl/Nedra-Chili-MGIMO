@@ -38,6 +38,8 @@ const PATHS = {
   logout: <><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" /><path d="M10 16.5 14.5 12 10 7.5M14.5 12H4" /></>,
   user: <><circle cx="12" cy="8" r="4" /><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" /></>,
   x: <path d="M6 6l12 12M18 6 6 18" />,
+  image: <><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><circle cx="9" cy="10" r="1.8" /><path d="m20.5 16-4.5-4.5L8 19.5" /></>,
+  upload: <><path d="M12 15.5V4M7.5 8.5 12 4l4.5 4.5" /><path d="M4.5 15v2.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15" /></>,
   clipboard: <><rect x="5" y="4.5" width="14" height="16.5" rx="2.5" /><path d="M9 4.5V3.5h6v1M9 4.5h6v2.5H9zM9 12h6M9 16h4" /></>,
   pause: <><circle cx="12" cy="12" r="8.5" /><path d="M10 9v6M14 9v6" /></>,
   refresh: <><path d="M19.5 11A7.5 7.5 0 0 0 6 6.6L4.5 8" /><path d="M4.5 4v4h4" /><path d="M4.5 13A7.5 7.5 0 0 0 18 17.4l1.5-1.4" /><path d="M19.5 20v-4h-4" /></>,
