@@ -78,10 +78,10 @@
 /* ───────────── Туман · тёмная ───────────── */
 [data-variant='fog'][data-theme='dark'] {
   color-scheme: dark;
-  --stage: #0c0e14;
-  --bg: #13161f;
-  --surface: #1a1c24;
-  --surface-2: #242732;
+  --stage: #12141b;
+  --bg: #1c1f29;
+  --surface: #1a1b24;
+  --surface-2: #22252f;
   --surface-3: #1e2029;
   --line: #272a34;
   --input-bg: #1d2029;
@@ -174,10 +174,10 @@
 /* ───────────── Графитово-синий · тёмная ───────────── */
 [data-variant='graphite'][data-theme='dark'] {
   color-scheme: dark;
-  --stage: #0c0e14;
-  --bg: #13161f;
-  --surface: #1a1c24;
-  --surface-2: #242732;
+  --stage: #12141b;
+  --bg: #1c1f29;
+  --surface: #1a1b24;
+  --surface-2: #22252f;
   --surface-3: #1e2029;
   --line: #272a34;
   --input-bg: #1d2029;
