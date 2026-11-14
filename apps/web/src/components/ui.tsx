@@ -6,13 +6,13 @@ import { useSettings } from '../context/settings'
 import { useIndicator } from '../lib/useIndicator'
 
 /* ── Логотип ───────────────────────────────────── */
-export function Brand({ compact = false }: { compact?: boolean }) {
+export function Brand() {
   return (
     <div className="brand">
       <img src={emblem} alt="" className="brand__emblem" width={44} height={38} />
       <div>
         <div className="brand__name">МУКПиД</div>
-        {!compact && <div className="brand__sub">Онлайн деканат</div>}
+        <div className="brand__sub">Онлайн деканат</div>
       </div>
     </div>
   )

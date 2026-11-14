@@ -127,7 +127,7 @@ function MobileBar() {
   return (
     <header className="mobile-bar">
       <Link to={`/${user.role}`} aria-label="На главную">
-        <Brand compact />
+        <Brand />
       </Link>
       <div className="mobile-bar__actions">
         <ThemeButton />
