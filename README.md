@@ -34,7 +34,7 @@ npm run dev --prefix apps/web
 
 ## Neon
 
-Настройки Neon находятся в `neon.ts`; локальная привязка проекта `.neon` и секреты `.env`/`.env.local` не сохраняются в Git. После `npm ci` CLI доступен как `node_modules/.bin/neon`. Для применения настроек используйте `node_modules/.bin/neon deploy --no-env-pull`. Адреса БД можно получить командой `node_modules/.bin/neon env pull --file .env.local -e DATABASE_URL -e DATABASE_URL_UNPOOLED`. Миграции используют прямой `DATABASE_URL_UNPOOLED`, если он задан; API использует `DATABASE_URL`. Для тестов нужен отдельный `TEST_DATABASE_URL`. Neon размещает БД, но публичный API и веб-клиент требуют отдельного размещения.
+Настройки Neon находятся в `neon.ts`; локальная привязка проекта `.neon` и секреты `.env`/`.env.local` не сохраняются в Git. После `npm ci` CLI доступен как `node_modules/.bin/neon`. Для применения настроек используйте `node_modules/.bin/neon deploy --no-env-pull`. Адреса БД можно получить командой `node_modules/.bin/neon env pull --file .env.local -e DATABASE_URL -e DATABASE_URL_UNPOOLED`. Миграции используют прямой `DATABASE_URL_UNPOOLED`, если он задан; API использует `DATABASE_URL`. Для тестов нужен отдельный `TEST_DATABASE_URL`. Публичное приложение использует отдельную ветку Neon `amvera-demo`; не применяйте к ней локальные интеграционные тесты.
 
 ## Кабинеты
 
@@ -81,8 +81,22 @@ DATABASE_URL="$TEST_DATABASE_URL" ../../node_modules/.bin/drizzle-kit migrate
 
 ## Публикация
 
-Публичный деплой не настроен. Для размещения требуются HTTPS, PostgreSQL, сервер API и выдача интерфейса с тем же origin (маршрут /api проксируется в API). JWT_SECRET и остальные секреты задаются окружением. Вместе с API переносится apps/api/assets для кириллического PDF. `/health` показывает работу процесса, не готовность БД.
+Демо опубликовано на Amvera: https://mgimo-vibecode-hack-betlick.msk1.amvera.tech/. База находится в ветке Neon `amvera-demo`. API и собранный интерфейс работают в одном контейнере на порту 3001; `/api` обслуживает тот же origin. Для работы опубликованного сайта запускать Docker на своём компьютере не нужно.
 
-## Подготовка контейнера (без публикации)
+`Dockerfile` собирает API и веб-клиент, `amvera.yaml` задаёт Docker toolchain и порт, `.dockerignore` исключает локальные секреты. В переменных Amvera на этапе «Запуск» заданы `DATABASE_URL` (ветка `amvera-demo`, секрет), `JWT_SECRET` (секрет) и `APP_ORIGIN` (точный HTTPS-адрес сайта без завершающего `/`). `NODE_ENV=production`, `HOST=0.0.0.0` и `PORT=3001` заданы в контейнере. Содержимое `.env` и `.env.neon-demo` не публикуется. Вместе с API в образ включены `apps/api/assets` для кириллического PDF.
 
-`Dockerfile` собирает API и веб-клиент для запуска на одном порту, `amvera.yaml` объявляет порт 3001, `.dockerignore` исключает локальные секреты. Эти файлы не запускают деплой. После завершения MVP для размещения потребуются `DATABASE_URL`, `JWT_SECRET` и `APP_ORIGIN` с точным HTTPS-адресом; `NODE_ENV=production`, `HOST=0.0.0.0`, `PORT=3001` задаются контейнером. Миграции применяются отдельно, до запуска новой версии API.
+Перед отправкой версии с новыми миграциями примените их к целевой ветке Neon, используя её строку подключения; только после этого обновляйте сервер. Из корня проекта для демоветки (после получения `.env.neon-demo` с `DATABASE_URL` и `DATABASE_URL_UNPOOLED`):
+
+```sh
+cd apps/api
+env -u DATABASE_URL -u DATABASE_URL_UNPOOLED node --env-file=../../.env.neon-demo ../../node_modules/drizzle-kit/bin.cjs migrate
+cd ../..
+```
+
+Для обновления контейнера закоммитьте изменения в `main` и отправьте её в `master` репозитория Amvera:
+
+```sh
+git -c http.version=HTTP/1.1 push amvera main:master
+```
+
+Amvera собирает и перезапускает приложение после push. При изменении переменных окружения перезапустите контейнер в панели Amvera. `/health` подтверждает работу процесса, а подключение к БД проверяйте входом и чтением данных в кабинетах. Обновление сайта не требует повторного seed; демоданные в Neon сохраняются отдельно от контейнера.
