@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useIndicator } from '../lib/useIndicator'
 import { Icon, type IconName } from './Icon'
 import { Avatar, Brand, IconButton, NewYearButton, ThemeButton } from './ui'
@@ -230,7 +230,7 @@ export function AppLayout() {
         <main className="content" id="main">
           {loading && <p role="status">Загружаем данные…</p>}
           {error && <p className="form-error" role="alert">{error} <button className="link-btn" onClick={() => void reload()}>Повторить</button></p>}
-          <Outlet />
+          <Suspense fallback={null}><Outlet /></Suspense>
         </main>
         <ForestSlot />
       </div>

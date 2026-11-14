@@ -1,4 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+/* Если после фонового обновления данные не изменились, оставляем прежний объект: интерфейс не перерисовывается зря. */
+function keep<T>(prev: T, next: T): T { return JSON.stringify(prev) === JSON.stringify(next) ? prev : next; }
 import type { GradeSheet, Inquiry, InquiryStatus, Notice, NotifyPrefs, StudentRequest } from '../types';
 import { dataApi, type ApiGrade, type ApiStaffRequest } from '../lib/api';
 import { useAuth } from './auth';
@@ -43,12 +45,12 @@ export function DataProvider({ children }: {
             const [rs, ns, ps, qs, ss, gs] = await Promise.all([user.role === 'student' ? dataApi.requests() : Promise.resolve([]), dataApi.notices(), dataApi.prefs(), user.role !== 'staff' ? dataApi.inquiries() : Promise.resolve([]), user.role === 'teacher' ? dataApi.sheets() : Promise.resolve([]), user.role === 'student' ? dataApi.grades() : Promise.resolve([])]);
             if (seq !== sequence.current)
                 return;
-            setRequests(rs.map(requestView));
-            setNotices(ns.map(n => ({ id: n.id, title: n.title, text: n.body, time: dateLabel(n.createdAt), unread: !n.readAt, icon: n.kind === 'change' ? 'calendar' : n.kind === 'request' ? 'doc' : n.kind === 'inquiry' ? 'inbox' : 'bell', kind: n.kind })));
-            setPrefs(ps);
-            setInquiries(qs.map(q => ({ ...q, group: q.group ?? '—', initials: q.student.split(' ').slice(0, 2).map(n => n[0]).join(''), message: q.text, replies: q.replies.map(r => `${dateLabel(r.createdAt)} — ${r.text}`) })));
-            setSheets(ss.map(s => ({ ...s, deadlineLabel: s.deadline ? dateLabel(s.deadline) : 'срок не задан' })));
-            setGrades(gs);
+            setRequests(p => keep(p, rs.map(requestView)));
+            setNotices(p => keep(p, ns.map(n => ({ id: n.id, title: n.title, text: n.body, time: dateLabel(n.createdAt), unread: !n.readAt, icon: n.kind === 'change' ? 'calendar' : n.kind === 'request' ? 'doc' : n.kind === 'inquiry' ? 'inbox' : 'bell', kind: n.kind }))));
+            setPrefs(p => keep(p, ps));
+            setInquiries(p => keep(p, qs.map(q => ({ ...q, group: q.group ?? '—', initials: q.student.split(' ').slice(0, 2).map(n => n[0]).join(''), message: q.text, replies: q.replies.map(r => `${dateLabel(r.createdAt)} — ${r.text}`) }))));
+            setSheets(p => keep(p, ss.map(s => ({ ...s, deadlineLabel: s.deadline ? dateLabel(s.deadline) : 'срок не задан' }))));
+            setGrades(p => keep(p, gs));
             setError(null);
         }
         catch (e) {
@@ -62,7 +64,7 @@ export function DataProvider({ children }: {
     }, [user]);
     useEffect(() => { void reload(); const refresh = () => { if (document.visibilityState === 'visible')
         void reload(); }; const timer = window.setInterval(refresh, 60000); window.addEventListener('focus', refresh); return () => { ++sequence.current; clearInterval(timer); window.removeEventListener('focus', refresh); }; }, [reload]);
-    const mutate = async (action: () => Promise<unknown>) => { ++sequence.current; try {
+    const mutate = useCallback(async (action: () => Promise<unknown>) => { ++sequence.current; try {
         await action();
         await reload();
         return true;
@@ -70,10 +72,11 @@ export function DataProvider({ children }: {
     catch (e) {
         setError(e instanceof Error ? e.message : 'Не удалось сохранить');
         return false;
-    } };
-    return <Ctx.Provider value={{ requests, notices, prefs, inquiries, sheets, grades, loading, error, reload, unreadCount: notices.filter(n => n.unread).length, newInquiries: inquiries.filter(q => q.status === 'new').length,
+    } }, [reload]);
+    const value = useMemo<Data>(() => ({ requests, notices, prefs, inquiries, sheets, grades, loading, error, reload, unreadCount: notices.filter(n => n.unread).length, newInquiries: inquiries.filter(q => q.status === 'new').length,
             addRequest: r => mutate(() => dataApi.addRequest(r)), cancelRequest: id => mutate(() => dataApi.cancelRequest(id)), markRead: id => mutate(() => dataApi.read(id)), markAllRead: () => mutate(() => dataApi.readAll()), setPref: (k, v) => mutate(() => dataApi.setPrefs({ [k]: v })),
-            setInquiryStatus: (id, status) => mutate(() => dataApi.inquiryStatus(id, status)), replyInquiry: (id, text) => mutate(() => dataApi.replyInquiry(id, text)), saveSheet: s => mutate(() => dataApi.saveSheet(s.id, s.version, s.students.map(st => ({ studentId: st.id, score: st.score })))) }}>{children}</Ctx.Provider>;
+            setInquiryStatus: (id, status) => mutate(() => dataApi.inquiryStatus(id, status)), replyInquiry: (id, text) => mutate(() => dataApi.replyInquiry(id, text)), saveSheet: s => mutate(() => dataApi.saveSheet(s.id, s.version, s.students.map(st => ({ studentId: st.id, score: st.score })))) }), [requests, notices, prefs, inquiries, sheets, grades, loading, error, reload, mutate]);
+    return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 export function useData() { const v = useContext(Ctx); if (!v)
     throw new Error('useData вне DataProvider'); return v; }

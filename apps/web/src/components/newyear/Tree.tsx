@@ -70,6 +70,7 @@ export function Tree({ height = 170, delay = 0, gifts = true }: { height?: numbe
   const id = useId().replace(/:/g, '')
   const width = (height * 120) / 170
   return (
+    <span className="tree-box">
     <svg className="tree" width={width} height={height} viewBox="0 0 120 170" aria-hidden="true">
       <defs>
         <linearGradient id={`g${id}`} x1="0" x2="1" y1="0" y2="0">
@@ -89,6 +90,24 @@ export function Tree({ height = 170, delay = 0, gifts = true }: { height?: numbe
         <path key={i} d={tierPath(t)} fill={`url(#g${id})`} />
       ))}
 
+      {/* шары */}
+      {BALLS.map((b, i) => (
+        <g key={i}>
+          <circle cx={b.x} cy={b.y} r={3.4} fill={b.c} />
+          <circle cx={b.x - 1.1} cy={b.y - 1.1} r={1} fill="#fff" opacity={0.6} />
+        </g>
+      ))}
+
+      {gifts && (
+        <g>
+          <Gift x={10} y={152} w={17} h={16} c="#b51f38" r="#f2c14e" />
+          <Gift x={93} y={148} w={15} h={20} c="#f2c14e" r="#b51f38" />
+          <Gift x={27} y={159} w={10} h={9} c="#8fa7f5" r="#f6f2e8" />
+        </g>
+      )}
+    </svg>
+    {/* всё, что мигает, лежит на отдельном слое: перерисовывается только он, а не вся ёлка */}
+    <svg className="tree-fx" viewBox="0 0 120 170" aria-hidden="true">
       {/* гирлянда-нить */}
       <g className="tree__lights">
         {LIGHTS.map((l, i) => (
@@ -99,14 +118,6 @@ export function Tree({ height = 170, delay = 0, gifts = true }: { height?: numbe
         ))}
       </g>
 
-      {/* шары */}
-      {BALLS.map((b, i) => (
-        <g key={i}>
-          <circle cx={b.x} cy={b.y} r={3.4} fill={b.c} />
-          <circle cx={b.x - 1.1} cy={b.y - 1.1} r={1} fill="#fff" opacity={0.6} />
-        </g>
-      ))}
-
       {/* звезда и искры */}
       <g className="tree__star" style={{ '--d': `${delay}s` } as CSSProperties}>
         <circle className="tree__star-halo" cx={CX} cy={17} r={12} />
@@ -116,14 +127,8 @@ export function Tree({ height = 170, delay = 0, gifts = true }: { height?: numbe
       <path className="sparkle" style={{ animationDelay: `${delay + 1.1}s` }} d={sparkle(79, 9, 4)} fill="#f6c143" />
       <path className="sparkle" style={{ animationDelay: `${delay + 1.8}s` }} d={sparkle(76, 27, 3)} fill="#f6c143" />
 
-      {gifts && (
-        <g>
-          <Gift x={10} y={152} w={17} h={16} c="#b51f38" r="#f2c14e" />
-          <Gift x={93} y={148} w={15} h={20} c="#f2c14e" r="#b51f38" />
-          <Gift x={27} y={159} w={10} h={9} c="#8fa7f5" r="#f6f2e8" />
-        </g>
-      )}
     </svg>
+    </span>
   )
 }
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { User } from '../types'
 import { ApiError, authApi, type ApiProfile } from '../lib/api'
 
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // Роль определяет сервер по аккаунту: пользователь её не выбирает.
-  const login: Auth['login'] = async (email, password) => {
+  const login = useCallback<Auth['login']>(async (email, password) => {
     try {
       await authApi.login(email.trim(), password)
       const profile = await authApi.me()
@@ -64,9 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       return error instanceof ApiError ? error.message : 'Не удалось войти. Попробуйте ещё раз.'
     }
-  }
+  }, [])
 
-  const logout: Auth['logout'] = async () => {
+  const logout = useCallback<Auth['logout']>(async () => {
     try {
       await authApi.logout()
       setUser(null)
@@ -74,9 +74,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       return error instanceof ApiError ? error.message : 'Не удалось выйти. Попробуйте ещё раз.'
     }
-  }
+  }, [])
 
-  return <Ctx.Provider value={{ user, loading, login, logout }}>{children}</Ctx.Provider>
+  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout])
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 
 export function useAuth() {

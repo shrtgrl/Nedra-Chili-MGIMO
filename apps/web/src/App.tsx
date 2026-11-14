@@ -1,6 +1,5 @@
-import { StudentInquiriesPage } from './pages/student/Inquiries'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
-import type { ReactElement } from 'react'
+import { lazy, Suspense, useEffect, type ReactElement } from 'react'
 import { AuthProvider, useAuth } from './context/auth'
 import { DataProvider } from './context/data'
 import { SettingsProvider } from './context/settings'
@@ -11,21 +10,46 @@ import { MaterialsProvider } from './context/materials'
 import type { Role } from './types'
 import { AppLayout } from './components/Layout'
 import { Snow, useNewYear } from './components/newyear'
-import { LoginPage } from './pages/Login'
-import { ProfilePage } from './pages/Profile'
-import { StudentHome } from './pages/student/Home'
-import { SchedulePage } from './pages/student/Schedule'
-import { GradesPage } from './pages/student/Grades'
-import { RequestsPage } from './pages/student/Requests'
-import { NotificationsPage } from './pages/student/Notifications'
-import { TeacherHome } from './pages/teacher/Home'
-import { GradebookPage } from './pages/teacher/Gradebook'
-import { InquiriesPage } from './pages/teacher/Inquiries'
-import { TeacherMaterialsPage } from './pages/teacher/Materials'
-import { TeacherDeadlinesPage } from './pages/teacher/Deadlines'
-import { StaffTasksPage } from './pages/staff/Tasks'
-import { StaffAnnouncementsPage } from './pages/staff/Announcements'
-import { StaffSchedulePage } from './pages/staff/Schedule'
+
+const StudentInquiriesPage = lazy(() => import('./pages/student/Inquiries').then((m) => ({ default: m.StudentInquiriesPage })))
+const LoginPage = lazy(() => import('./pages/Login').then((m) => ({ default: m.LoginPage })))
+const ProfilePage = lazy(() => import('./pages/Profile').then((m) => ({ default: m.ProfilePage })))
+const StudentHome = lazy(() => import('./pages/student/Home').then((m) => ({ default: m.StudentHome })))
+const SchedulePage = lazy(() => import('./pages/student/Schedule').then((m) => ({ default: m.SchedulePage })))
+const GradesPage = lazy(() => import('./pages/student/Grades').then((m) => ({ default: m.GradesPage })))
+const RequestsPage = lazy(() => import('./pages/student/Requests').then((m) => ({ default: m.RequestsPage })))
+const NotificationsPage = lazy(() => import('./pages/student/Notifications').then((m) => ({ default: m.NotificationsPage })))
+const TeacherHome = lazy(() => import('./pages/teacher/Home').then((m) => ({ default: m.TeacherHome })))
+const GradebookPage = lazy(() => import('./pages/teacher/Gradebook').then((m) => ({ default: m.GradebookPage })))
+const InquiriesPage = lazy(() => import('./pages/teacher/Inquiries').then((m) => ({ default: m.InquiriesPage })))
+const TeacherMaterialsPage = lazy(() => import('./pages/teacher/Materials').then((m) => ({ default: m.TeacherMaterialsPage })))
+const TeacherDeadlinesPage = lazy(() => import('./pages/teacher/Deadlines').then((m) => ({ default: m.TeacherDeadlinesPage })))
+const StaffTasksPage = lazy(() => import('./pages/staff/Tasks').then((m) => ({ default: m.StaffTasksPage })))
+const StaffAnnouncementsPage = lazy(() => import('./pages/staff/Announcements').then((m) => ({ default: m.StaffAnnouncementsPage })))
+const StaffSchedulePage = lazy(() => import('./pages/staff/Schedule').then((m) => ({ default: m.StaffSchedulePage })))
+
+/* Страницы грузятся отдельными кусками. Когда браузер свободен, догружаем остальные,
+   чтобы переходы между разделами оставались мгновенными. */
+const PAGE_LOADERS = [
+  () => import('./pages/student/Home'), () => import('./pages/student/Schedule'), () => import('./pages/student/Grades'),
+  () => import('./pages/student/Requests'), () => import('./pages/student/Inquiries'), () => import('./pages/student/Notifications'),
+  () => import('./pages/teacher/Home'), () => import('./pages/teacher/Gradebook'), () => import('./pages/teacher/Inquiries'),
+  () => import('./pages/teacher/Materials'), () => import('./pages/teacher/Deadlines'),
+  () => import('./pages/staff/Tasks'), () => import('./pages/staff/Announcements'), () => import('./pages/staff/Schedule'),
+  () => import('./pages/Profile'),
+]
+function usePrefetchPages(role: Role | undefined) {
+  useEffect(() => {
+    if (!role) return
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback
+    const run = () => {
+      const pick = role === 'student' ? PAGE_LOADERS.slice(0, 6) : role === 'teacher' ? PAGE_LOADERS.slice(6, 11) : PAGE_LOADERS.slice(11, 14)
+      for (const load of [...pick, PAGE_LOADERS[14]]) void load().catch(() => undefined)
+    }
+    const t = idle ? idle(run) : window.setTimeout(run, 1500)
+    return () => { if (!idle) window.clearTimeout(t) }
+  }, [role])
+}
 
 function NewYearBackdrop() {
   return useNewYear() ? <Snow /> : null
@@ -55,11 +79,13 @@ function GuestOnly({ children }: { children: ReactElement }) {
 }
 
 function AppRoutes() {
+  usePrefetchPages(useAuth().user?.role)
   return (
           <ToastProvider>
             <NewYearBackdrop />
             {/* HashRouter — чтобы сайт работал на любом статическом хостинге без настройки сервера */}
             <HashRouter>
+              <Suspense fallback={null}>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route
@@ -121,6 +147,7 @@ function AppRoutes() {
                 </Route>
                 <Route path="*" element={<Home />} />
               </Routes>
+              </Suspense>
             </HashRouter>
           </ToastProvider>
   )

@@ -50,7 +50,7 @@ export function Snow() {
     }
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       w = window.innerWidth
       h = window.innerHeight
       canvas.width = w * dpr
@@ -94,6 +94,8 @@ export function Snow() {
     }
 
     const tick = (now: number) => {
+      raf = requestAnimationFrame(tick)
+      if (now - last < 30) return // ~30 кадров/с: снег медленный, разницы глазом нет
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
       for (const f of flakes) {
@@ -103,7 +105,6 @@ export function Snow() {
         if (f.y > h + 10 || f.x < -20 || f.x > w + 20) Object.assign(f, spawn(false))
       }
       draw()
-      raf = requestAnimationFrame(tick)
     }
 
     resize()
