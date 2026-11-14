@@ -7512,3 +7512,93 @@ tbody tr:last-child .tt__cell.is-today:not(.is-last) {
 @media (prefers-reduced-motion: reduce) {
   .cover-tile, .cover-tile__check { transition: none; }
 }
+
+/* ===== Защита от переполнения: ничего не вылезает за свой блок ===== */
+
+/* плитки «допуск / экзамена / зачёта»: переносятся в 2 ряда вместо выхода за карточку */
+.tiles { grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); }
+.tile { min-width: 0; }
+.tile span { overflow-wrap: anywhere; }
+.avg-card { flex-wrap: wrap; }
+.avg-card > :first-child { flex: none; }
+.avg-card > :last-child { flex: 1 1 170px; min-width: 0; }
+
+/* шапка профиля: длинное ФИО переносится */
+.profile-head > * { min-width: 0; }
+.profile-head > div { flex: 1 1 0; }
+.profile-head__name,
+.profile-head p { overflow-wrap: anywhere; }
+
+/* кнопки формы объявления переносятся, а не лезут в соседнюю колонку */
+.ann__actions { flex-wrap: wrap; }
+.ann__actions .btn { min-width: 0; padding-inline: 20px; }
+.ann__actions .btn--hl { flex: 1 1 auto; min-width: min(190px, 100%); }
+.ann__actions .btn:not(.btn--hl) { flex: 0 1 auto; }
+@media (max-width: 900px) {
+  .ann__actions .btn { flex: none; width: 100%; }
+}
+
+/* сегменты и шапки карточек: помещаются в экран любой ширины */
+.card__head { flex-wrap: wrap; gap: 10px 16px; }
+.seg { max-width: 100%; }
+.seg__btn { min-width: 0; flex: 1 1 auto; padding-inline: clamp(10px, 3.2vw, 22px); line-height: 1.15; }
+@media (max-width: 400px) {
+  .seg__btn { white-space: normal; padding-block: 6px; }
+}
+
+/* плитки занятий: название не вылезает, шрифт подстраивается под ширину плитки */
+.tc { container-type: inline-size; }
+.tc__title { overflow-wrap: break-word; word-break: normal; hyphens: manual; }
+@container (max-width: 190px) {
+  .tc__title { font-size: 13px; }
+  .tc__meta, .tc__kind, .tc__note, .tc__live { font-size: 13px; }
+}
+
+/* точки объявлений ужимаются, чтобы кнопка паузы не уходила за карточку */
+.ann-dots { min-width: 0; }
+.ann-dot { flex: 1 1 0; min-width: 0; max-width: 36px; transition: flex-grow 0.3s cubic-bezier(0.23, 1, 0.32, 1); }
+.ann-dot.is-active { flex-grow: 1.8; min-width: 0; max-width: 64px; }
+.ann-dots__pause { flex: none; }
+
+/* нижняя навигация на самых узких экранах */
+.bottom-nav .bottom-nav__label { text-overflow: ellipsis; }
+@media (max-width: 400px) {
+  .bottom-nav { gap: 0; padding: 6px; }
+  .bottom-nav__item { min-width: 34px; }
+  .bottom-nav__item.is-active { padding: 0 11px 0 10px; }
+  .bottom-nav .bottom-nav__label { font-size: 13px; }
+  .bottom-nav__item.is-active .bottom-nav__label { max-width: 8em; margin-left: 6px; }
+}
+@media (max-width: 340px) {
+  .bottom-nav__item.is-active .bottom-nav__label { max-width: 5.2em; }
+}
+
+/* липкая шапка телефона: полоса на всю ширину вместо «коробки» с краями у логотипа и аватара */
+@media (max-width: 860px) {
+  .mobile-bar {
+    --bar-bg: color-mix(in srgb, var(--bg) 82%, transparent);
+    background: var(--bar-bg);
+    box-shadow: 0 0 0 100vmax var(--bar-bg);
+    clip-path: inset(0 -100vmax);
+  }
+}
+
+/* список обращений: бейдж статуса переносится под ФИО, длинные темы не вылезают */
+.inbox__head { flex-wrap: wrap; row-gap: 4px; }
+.inbox__head > b { min-width: 0; overflow-wrap: anywhere; }
+.inbox__head > .badge { flex: none; }
+.inbox__subject,
+.inbox__item { min-width: 0; overflow-wrap: anywhere; }
+.msg__bubble { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .msg--mine { padding-left: 24px; }
+}
+
+/* плитки статистики: слово «экзамена» не рвётся, ФИО в шапке профиля ужимается по ширине экрана */
+.tile { padding: 14px 12px; }
+.tile span { font-size: 13px; overflow-wrap: break-word; }
+.tile__value { font-size: clamp(22px, 7vw, 28px); }
+.profile-head__name { font-size: clamp(18px, 5.4vw, 32px); }
+@media (max-width: 600px) {
+  .staff-bar .staff-chips { flex-wrap: wrap; overflow: visible; }
+}
